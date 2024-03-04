@@ -1,3 +1,11 @@
+land_use/EPA_NLUD/inputs
+land_use/EPA_NLUD/accuracy
+land_use/EPA_NLUD/outputs
+land_use/EPA_NLUD/preprocessing
+population/inputs
+population/outputs
+*.sqlite
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
