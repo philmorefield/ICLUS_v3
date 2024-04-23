@@ -5,7 +5,7 @@ import os
 import sqlite3
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
@@ -16,6 +16,8 @@ else:
     raise Exception
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
+MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
+
 # ANALYSIS_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis')
 # DATABASE_FOLDER = os.path.join(DISSERTATION_FOLDER, 'databases')
 # PART_3_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis\\part_3')
@@ -31,8 +33,6 @@ COLUMN_MAP = {'count_.Intercept.': 'c_int',
               'count_ln_mi': 'c_ln_mi',
               'count_ln_nj': 'c_ln_nj',
               'count_ln_Cij': 'c_ln_Cij',
-              'count_ln_Lij': 'c_ln_Lij',
-              'count_ln_sij': 'c_ln_sij',
               'count_ln_Tij': 'c_ln_Tij',
               'count_ln_nj_star': 'c_ln_nj_star',
               'count_factor.SAME_LABOR_MARKET.1': 'c_same_labor_market',
@@ -41,24 +41,35 @@ COLUMN_MAP = {'count_.Intercept.': 'c_int',
               'zero_ln_mi': 'z_ln_mi',
               'zero_ln_nj': 'z_ln_nj',
               'zero_ln_Cij': 'z_ln_Cij',
-              'zero_ln_Lij': 'z_ln_Lij',
-              'zero_ln_sij': 'z_ln_sij',
               'zero_ln_Tij': 'z_ln_Tij',
               'zero_ln_nj_star': 'z_ln_nj_star',
               'zero_factor.SAME_LABOR_MARKET.1': 'z_same_labor_market',
               'zero_factor.URBAN_DESTINATION.1': 'z_urban_destination'}
 
 
-def get_fips_changes():
+def make_fips_changes(df=None):
     '''
-    TODO: Docstring
+    TODO: Add docstring
     '''
+
+    uri = f'sqlite:{MIG_DB}'
     query = 'SELECT OLD_FIPS, NEW_FIPS \
              FROM fips_or_name_changes'
-    db = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'migration.sqlite')
-    con = sqlite3.connect(database=db, timeout=30)
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
+    df_fips = pl.read_database_uri(query=query, uri=uri)
+
+    df = df.join(other=df_fips,
+                 how='left',
+                 left_on='GEOID',
+                 right_on='OLD_FIPS')
+
+    df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
+                         .then(pl.col('NEW_FIPS'))
+                         .otherwise(pl.col('GEOID')).alias('GEOID'))
+    df = df.drop('NEW_FIPS')
+    if 'URBAN_DESTINATION' in df.columns:
+        df = df.group_by('GEOID').agg(pl.col('URBAN_DESTINATION').max())
+    else:
+        df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'GENDER']).agg(pl.col('POPULATION').sum())
 
     return df
 
@@ -81,15 +92,15 @@ def get_age_weighted_population(race_pop, age_group):
     query = f'SELECT POPULATION_AGE_GROUP AS AGE_GROUP, RHO AS WEIGHT \
               FROM Census1990_ALL_AGE_CORRELATIONS \
               WHERE MIGRATION_AGE_GROUP = "{age_group_label}"'
-    weights = pd.read_sql(sql=query, con=con)
+    weights = pl.read_sql(sql=query, con=con)
     con.close()
 
     # rename some things and add the 0-4 age group
     weights.AGE_GROUP = weights.AGE_GROUP.str.replace('_TO_', '-')
     weights.AGE_GROUP = weights.AGE_GROUP.str.replace('85_AND_OVER', '85+')
     val_5_9 = weights.query('AGE_GROUP == "5-9"').WEIGHT.values[0]
-    row = pd.DataFrame.from_dict(data={'AGE_GROUP': ('0-4',), 'WEIGHT': (val_5_9,)})
-    weights = pd.concat(objs=[weights, row],
+    row = pl.DataFrame.from_dict(data={'AGE_GROUP': ('0-4',), 'WEIGHT': (val_5_9,)})
+    weights = pl.concat(objs=[weights, row],
                         ignore_index=True,
                         verify_integrity=True).set_index(keys='AGE_GROUP')
     weights['WEIGHT'] = weights['WEIGHT'] / weights['WEIGHT'].max()  # standardize weights so that the largest weight is 1.0
@@ -117,12 +128,10 @@ def get_age_weighted_population(race_pop, age_group):
 
 
 def get_intra_labor_market_moves():
-    db = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
+    uri = f'sqlite:{MIG_DB}'
     query = 'SELECT COFIPS, BEA10 \
              FROM county_to_BEA10'
-    con = sqlite3.connect(database=db, timeout=30)
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
+    df = pl.read_database_uri(query=query, uri=uri)
 
     return df
 
@@ -143,7 +152,7 @@ class migration_2_c_ii_3_a():
         self.ALPHA = 0.05
 
         self.retrieve_coefficients()
-        self.fips_changes = get_fips_changes()
+        # self.fips_changes = get_fips_changes()
         self.intra_labor_market = get_intra_labor_market_moves()
         self.urban_counties = self.get_urban_counties()
         self.distance = self.get_euclidean_distance()
@@ -153,40 +162,43 @@ class migration_2_c_ii_3_a():
         Query a SQLite database for the correct coefficients, format them and
         then set the result as self.coefficients
         '''
-        p = os.path.join(INPUT_FOLDER, 'part_2_c_ii_3_a')
-        db = os.path.join(p, 'zeroinfl_outputs.sqlite')
-        con = sqlite3.connect(database=db, timeout=30)
+        # set up the regression coefficients
+        uri = f"sqlite:{os.path.join(INPUT_FOLDER, 'databases', 'zeroinflated_regression.sqlite')}"
         query = 'SELECT * FROM coefficients_Census_1990'
-        coefs = pd.read_sql(sql=query, con=con)
-        coefs['AGE_GROUP'] = coefs['AGE_GROUP'].str.replace('_TO_', '-')
-        coefs['AGE_GROUP'] = coefs['AGE_GROUP'].str.replace('85_AND_OVER', '85+')
-        coefs.set_index(keys=['RACE', 'AGE_GROUP'], inplace=True)
-        coefs.drop(columns=['DIST', 'LINK'], inplace=True)
-        coefs.rename(columns=COLUMN_MAP, inplace=True)
-        coefs = coefs.melt(var_name='VARIABLE',
-                           value_name='COEFF',
-                           ignore_index=False)
-        coefs.set_index(keys='VARIABLE', append=True, inplace=True)
+        coefs = pl.read_database_uri(query=query, uri=uri)
 
+        coefs = pl.read_database_uri(query=query, uri=uri)
+        coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('_TO_', '-')
+                      .alias('AGE_GROUP')))
+        coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
+                      .alias('AGE_GROUP')))
+        coefs = coefs.drop(columns=['DIST', 'LINK', 'CONVERGED'])
+        coefs.rename(COLUMN_MAP)
+        coefs = coefs.melt(id_vars=['RACE', 'AGE_GROUP'],
+                           variable_name='VARIABLE',
+                           value_name='COEFF')
+
+        # set up the signifcance terms, which vary somewhat from race to race
         query = 'SELECT * FROM significance_Census_1990'
-        sigs = pd.read_sql(sql=query, con=con)
-        con.close()
-        sigs['AGE_GROUP'] = sigs['AGE_GROUP'].str.replace('_TO_', '-')
-        sigs['AGE_GROUP'] = sigs['AGE_GROUP'].str.replace('85_AND_OVER', '85+')
-        sigs.set_index(keys=['RACE', 'AGE_GROUP'], inplace=True)
-        sigs.drop(columns=['DIST', 'LINK', 'CONVERGED'], inplace=True)
-        sigs.rename(columns=COLUMN_MAP, inplace=True)
-        sigs = sigs.melt(var_name='VARIABLE',
-                         value_name='P_VALUE',
-                         ignore_index=False)
-        sigs.set_index(keys='VARIABLE', append=True, inplace=True)
+        sigs = pl.read_database_uri(query=query, uri=uri)
+        sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('_TO_', '-')
+                   .alias('AGE_GROUP')))
+        sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
+                    .alias('AGE_GROUP')))
+        sigs = sigs.drop(columns=['DIST', 'LINK', 'CONVERGED'])
+        sigs.rename(COLUMN_MAP)
+        sigs = sigs.melt(id_vars=['RACE', 'AGE_GROUP'],
+                         variable_name='VARIABLE',
+                         value_name='P_VALUE')
 
-        df = coefs.join(other=sigs)
+        df = coefs.join(other=sigs,
+                        on=['RACE', 'AGE_GROUP'],
+                        how='left')
 
         # for now keep all of the intercepts regardless of statistical significance;
         # otherwise set the coefficient to 0 when P_VALUE >- ALPHA
         # df.loc[(df.P_VALUE >= self.ALPHA) & (df.AGE_GROUP != '85+') & (~df.index.get_level_values('VARIABLE').isin(['c_int', 'z_int'])), 'COEFF'] = 0.0
-        self.coefs = df.copy()
+        self.coefs = df.clone()
 
     def compute_migrants(self, race):
         '''
@@ -267,7 +279,7 @@ class migration_2_c_ii_3_a():
             if gross_migration_flows is None:
                 gross_migration_flows = df.copy()
             else:
-                gross_migration_flows = pd.concat(objs=[gross_migration_flows, df],
+                gross_migration_flows = pl.concat(objs=[gross_migration_flows, df],
                                                   verify_integrity=True,
                                                   copy=False)
 
@@ -319,7 +331,7 @@ class migration_2_c_ii_3_a():
         con = sqlite3.connect(db)
         query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, Dij \
                  FROM county_to_county_distance_2010'
-        df = pd.read_sql(sql=query, con=con)
+        df = pl.read_sql(sql=query, con=con)
         con.close()
         assert not df.isnull().any().any()
 
@@ -356,21 +368,21 @@ class migration_2_c_ii_3_a():
         return df
 
     def get_urban_counties(self):
-        db = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
+        uri = f'sqlite:{MIG_DB}'
         query = 'SELECT GEOID, UA10 AS URBAN_DESTINATION \
                  FROM ua10_counties'
-        con = sqlite3.connect(db)
-        df = pd.read_sql(sql=query, con=con)
-        con.close()
+        df = pl.read_database_uri(query=query, uri=uri)
 
-        # make sure GEOID is updated
-        df = df.merge(right=self.fips_changes,
-                      how='left',
-                      left_on='GEOID',
-                      right_on='OLD_FIPS')
-        df.loc[~pd.isnull(df['NEW_FIPS']), 'GEOID'] = df['NEW_FIPS']
-        df.drop(labels=['OLD_FIPS', 'NEW_FIPS'], axis=1, inplace=True)
+        df = make_fips_changes(df)
 
-        df = df.groupby(by='GEOID', as_index=False).max()
+        # # make sure GEOID is updated
+        # df = df.merge(right=self.fips_changes,
+        #               how='left',
+        #               left_on='GEOID',
+        #               right_on='OLD_FIPS')
+        # df.loc[~pl.isnull(df['NEW_FIPS']), 'GEOID'] = df['NEW_FIPS']
+        # df.drop(labels=['OLD_FIPS', 'NEW_FIPS'], axis=1, inplace=True)
+
+        # df = df.groupby(by='GEOID', as_index=False).max()
 
         return df
