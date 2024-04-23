@@ -2,7 +2,6 @@
 TODO: Docstring
 '''
 import os
-import sqlite3
 
 import numpy as np
 import polars as pl
@@ -16,14 +15,9 @@ else:
     raise Exception
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
+ANALYSIS_DB = os.path.join(INPUT_FOLDER, 'databases', 'analysis.sqlite')
+CORR_DB = MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'correlations.sqlite')
 MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
-
-# ANALYSIS_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis')
-# DATABASE_FOLDER = os.path.join(DISSERTATION_FOLDER, 'databases')
-# PART_3_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis\\part_3')
-# PART_4_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis\\part_4')
-# ACS_DB = os.path.join(PART_3_FOLDER, 'inputs\\acs\\acs.sqlite')
-# CENSUS_DB = os.path.join(PART_3_FOLDER, 'inputs\\census\\census.sqlite')
 
 AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
@@ -87,31 +81,29 @@ def get_age_weighted_population(race_pop, age_group):
     if age_group == '85+':
         age_group_label = '85_AND_OVER'
 
-    db = os.path.join(INPUT_FOLDER, 'part_2_c_i_3', 'correlations.sqlite')
-    con = sqlite3.connect(database=db, timeout=30)
+    uri = f'sqlite:{CORR_DB}'
     query = f'SELECT POPULATION_AGE_GROUP AS AGE_GROUP, RHO AS WEIGHT \
               FROM Census1990_ALL_AGE_CORRELATIONS \
               WHERE MIGRATION_AGE_GROUP = "{age_group_label}"'
-    weights = pl.read_sql(sql=query, con=con)
-    con.close()
+    weights = pl.read_database_uri(query=query, uri=uri)
 
     # rename some things and add the 0-4 age group
-    weights.AGE_GROUP = weights.AGE_GROUP.str.replace('_TO_', '-')
-    weights.AGE_GROUP = weights.AGE_GROUP.str.replace('85_AND_OVER', '85+')
-    val_5_9 = weights.query('AGE_GROUP == "5-9"').WEIGHT.values[0]
-    row = pl.DataFrame.from_dict(data={'AGE_GROUP': ('0-4',), 'WEIGHT': (val_5_9,)})
-    weights = pl.concat(objs=[weights, row],
-                        ignore_index=True,
-                        verify_integrity=True).set_index(keys='AGE_GROUP')
-    weights['WEIGHT'] = weights['WEIGHT'] / weights['WEIGHT'].max()  # standardize weights so that the largest weight is 1.0
+    weights = weights.with_columns(pl.col('AGE_GROUP')
+                                   .str.replace('_TO_', '-')
+                                   .str.replace('85_AND_OVER', '85+')
+                                   .alias('AGE_GROUP'))
+    val_5_9 = weights.filter(pl.col('AGE_GROUP') == '5-9').item(row=0, column='WEIGHT')
+    row = pl.from_dict(data={'AGE_GROUP': ('0-4',), 'WEIGHT': (val_5_9,)})
+    weights = pl.concat(items=[weights, row])
+    weights = weights.with_columns((pl.col('WEIGHT') / pl.col('WEIGHT').max()).alias('WEIGHT'))  # standardize weights so that the largest weight is 1.0
 
-    df = race_pop.reset_index().merge(right=weights,
-                                      how='left',
-                                      on='AGE_GROUP',
-                                      copy=False)
-    assert not df.isnull().any().any()
+    df = race_pop.join(other=weights,
+                       on='AGE_GROUP',
+                       how='left')
+    assert sum(df.null_count()).item() == 0
 
     # numerator
+
     df['WEIGHT_x_POPULATION'] = df['WEIGHT'] * df['VALUE']
     df['SUM_WEIGHT_x_POPULATION'] = df.groupby('GEOID')['WEIGHT_x_POPULATION'].transform('sum')
 
@@ -204,13 +196,13 @@ class migration_2_c_ii_3_a():
         '''
         Placeholder
         '''
-        race_pop = self.current_pop.query('RACE == @race').copy()
+        race_pop = self.current_pop.filter(pl.col('RACE') == race)
         gross_migration_flows = None
 
         # for age_group in ('0-4', '20-24', '85+'):
         for age_group in AGE_GROUPS:
             print(f"\t\t{age_group}")
-            df = self.distance.copy()
+            df = self.distance.clone()
             age_weighted_population = get_age_weighted_population(race_pop=race_pop, age_group=age_group)
 
             age_pop = race_pop.query('AGE_GROUP == @age_group').groupby(by='GEOID').sum()
@@ -327,43 +319,39 @@ class migration_2_c_ii_3_a():
         return df
 
     def get_euclidean_distance(self):
-        db = os.path.join(INPUT_FOLDER, 'databases', 'analysis.sqlite')
-        con = sqlite3.connect(db)
+        uri = f'sqlite:{ANALYSIS_DB}'
         query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, Dij \
                  FROM county_to_county_distance_2010'
-        df = pl.read_sql(sql=query, con=con)
-        con.close()
-        assert not df.isnull().any().any()
+        df = pl.read_database_uri(query=query, uri=uri)
 
         # label intra-labor market moves
-        df = df.merge(right=self.intra_labor_market,
-                      how='left',
-                      left_on='ORIGIN_FIPS',
-                      right_on='COFIPS',
-                      copy=False)
-        df.rename(columns={'BEA10': 'ORIGIN_BEA10'}, inplace=True)
-        df.drop(columns='COFIPS', inplace=True)
+        df = df.join(other=self.intra_labor_market,
+                     how='left',
+                     left_on='ORIGIN_FIPS',
+                     right_on='COFIPS')
+        df = df.rename({'BEA10': 'ORIGIN_BEA10'})
 
-        df = df.merge(right=self.intra_labor_market,
-                      how='left',
-                      left_on='DESTINATION_FIPS',
-                      right_on='COFIPS')
-        df.rename(columns={'BEA10': 'DESTINATION_BEA10'}, inplace=True)
-        assert not df.isnull().any().any()
-        df['SAME_LABOR_MARKET'] = 0
-        df.loc[df.ORIGIN_BEA10 == df.DESTINATION_BEA10, 'SAME_LABOR_MARKET'] = 1
-        assert not df.isnull().any().any()
-        df.drop(columns=['COFIPS', 'ORIGIN_BEA10', 'DESTINATION_BEA10'], inplace=True)
+        df = df.join(other=self.intra_labor_market,
+                     how='left',
+                     left_on='DESTINATION_FIPS',
+                     right_on='COFIPS')
+        df = df.rename({'BEA10': 'DESTINATION_BEA10'})
+        assert sum(df.null_count()).item() == 0
+
+        df = df.with_columns(pl.lit(0).alias('SAME_LABOR_MARKET'))
+        df = df.with_columns(pl.when(pl.col('ORIGIN_BEA10') == pl.col('DESTINATION_BEA10'))
+                               .then(1)
+                               .otherwise(0)
+                               .alias('SAME_LABOR_MARKET'))
+        assert sum(df.null_count()).item() == 0
 
         # label destinations that overlap Census Urban Areas (not including
         # Urban Clusters)
-        df = df.merge(right=self.urban_counties,
+        df = df.join(other=self.urban_counties,
                       how='left',
                       left_on='DESTINATION_FIPS',
                       right_on='GEOID')
-        df['URBAN_DESTINATION'] = df['URBAN_DESTINATION'].astype(int)
-        df.drop(columns='GEOID', inplace=True)
-        assert not df.isnull().any().any()
+        assert sum(df.null_count()).item() == 0
 
         return df
 

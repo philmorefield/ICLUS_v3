@@ -443,7 +443,7 @@ class Projector():
         print("Calculating domestic migration...")
 
         migration_model = MigrationModel()
-        migration_model.current_pop = self.current_pop.copy()
+        migration_model.current_pop = self.current_pop.clone()
 
         for race in RACES:
             print(f"\t{race}...")
