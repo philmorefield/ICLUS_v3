@@ -103,18 +103,17 @@ def get_age_weighted_population(race_pop, age_group):
     assert sum(df.null_count()).item() == 0
 
     # numerator
-
-    df['WEIGHT_x_POPULATION'] = df['WEIGHT'] * df['VALUE']
-    df['SUM_WEIGHT_x_POPULATION'] = df.groupby('GEOID')['WEIGHT_x_POPULATION'].transform('sum')
+    df = df.with_columns((pl.col('WEIGHT') * pl.col('POPULATION')).alias('WEIGHT_x_POPULATION'))
+    df = df.with_columns(pl.col('WEIGHT_x_POPULATION').sum().over('GEOID').alias('NUMERATOR'))
 
     # denomenator
-    df['SUM_WEIGHTS'] = df.groupby(by='GEOID')['WEIGHT'].transform('sum')
+    df = df.with_columns(pl.col('WEIGHT').sum().over('GEOID').alias('DENOMENATOR'))
 
     # quotient
-    df['WEIGHTED_POPULATION'] = df['SUM_WEIGHT_x_POPULATION'] / df['SUM_WEIGHTS']
-
-    df = df[['GEOID', 'WEIGHTED_POPULATION']].groupby(by='GEOID').max()
-    df['WEIGHTED_POPULATION'] = df['WEIGHTED_POPULATION'].round().astype(int)
+    df = (df.with_columns((pl.col('NUMERATOR') / pl.col('DENOMENATOR'))
+          .alias('WEIGHTED_POPULATION'))
+          .select(['GEOID', 'WEIGHTED_POPULATION'])
+          .unique())
 
     return df
 
@@ -205,7 +204,9 @@ class migration_2_c_ii_3_a():
             df = self.distance.clone()
             age_weighted_population = get_age_weighted_population(race_pop=race_pop, age_group=age_group)
 
-            age_pop = race_pop.query('AGE_GROUP == @age_group').groupby(by='GEOID').sum()
+            age_pop = (race_pop.filter(pl.col('AGE_GROUP') == age_group)
+                       .groupby('GEOID')
+                       .sum())
             df = self.compute_spatial_variables(age_pop=age_pop, age_weighted_population=age_weighted_population)
 
             race_label = race

@@ -433,7 +433,7 @@ class Projector():
                                    if_table_exists='replace',
                                    engine='adbc')
 
-        total_immigrants_this_year = immigration.select(self.current_projection_year).sum().item()
+        total_immigrants_this_year = immigration.select(f'{self.current_projection_year}').sum().item()
         print(f"finished! ({total_immigrants_this_year:,} net immigrants this year)")
 
     def migration(self):
