@@ -205,6 +205,7 @@ class migration_2_c_ii_3_a():
             age_weighted_population = get_age_weighted_population(race_pop=race_pop, age_group=age_group)
 
             age_pop = (race_pop.filter(pl.col('AGE_GROUP') == age_group)
+                       .select(['GEOID', 'POPULATION'])
                        .groupby('GEOID')
                        .sum())
             df = self.compute_spatial_variables(age_pop=age_pop, age_weighted_population=age_weighted_population)
@@ -283,28 +284,33 @@ class migration_2_c_ii_3_a():
         Placeholder
         '''
         # origin population
-        df = self.distance.merge(right=age_pop,
-                                 how='left',
-                                 left_on='ORIGIN_FIPS',
-                                 right_on='GEOID')
-        df.rename(columns={'VALUE': 'Pi'}, inplace=True)
+        df = self.distance.join(other=age_pop,
+                                how='left',
+                                left_on='ORIGIN_FIPS',
+                                right_on='GEOID')
+        df = df.rename({'POPULATION': 'Pi'})
 
         # destination population (i.e., age group-weighted population)
-        df = df.merge(right=age_weighted_population,
-                      how='left',
-                      left_on='DESTINATION_FIPS',
-                      right_on='GEOID')
-        df.rename(columns={'WEIGHTED_POPULATION': 'Pj'}, inplace=True)
+        df = df.join(other=age_weighted_population,
+                     how='left',
+                     left_on='DESTINATION_FIPS',
+                     right_on='GEOID')
+        df = df.rename({'WEIGHTED_POPULATION': 'Pj'})
 
         # calculate total BEA population minus destination
-        df.loc[df['SAME_LABOR_MARKET'] == 1, 'Pj_star'] = df['Pj']
-        df['Pj_star'].fillna(value=0, inplace=True)
-        df['Pj_star'] = df.groupby(by='ORIGIN_FIPS')['Pj_star'].transform('sum').astype(int)
-        dw = df[['ORIGIN_FIPS', 'Pj_star']].copy()
-        df.drop(columns=['Pj_star'], inplace=True)
-        dw.drop_duplicates(inplace=True, ignore_index=True)
-        dw.rename(columns={'ORIGIN_FIPS': 'DESTINATION_FIPS'}, inplace=True)
-        df = df.merge(right=dw, how='left', on='DESTINATION_FIPS')
+        df = df.with_columns(pl.when(pl.col('SAME_LABOR_MARKET') == 1)
+                               .then(pl.col('Pj'))
+                               .otherwise(0)
+                               .alias('Pj_star'))
+
+        df = df.with_columns(pl.col('Pj_star')
+                               .sum()
+                               .over('ORIGIN_FIPS')
+                               .alias('Pj_star'))
+
+        dw = df.select(['ORIGIN_FIPS', 'Pj_star'])
+        df = df.drop('Pj_star').unique().rename({'ORIGIN_FIPS': 'DESTINATION_FIPS'})
+        df = df.join(other=dw, on='DESTINATION_FIPS', how='left')
 
         assert not df.isnull().any().any()
 
