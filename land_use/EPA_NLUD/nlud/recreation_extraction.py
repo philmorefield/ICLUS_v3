@@ -33,7 +33,7 @@ class RecreationExtraction():
         print(f"[Region {self.REGION_NUMBER}]   Creating recreation-extraction raster from PAD-US...")
 
         padus = os.path.join(self.INPUTS, 'PADUS_14_Combined_proj')
-        padus_query = "GAP_Sts = '3'"  # managed for multiple uses
+        padus_query = "GAP_Sts = '3'"  # protected, but managed for multile uses, e.g., recreation, extraction, farming
         padus_output_fc = 'in_memory\\padus_recex'
 
         padus_recex = ap.Select_analysis(in_features=padus,

@@ -166,6 +166,8 @@ def worker_function(region_number=None):
     ap.env.extent = kws['nlcd_ras']
     ap.env.mask = kws['nlcd_ras']
 
+    # TODO 'Conservation' should take priority over Private Forest/GrassShrub
+
     nlud.Transportation(kwargs=kws)
     # nlud.Institutional(kwargs=kws)
     # nlud.MixedUse(kwargs=kws)

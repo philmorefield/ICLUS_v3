@@ -125,13 +125,13 @@ class Industrial():
 
     def create_usgs_industrial_raster(self):
         '''
-        Create a raster of industrial land
+        Create a raster of industrial land from the NLCD impervious descriptor
         '''
         print(f"[Region {self.REGION_NUMBER}]   Creating industrial raster from NLCD_2011_Impervious_descriptor_L48_20190405...")
 
         nlcd_raster = ap.Raster(os.path.join(self.INPUTS, 'NLCD_2011_Impervious_descriptor_L48_20190405'))
 
-        usgs_industrial_raster = Con((nlcd_raster == 11) | (nlcd_raster == 12), self.raster_value)
+        usgs_industrial_raster = Con((nlcd_raster == 27) | (nlcd_raster == 28 | nlcd_raster == 29), self.raster_value)
         usgs_industrial_raster.save(os.path.join(self.INTERMEDIATE, 'USGS_INDUSTRIAL'))
 
     def create_navteq_industrial_raster(self):
