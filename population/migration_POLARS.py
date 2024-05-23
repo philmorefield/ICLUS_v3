@@ -183,7 +183,7 @@ class migration_2_c_ii_3_a():
                          value_name='P_VALUE')
 
         df = coefs.join(other=sigs,
-                        on=['RACE', 'AGE_GROUP'],
+                        on=['RACE', 'AGE_GROUP', 'VARIABLE'],
                         how='left')
 
         # for now keep all of the intercepts regardless of statistical significance;
@@ -218,12 +218,12 @@ class migration_2_c_ii_3_a():
             if age_group in ('0-4', '5-9'):
                 age_group_label = '0-9'
 
-            coefs = self.coefs.query('RACE == @race_label & AGE_GROUP == @age_group_label')
-
-            assert coefs.shape == (16, 2)
+            coefs = self.coefs.filter((pl.col('RACE') == race_label) & (pl.col('AGE_GROUP') == age_group_label))
+            assert coefs.shape == (16, 5)
 
             # calculate the zero model first
-            z_int = coefs.query('VARIABLE == "z_int"').COEFF.iloc[0]
+            z_int = coefs.filter(pl.col('VARIABLE') == 'zero_.Intercept.')['COEFF'][0]
+
             z_Pi = coefs.query('VARIABLE == "z_ln_mi"').COEFF.iloc[0]
             z_Pj = coefs.query('VARIABLE == "z_ln_nj"').COEFF.iloc[0]
             z_Cij = coefs.query('VARIABLE == "z_ln_Cij"').COEFF.iloc[0]
@@ -308,20 +308,32 @@ class migration_2_c_ii_3_a():
                                .over('ORIGIN_FIPS')
                                .alias('Pj_star'))
 
-        dw = df.select(['ORIGIN_FIPS', 'Pj_star'])
-        df = df.drop('Pj_star').unique().rename({'ORIGIN_FIPS': 'DESTINATION_FIPS'})
+        dw = (df.select(['ORIGIN_FIPS', 'Pj_star'])
+                .unique()
+                .rename({'ORIGIN_FIPS': 'DESTINATION_FIPS'}))
+        df = df.drop('Pj_star')
         df = df.join(other=dw, on='DESTINATION_FIPS', how='left')
 
-        assert not df.isnull().any().any()
+        assert sum(df.null_count()).item() == 0
 
         # distance-weighted Intervening Opportunities
-        df.sort_values(by=['ORIGIN_FIPS', 'Dij'], inplace=True)
-        df['PPD'] = df.Pj / df.Dij  # 'people per unit of distance'
-        df['Tij'] = df.groupby('ORIGIN_FIPS')['PPD'].transform(lambda x: x.shift(1).cumsum()).fillna(0)
+        df = (df.sort(by=['ORIGIN_FIPS', 'Dij'])
+                .with_columns((pl.col('Pj') / pl.col('Dij'))
+                .alias('PPD')))
+
+        df = df.with_columns(pl.col('PPD')
+                             .shift(n=1, fill_value=0)
+                             .cum_sum()
+                             .over('ORIGIN_FIPS')
+                             .alias('Tij'))
 
         # Competing Migrants
-        df.sort_values(by=['DESTINATION_FIPS', 'Dij'], inplace=True)
-        df['Cij'] = df.groupby('DESTINATION_FIPS')['Pi'].transform(lambda x: x.shift(1).cumsum()).fillna(0).astype(int)
+        df = (df.sort(by=['DESTINATION_FIPS', 'Dij'])
+                .with_columns(pl.col('Pi')
+                              .shift(n=1, fill_value=0)
+                              .cum_sum()
+                              .over('DESTINATION_FIPS')
+                              .alias('Cij')))
 
         return df
 

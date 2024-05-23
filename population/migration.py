@@ -295,10 +295,12 @@ class migration_2_c_ii_3_a():
         df.loc[df['SAME_LABOR_MARKET'] == 1, 'Pj_star'] = df['Pj']
         df['Pj_star'].fillna(value=0, inplace=True)
         df['Pj_star'] = df.groupby(by='ORIGIN_FIPS')['Pj_star'].transform('sum').astype(int)
+
         dw = df[['ORIGIN_FIPS', 'Pj_star']].copy()
-        df.drop(columns=['Pj_star'], inplace=True)
         dw.drop_duplicates(inplace=True, ignore_index=True)
         dw.rename(columns={'ORIGIN_FIPS': 'DESTINATION_FIPS'}, inplace=True)
+
+        df.drop(columns=['Pj_star'], inplace=True)
         df = df.merge(right=dw, how='left', on='DESTINATION_FIPS')
 
         assert not df.isnull().any().any()
