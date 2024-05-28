@@ -450,18 +450,19 @@ class Projector():
 
             # compute all county to county migration flows
             gross_migration_flows = migration_model.compute_migrants(race)
-            gross_migration_flows['RACE'] = race
-            gross_migration_flows.set_index(keys='RACE',
-                                            append=True,
-                                            inplace=True,
-                                            verify_integrity=True)
+            gross_migration_flows = gross_migration_flows.with_columns(pl.lit(race).alias('RACE'))
 
             # the MIGRATION column is actually a gender ratio, but naming it
             # MIGRATION to match gross_migration_flows makes the multiplication
             # step cleaner
-            ratio = self.current_pop.query('RACE == @race').copy()
-            ratio['GEOID_AGE_POP'] = ratio.group_by(by=['GEOID', 'AGE_GROUP']).transform('sum')
-            ratio['MIGRATION'] = (ratio['VALUE'] / ratio['GEOID_AGE_POP']).fillna(0)
+            ratio = self.current_pop.filter(pl.col('RACE') == race)
+            ratio = (ratio.sum('POPULATION')
+                           .over(['GEOID', 'AGE_GROUP'])
+                           .alias('GEOID_AGE_POP'))
+
+            ratio = ratio.with_columns(pl.col('VALUE') / pl.col('GEOID_AGE_POP')
+                                       .alias('MIGRATION'))
+
             ratio = ratio[['MIGRATION']].copy()
             ratio.index.rename(names='ORIGIN_FIPS', level='GEOID', inplace=True)
 

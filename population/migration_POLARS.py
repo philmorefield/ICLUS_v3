@@ -223,59 +223,52 @@ class migration_2_c_ii_3_a():
 
             # calculate the zero model first
             z_int = coefs.filter(pl.col('VARIABLE') == 'zero_.Intercept.')['COEFF'][0]
+            z_Pi = coefs.filter(pl.col('VARIABLE') == 'zero_ln_mi')['COEFF'][0]
+            z_Pj = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj')['COEFF'][0]
+            z_Cij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Cij')['COEFF'][0]
+            z_Tij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Tij')['COEFF'][0]
+            z_Pj_star = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj_star')['COEFF'][0]
 
-            z_Pi = coefs.query('VARIABLE == "z_ln_mi"').COEFF.iloc[0]
-            z_Pj = coefs.query('VARIABLE == "z_ln_nj"').COEFF.iloc[0]
-            z_Cij = coefs.query('VARIABLE == "z_ln_Cij"').COEFF.iloc[0]
-            z_Tij = coefs.query('VARIABLE == "z_ln_Tij"').COEFF.iloc[0]
-            z_Pj_star = coefs.query('VARIABLE == "z_ln_nj_star"').COEFF.iloc[0]
-            z_labor = coefs.query('VARIABLE == "z_same_labor_market"').COEFF.iloc[0]
-            z_urban = coefs.query('VARIABLE == "z_urban_destination"').COEFF.iloc[0]
+            z_labor = coefs.filter(pl.col('VARIABLE') == 'zero_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
+            z_urban = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBAN_DESTINATION.1')['COEFF'][0]
 
-            df['ZERO_RESULT'] = 1 - np.exp(-np.exp(z_int +
+            df = df.with_columns(1 - np.exp(-np.exp(z_int +
                                                    (z_Pi * np.log(df['Pi'] + 1)) +
                                                    (z_Pj * np.log(df['Pj'] + 1)) +
                                                    (z_Cij * np.log(df['Cij'] + df['Pj'] + 1)) +
                                                    (z_Tij * np.log(df['Tij'] + 1)) +
                                                    (z_Pj_star * np.log(df['Pj_star'] + 1)) +
                                                    (z_labor * df['SAME_LABOR_MARKET']) +
-                                                   (z_urban * df['URBAN_DESTINATION'])))
+                                                   (z_urban * df['URBAN_DESTINATION']))).alias('ZERO_RESULT'))
 
             # calculate the count model
-            c_int = coefs.query('VARIABLE == "c_int"').COEFF.iloc[0]
-            c_Pi = coefs.query('VARIABLE == "c_ln_mi"').COEFF.iloc[0]
-            c_Pj = coefs.query('VARIABLE == "c_ln_nj"').COEFF.iloc[0]
-            c_Cij = coefs.query('VARIABLE == "c_ln_Cij"').COEFF.iloc[0]
-            c_Tij = coefs.query('VARIABLE == "c_ln_Tij"').COEFF.iloc[0]
-            c_Pj_star = coefs.query('VARIABLE == "c_ln_nj_star"').COEFF.iloc[0]
-            c_labor = coefs.query('VARIABLE == "c_same_labor_market"').COEFF.iloc[0]
-            c_urban = coefs.query('VARIABLE == "c_urban_destination"').COEFF.iloc[0]
+            c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
+            c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_mi')['COEFF'][0]
+            c_Pj = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj')['COEFF'][0]
+            c_Cij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Cij')['COEFF'][0]
+            c_Tij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Tij')['COEFF'][0]
+            c_Pj_star = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj_star')['COEFF'][0]
+            c_labor = coefs.filter(pl.col('VARIABLE') == 'count_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
+            c_urban = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBAN_DESTINATION.1')['COEFF'][0]
 
-            df['COUNT_RESULT'] = np.exp(c_int +
-                                        (c_Pi * np.log(df['Pi'] + 1)) +
-                                        (c_Pj * np.log(df['Pj'] + 1)) +
-                                        (c_Cij * np.log(df['Cij'] + df['Pj'] + 1)) +
-                                        (c_Tij * np.log(df['Tij'] + 1)) +
-                                        (c_Pj_star * np.log(df['Pj_star'] + 1)) +
-                                        (c_labor * df['SAME_LABOR_MARKET']) +
-                                        (c_urban * df['URBAN_DESTINATION']))
+            df = df.with_columns(np.exp(c_int +
+                                       (c_Pi * np.log(df['Pi'] + 1)) +
+                                       (c_Pj * np.log(df['Pj'] + 1)) +
+                                       (c_Cij * np.log(df['Cij'] + df['Pj'] + 1)) +
+                                       (c_Tij * np.log(df['Tij'] + 1)) +
+                                       (c_Pj_star * np.log(df['Pj_star'] + 1)) +
+                                       (c_labor * df['SAME_LABOR_MARKET']) +
+                                       (c_urban * df['URBAN_DESTINATION'])).alias('COUNT_RESULT'))
+
             # this rounding step preserves >99% of the total migration just calculated
-            df['MIGRATION'] = ((1 - df['ZERO_RESULT']) * df['COUNT_RESULT']).round(2)
-            df = df.loc[:, ['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION']]
-            df.set_index(keys=['ORIGIN_FIPS', 'DESTINATION_FIPS'], inplace=True)
-            df.columns = ['MIGRATION']
-            df['AGE_GROUP'] = age_group
-            df.set_index(keys='AGE_GROUP',
-                         append=True,
-                         inplace=True,
-                         verify_integrity=True)
+            df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))
+            df = df.select(['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION'])
+            df = df.with_columns(pl.lit(age_group).alias('AGE_GROUP'))
 
             if gross_migration_flows is None:
-                gross_migration_flows = df.copy()
+                gross_migration_flows = df.clone()
             else:
-                gross_migration_flows = pl.concat(objs=[gross_migration_flows, df],
-                                                  verify_integrity=True,
-                                                  copy=False)
+                gross_migration_flows = pl.concat(items=[gross_migration_flows, df])
 
         return gross_migration_flows
 
