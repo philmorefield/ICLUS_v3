@@ -456,11 +456,12 @@ class Projector():
             # MIGRATION to match gross_migration_flows makes the multiplication
             # step cleaner
             ratio = self.current_pop.filter(pl.col('RACE') == race)
-            ratio = (ratio.sum('POPULATION')
-                           .over(['GEOID', 'AGE_GROUP'])
-                           .alias('GEOID_AGE_POP'))
+            ratio = (ratio.with_columns(pl.col('POPULATION')
+                                        .sum()
+                                        .over(['GEOID', 'AGE_GROUP'])
+                                        .alias('GEOID_AGE_POP')))
 
-            ratio = ratio.with_columns(pl.col('VALUE') / pl.col('GEOID_AGE_POP')
+            ratio = ratio.with_columns((pl.col('POPULATION') / pl.col('GEOID_AGE_POP'))
                                        .alias('MIGRATION'))
 
             ratio = ratio[['MIGRATION']].copy()

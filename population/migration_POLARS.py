@@ -239,7 +239,7 @@ class migration_2_c_ii_3_a():
                                                    (z_Tij * np.log(df['Tij'] + 1)) +
                                                    (z_Pj_star * np.log(df['Pj_star'] + 1)) +
                                                    (z_labor * df['SAME_LABOR_MARKET']) +
-                                                   (z_urban * df['URBAN_DESTINATION']))).alias('ZERO_RESULT'))
+                                                   (z_urban * df['URBAN_DESTINATION']))).alias('ZERO_RESULT')).lazy()
 
             # calculate the count model
             c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
@@ -280,26 +280,26 @@ class migration_2_c_ii_3_a():
         df = self.distance.join(other=age_pop,
                                 how='left',
                                 left_on='ORIGIN_FIPS',
-                                right_on='GEOID')
+                                right_on='GEOID').lazy()
         df = df.rename({'POPULATION': 'Pi'})
 
         # destination population (i.e., age group-weighted population)
-        df = df.join(other=age_weighted_population,
+        df = df.join(other=age_weighted_population.lazy(),
                      how='left',
                      left_on='DESTINATION_FIPS',
-                     right_on='GEOID')
+                     right_on='GEOID').lazy()
         df = df.rename({'WEIGHTED_POPULATION': 'Pj'})
 
         # calculate total BEA population minus destination
         df = df.with_columns(pl.when(pl.col('SAME_LABOR_MARKET') == 1)
                                .then(pl.col('Pj'))
                                .otherwise(0)
-                               .alias('Pj_star'))
+                               .alias('Pj_star')).lazy()
 
         df = df.with_columns(pl.col('Pj_star')
                                .sum()
                                .over('ORIGIN_FIPS')
-                               .alias('Pj_star'))
+                               .alias('Pj_star')).lazy()
 
         dw = (df.select(['ORIGIN_FIPS', 'Pj_star'])
                 .unique()
@@ -307,7 +307,7 @@ class migration_2_c_ii_3_a():
         df = df.drop('Pj_star')
         df = df.join(other=dw, on='DESTINATION_FIPS', how='left')
 
-        assert sum(df.null_count()).item() == 0
+        assert sum(df.null_count().collect()).item() == 0
 
         # distance-weighted Intervening Opportunities
         df = (df.sort(by=['ORIGIN_FIPS', 'Dij'])
@@ -318,7 +318,7 @@ class migration_2_c_ii_3_a():
                              .shift(n=1, fill_value=0)
                              .cum_sum()
                              .over('ORIGIN_FIPS')
-                             .alias('Tij'))
+                             .alias('Tij')).lazy()
 
         # Competing Migrants
         df = (df.sort(by=['DESTINATION_FIPS', 'Dij'])
@@ -326,7 +326,7 @@ class migration_2_c_ii_3_a():
                               .shift(n=1, fill_value=0)
                               .cum_sum()
                               .over('DESTINATION_FIPS')
-                              .alias('Cij')))
+                              .alias('Cij'))).lazy()
 
         return df
 
