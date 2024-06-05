@@ -13,6 +13,7 @@ import time
 
 from datetime import datetime
 
+import numpy as np
 import polars as pl
 
 from migration_POLARS import migration_2_c_ii_3_a as MigrationModel
@@ -445,114 +446,118 @@ class Projector():
         migration_model = MigrationModel()
         migration_model.current_pop = self.current_pop.clone()
 
-        for race in RACES:
+        for race in ('BLACK',):
+        # for race in RACES:
             print(f"\t{race}...")
 
             # compute all county to county migration flows
-            gross_migration_flows = migration_model.compute_migrants(race)
-            gross_migration_flows = gross_migration_flows.with_columns(pl.lit(race).alias('RACE'))
+            gross_flows = migration_model.compute_migrants(race)
+            gross_flows = gross_flows.with_columns(pl.lit(race).alias('RACE'))
 
-            # the MIGRATION column is actually a gender ratio, but naming it
-            # MIGRATION to match gross_migration_flows makes the multiplication
-            # step cleaner
-            ratio = self.current_pop.filter(pl.col('RACE') == race)
-            ratio = (ratio.with_columns(pl.col('POPULATION')
-                                        .sum()
-                                        .over(['GEOID', 'AGE_GROUP'])
-                                        .alias('GEOID_AGE_POP')))
+            # calculate a gender fraction for each county/race/age cohort
+            ratios = self.current_pop.filter(pl.col('RACE') == race)
+            ratios = ratios.with_columns(pl.col('POPULATION')
+                                         .sum()
+                                         .over(['GEOID', 'AGE_GROUP'])
+                                         .alias('GEOID_AGE_POP')).lazy()
 
-            ratio = ratio.with_columns((pl.col('POPULATION') / pl.col('GEOID_AGE_POP'))
-                                       .alias('MIGRATION'))
+            ratios = ratios.with_columns((pl.col('POPULATION') / pl.col('GEOID_AGE_POP'))
+                                         .fill_null(value=0)
+                                         .alias('GENDER_FRACTION'))
+            ratios = ratios.drop(['POPULATION', 'GEOID_AGE_POP', 'RACE'])
 
-            ratio = ratio[['MIGRATION']].copy()
-            ratio.index.rename(names='ORIGIN_FIPS', level='GEOID', inplace=True)
+            lf = (ratios.join(other=gross_flows,
+                              how='left',
+                              left_on=['GEOID', 'AGE_GROUP'],
+                              right_on=['DESTINATION_FIPS', 'AGE_GROUP'])
+                  .fill_null(value=0)
+                  .fill_nan(value=0)
+                  .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
+                  .alias('GROSS_INFLOW')))
+            lf = lf.with_columns(pl.col('GROSS_INFLOW')
+                                 .sum()
+                                 .over(['GEOID', 'AGE_GROUP', 'GENDER'])
+                                 .alias('SUM_INFLOWS'))
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'GENDER_FRACTION', 'SUM_INFLOWS']).unique()
 
-            ratio_male = ratio.query('GENDER == "MALE"').reset_index(level=['GENDER', 'RACE'], drop=True)
-            gross_male = gross_migration_flows.mul(other=ratio_male, axis='index', fill_value=0)
-            migin_male = pl.DataFrame(gross_male.group_by(by=['DESTINATION_FIPS', 'AGE_GROUP'])['MIGRATION'].sum())
-            migin_male.index.rename(names='GEOID', level='DESTINATION_FIPS', inplace=True)
-            migout_male = pl.DataFrame(gross_male.group_by(by=['ORIGIN_FIPS', 'AGE_GROUP'])['MIGRATION'].sum())
-            migout_male.index.rename(names='GEOID', level='ORIGIN_FIPS', inplace=True)
-            mignet_male = pl.DataFrame(migin_male.sub(other=migout_male, axis='index', fill_value=0))
-            mignet_male['GENDER'] = 'MALE'
-            mignet_male.set_index(keys='GENDER', append=True, inplace=True)
+            lf = (lf.join(other=gross_flows,
+                          how='left',
+                          left_on=['GEOID', 'AGE_GROUP'],
+                          right_on=['ORIGIN_FIPS', 'AGE_GROUP'])
+                  .fill_null(value=0)
+                  .fill_nan(value=0)
+                  .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
+                  .alias('GROSS_OUTFLOW')).collect())
+            lf = lf.with_columns(pl.col('GROSS_OUTFLOW')
+                        .sum()
+                        .over(['GEOID', 'AGE_GROUP', 'GENDER'])
+                        .alias('SUM_OUTFLOWS'))
+            lf = lf.with_columns((pl.col('SUM_INFLOWS') - pl.col('SUM_OUTFLOWS'))
+                                 .alias('NET_MIGRATION'))
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'NET_MIGRATION']).unique()
 
-            ratio_female = ratio.query('GENDER == "FEMALE"').reset_index(level=['GENDER', 'RACE'], drop=True)
-            gross_female = gross_migration_flows.mul(other=ratio_female, axis='index', fill_value=0)
-            migin_female = gross_female.group_by(by=['DESTINATION_FIPS', 'AGE_GROUP'])['MIGRATION'].sum()
-            migin_female.index.rename(names='GEOID', level='DESTINATION_FIPS', inplace=True)
-            migout_female = gross_female.group_by(by=['ORIGIN_FIPS', 'AGE_GROUP'])['MIGRATION'].sum()
-            migout_female.index.rename(names='GEOID', level='ORIGIN_FIPS', inplace=True)
-            mignet_female = pl.DataFrame(migin_female.sub(other=migout_female, axis='index', fill_value=0))
-            mignet_female['GENDER'] = 'FEMALE'
-            mignet_female.set_index(keys='GENDER', append=True, inplace=True)
-
-            mignet = pl.concat(objs=[mignet_male, mignet_female])
-            mignet['RACE'] = race
-            mignet.set_index(keys='RACE', append=True, inplace=True)
-            assert mignet.shape == (111960, 1)
+            assert lf.shape == (111960, 4)
 
             if self.net_migration is None:
-                self.net_migration = mignet.copy()
+                self.net_migration = lf.clone()
             else:
-                self.net_migration = pl.concat(objs=[self.net_migration, mignet])
+                self.net_migration = pl.concat([self.net_migration, lf])
 
-        assert self.net_migration.shape == (671760, 1)
-        # assert self.net_migration_r.shape == (671760, 1)
+            # assert self.net_migration.null_count().sum_horizontal().item() == 0
+            # assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
-        # using the % change in net migration by county from my model for the
-        # years 2015 and the projected year, calculate new net migration by
-        # county using observed net migration for 2015 (i.e., delta method)
-        baseline_migration_estimate = retrieve_baseline_migration_estimate()
-        net_migration_total = self.net_migration.group_by(by='GEOID').sum()
-        county_change_factor = net_migration_total.div(other=baseline_migration_estimate, axis='index')
-        baseline_migration = retrieve_intercensal_migration()
-        new_net_migration = baseline_migration.mul(other=county_change_factor, axis='index')
+        assert self.net_migration.shape == (671760, 4)
+        assert self.net_migration.null_count().sum_horizontal().item() == 0
+        assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
 
-        # the numbers get messy when the baseline migration estimate and
-        # my model's projected migration have a different sign, e.g., negative
-        # net migration in 2015 (the baseline) and positive net migration in
-        # 2016 (projected). In those cases - for now - use the average of the
-        # projected net migration and the 2015 value
-        opposite_signs = net_migration_total.join(other=baseline_migration_estimate, lsuffix='proj', rsuffix='base')
-        opposite_signs.query('MIGRATIONproj * MIGRATIONbase < 0', inplace=True)
-        avg_for_opp_signs = baseline_migration.join(other=net_migration_total, lsuffix='obs', rsuffix='proj')
-        # avg_for_opp_signs = avg_for_opp_signs.loc[avg_for_opp_signs.index.isin(opposite_signs.index)]
-        avg_for_opp_signs = avg_for_opp_signs.loc[opposite_signs.index]
-        avg_for_opp_signs.eval('MIGRATION = (MIGRATIONobs + MIGRATIONproj) / 2', inplace=True)
-        new_net_migration.update(other=avg_for_opp_signs)
+        # # using the % change in net migration by county from my model for the
+        # # years 2015 and the projected year, calculate new net migration by
+        # # county using observed net migration for 2015 (i.e., delta method)
+        # baseline_migration_estimate = retrieve_baseline_migration_estimate()
+        # net_migration_total = self.net_migration.group_by(by='GEOID').sum()
+        # county_change_factor = net_migration_total.div(other=baseline_migration_estimate, axis='index')
+        # baseline_migration = retrieve_intercensal_migration()
+        # new_net_migration = baseline_migration.mul(other=county_change_factor, axis='index')
 
-        net_change = new_net_migration.sub(other=net_migration_total, axis='index').div(other=216)
-        self.net_migration = self.net_migration.add(other=net_change, axis='index')
+        # # the numbers get messy when the baseline migration estimate and
+        # # my model's projected migration have a different sign, e.g., negative
+        # # net migration in 2015 (the baseline) and positive net migration in
+        # # 2016 (projected). In those cases - for now - use the average of the
+        # # projected net migration and the 2015 value
+        # opposite_signs = net_migration_total.join(other=baseline_migration_estimate, lsuffix='proj', rsuffix='base')
+        # opposite_signs.query('MIGRATIONproj * MIGRATIONbase < 0', inplace=True)
+        # avg_for_opp_signs = baseline_migration.join(other=net_migration_total, lsuffix='obs', rsuffix='proj')
+        # # avg_for_opp_signs = avg_for_opp_signs.loc[avg_for_opp_signs.index.isin(opposite_signs.index)]
+        # avg_for_opp_signs = avg_for_opp_signs.loc[opposite_signs.index]
+        # avg_for_opp_signs.eval('MIGRATION = (MIGRATIONobs + MIGRATIONproj) / 2', inplace=True)
+        # new_net_migration.update(other=avg_for_opp_signs)
 
-        self.net_migration = self.net_migration.round().astype(int)
+        # net_change = new_net_migration.sub(other=net_migration_total, axis='index').div(other=216)
+        # self.net_migration = self.net_migration.add(other=net_change, axis='index')
+
+        # self.net_migration = self.net_migration.round().astype(int)
 
         # store time series of migration in sqlite3
-        db = OUTPUT_DATABASE
-        con = sqlite3.connect(database=db, timeout=60)
+        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
-            migration = self.net_migration.rename(columns={'MIGRATION': self.current_projection_year}).copy()
+            migration = self.net_migration.rename({'NET_MIGRATION': self.current_projection_year}).clone()
         else:
             query = f'SELECT * FROM migration_by_race_gender_age_{self.scenario}'
-            migration = pl.read_sql(sql=query,
-                                    con=con,
-                                    index_col=['GEOID', 'AGE_GROUP', 'GENDER', 'RACE'])
-            current_migration = self.net_migration.copy()
-            current_migration.rename(columns={'MIGRATION': self.current_projection_year}, inplace=True)
-            migration = pl.concat(objs=[migration, current_migration], axis=1)
-        migration.reset_index(inplace=True)
-        migration['AGE_GROUP'] = migration['AGE_GROUP'].astype(age_group_dtype)
+            migration = pl.read_database_uri(query=query, uri=uri)
+            current_migration = self.net_migration.clone()
+            current_migration.rename({'NET_MIGRATION': self.current_projection_year})
+            migration = migration.join(current_migration, on=['GEOID', 'AGE_GROUP', 'GENDER'], how='left')
         migration.sort_values(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'], inplace=True)
         assert migration.shape[0] == 671760
-        assert not migration.isnull().any().any()
-        migration.to_sql(name=f'migration_by_race_gender_age_{self.scenario}',
-                         con=con,
-                         if_table_exists='replace',
-                         index=False)
-        con.close()
+        assert migration.null_count()[:] == 0
+        assert self.net_migration.select('NET_MIGRATION').filter(pl.all() == np.nan).shape[0]
 
-        self.net_migration.rename(columns={'MIGRATION': 'VALUE'}, inplace=True)
-        total_migrants_this_year = self.net_migration.query('VALUE > 0').sum().squeeze()
+        migration.write_database(table_name=f'migration_by_race_gender_age_{self.scenario}',
+                                 connection=uri,
+                                 if_table_exists='replace')
+
+        total_migrants_this_year = (self.net_migration.filter(pl.col('NET_MIGRATION') > 0)
+                                    .select('NET_MIGRATION').sum())
         pct_migration = (((total_migrants_this_year / self.current_pop.sum().values[0]) * 100.0).round(1))
         print(f"finished! ({total_migrants_this_year:,} total migrants this year; {pct_migration}% of the current population)")
 
