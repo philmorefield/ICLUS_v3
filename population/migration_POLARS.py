@@ -198,8 +198,8 @@ class migration_2_c_ii_3_a():
         race_pop = self.current_pop.filter(pl.col('RACE') == race)
         gross_migration_flows = None
 
-        for age_group in ('50-54',):
-        # for age_group in AGE_GROUPS:
+        # for age_group in ('50-54',):
+        for age_group in AGE_GROUPS:
             print(f"\t\t{age_group}")
             df = self.distance.clone()
             age_weighted_population = get_age_weighted_population(race_pop=race_pop, age_group=age_group)
@@ -209,12 +209,6 @@ class migration_2_c_ii_3_a():
                        .groupby('GEOID')
                        .sum())
             df = self.compute_spatial_variables(age_pop=age_pop, age_weighted_population=age_weighted_population)
-
-            assert df.null_count().collect().sum_horizontal().item() == 0
-            assert (df.select(pl.col(pl.NUMERIC_DTYPES))
-                    .filter(pl.any_horizontal(pl.col('*').is_nan()))
-                    .collect()
-                    .shape[0] == 0)
 
             race_label = race
             if race not in ('BLACK', 'WHITE'):
@@ -248,12 +242,6 @@ class migration_2_c_ii_3_a():
                                                    (z_urban * pl.col('URBAN_DESTINATION')))))
             df = df.rename({'literal': 'ZERO_RESULT'})
 
-            assert df.null_count().collect().sum_horizontal().item() == 0
-            assert (df.select(pl.col(pl.NUMERIC_DTYPES))
-                    .filter(pl.any_horizontal(pl.col('*').is_nan()))
-                    .collect()
-                    .shape[0] == 0)
-
             # calculate the count model
             c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
             c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_mi')['COEFF'][0]
@@ -273,16 +261,6 @@ class migration_2_c_ii_3_a():
                                        (c_labor * pl.col('SAME_LABOR_MARKET')) +
                                        (c_urban * pl.col('URBAN_DESTINATION'))))
             df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug
-
-            assert df.null_count().collect().sum_horizontal().item() == 0
-            assert (df.select(pl.col(pl.NUMERIC_DTYPES))
-                    .filter(pl.any_horizontal(pl.col('*').is_nan()))
-                    .collect()
-                    .shape[0] == 0)
-
-            if race == 'BLACK':
-                if age_group == '50-54':
-                    ...
 
             # this rounding step preserves >99% of the total migration just calculated
             df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))

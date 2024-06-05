@@ -60,7 +60,8 @@ def make_fips_changes(df=None):
     df = df.join(other=df_fips,
                  how='left',
                  left_on='GEOID',
-                 right_on='OLD_FIPS')
+                 right_on='OLD_FIPS',
+                 coalesce=True)
 
     df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
                          .then(pl.col('NEW_FIPS'))
@@ -175,44 +176,70 @@ class Projector():
             print(f"{time.ctime()}")
             print(f"Total population (start): {self.current_pop.select('POPULATION').sum()[0, 0]:,}\n")
 
-            # calculate deaths
+            ############
+            ## DEATHS ##
+            ############
+
             self.mortality()  # creates self.death
-            self.current_pop = (self.current_pop.join(self.deaths, on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'], how='left')
+            self.current_pop = (self.current_pop.join(self.deaths,
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      how='left',
+                                                      coalesce=True)
                                 .with_columns(pl.col('POPULATION') - pl.col('DEATHS')
                                 .alias('POPULATION'))
                                 .drop('DEATHS'))
             assert self.current_pop.shape == (671760, 5)
             assert sum(self.current_pop.null_count()).item() == 0
             # self.current_pop.clip(lower=0, inplace=True)
-            # assert self.current_pop.select('POPULATION') >= 0).all().all()
+            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.deaths = None
+
+            #################
+            ## IMMIGRATION ##
+            #################
 
             # calculate net international immigration
             self.immigration()  # creates self.immigrants
-            self.current_pop = (self.current_pop.join(self.immigrants, on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'], how='left')
+            self.current_pop = (self.current_pop.join(self.immigrants,
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      how='left',
+                                                      coalesce=True)
                                 .with_columns(pl.when(pl.col('NET_IMMIGRATION').is_not_null()).then(pl.col('POPULATION') + pl.col('NET_IMMIGRATION'))
                                 .otherwise(pl.col('POPULATION'))
                                 .alias('POPULATION'))
                                 .drop('NET_IMMIGRATION'))
-
             # correct for any cohorts that have negative population
-            # self.current_pop = self.current_pop.clip(lower=0).astype(int)
-
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
             assert self.current_pop.shape == (671760, 5)
             assert sum(self.current_pop.null_count()).item() == 0
-            # assert (self.current_pop >= 0).all().all()
+            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.immigrants = None
+
+            ###############
+            ## MIGRATION ##
+            ###############
 
             # calculate domestic migration
             self.migration()  # creates self.net_migration
-            self.current_pop = self.current_pop.add(other=self.net_migration, axis='index', fill_value=0)
-            # correct for any cohorts that have negative population
-            self.current_pop = self.current_pop.clip(lower=0).astype(int)
+            self.current_pop = (self.current_pop.join(other=self.net_migration,
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      how='left',
+                                                      coalesce=True)
+                                .fill_null(0)
+                                .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
+                                .alias('POPULATION')))
 
-            assert self.current_pop.shape == (671760, 1)
-            assert not self.current_pop.isnull().any().any()
-            assert (self.current_pop >= 0).all().all()
+            # correct for any cohorts that have negative population
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+
+            assert self.current_pop.shape == (671760, 5)
+            assert sum(self.current_pop.null_count()).item() == 0
+            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.net_migration = None
+
+            ############
+            ## BIRTHS ##
+            ############
 
             # calculate births
             self.fertility()  # create self.births
@@ -222,35 +249,34 @@ class Projector():
             assert self.current_pop.shape == (671760, 1)
 
             # add births
-            self.current_pop = self.current_pop.add(other=self.births, axis='index', fill_value=0.0).astype(int)
+            self.current_pop = (self.current_pop.join(other=self.births,
+                                                     on=['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'],
+                                                     how='left',
+                                                     coalesce=True)
+                                .with_columns(pl.col('POPULATION') + pl.col('BIRTHS')).
+                                alias('POPULATION'))
             assert self.current_pop.shape == (671760, 1)
             self.births = None
 
-            self.current_pop.sort_index(level=['GEOID', 'GENDER', 'RACE', 'AGE_GROUP'],
-                                        inplace=True,
-                                        sort_remaining=True)
+            self.current_pop = self.current_pop.sort(by=['GEOID', 'GENDER', 'RACE', 'AGE_GROUP'])
 
             if self.population_time_series is None:
-                self.population_time_series = self.current_pop.copy()
-                self.population_time_series.columns = [self.current_projection_year]
+                self.population_time_series = self.current_pop.clone()
             else:
                 self.population_time_series = pl.concat(objs=[self.population_time_series, self.current_pop], axis=1)
-                self.population_time_series.rename(columns={'VALUE': self.current_projection_year}, inplace=True)
+            self.population_time_series = self.population_time_series.rename({'POPULATION': self.current_projection_year})
             self.current_projection_year += 1
 
             print(f"Total population (end): {self.current_pop.sum().sum():,}\n")
 
             # save results to sqlite3 database
-            db = OUTPUT_DATABASE
-            temp = self.population_time_series.reset_index()
-            temp['AGE_GROUP'] = temp['AGE_GROUP'].astype(age_group_dtype)
-            temp.sort_index(level=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'], inplace=True)
-            con = sqlite3.connect(database=db, timeout=60)
-            temp.to_sql(name=f'population_by_race_gender_age_{self.scenario}',
-                        con=con,
-                        if_table_exists='replace',
-                        index=False)
-            con.close()
+            uri = f'sqlite:{OUTPUT_DATABASE}'
+            temp = self.population_time_series.clone()
+            temp = temp.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+            temp.write_database(table_name=f'population_by_race_gender_age_{self.scenario}',
+                                connection=uri,
+                                if_table_exists='replace',
+                                engine='adbc')
             del temp
 
     def advance_age_groups(self):
@@ -302,7 +328,10 @@ class Projector():
         county_mort_rates = pl.read_database_uri(query=query, uri=uri)
 
         df = self.current_pop.clone()
-        df = df.join(other=county_mort_rates, on=['RACE', 'AGE_GROUP', 'GENDER', 'GEOID'], how='left')
+        df = df.join(other=county_mort_rates,
+                     on=['RACE', 'AGE_GROUP', 'GENDER', 'GEOID'],
+                     how='left',
+                     coalesce=True)
 
         # get Wittgenstein mortality rate adjustments
         uri = f'sqlite:{WITT_DB}'
@@ -312,7 +341,10 @@ class Projector():
                   AND YEAR = "{self.current_projection_year - 1}"'
         mort_multiply = pl.read_database_uri(query=query, uri=uri)
 
-        df = df.join(other=mort_multiply, on=['AGE_GROUP', 'GENDER'], how='left')
+        df = df.join(other=mort_multiply,
+                     on=['AGE_GROUP', 'GENDER'],
+                     how='left',
+                     coalesce=True)
         assert df.shape[0] == 671760
         df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
@@ -323,7 +355,7 @@ class Projector():
 
         # store deaths
         self.deaths = df.clone()
-        total_deaths_this_year = self.deaths.select(pl.col('DEATHS').sum()).item()
+        total_deaths_this_year = round(self.deaths.select(pl.col('DEATHS').sum()).item())
 
         # store time series of mortality in sqlite3
         uri = f'sqlite:{OUTPUT_DATABASE}'
@@ -386,7 +418,10 @@ class Projector():
         df_census = pl.read_database_uri(query=query, uri=uri).drop('YEAR')
 
         # multiply annual immigration by the agegroup/race/sex proportions
-        all_immig_cohorts = df_census.join(other=witt, on=['GENDER', 'AGE_GROUP'], how='left')
+        all_immig_cohorts = df_census.join(other=witt,
+                                           on=['GENDER', 'AGE_GROUP'],
+                                           how='left',
+                                           coalesce=True)
         for race in IMMIGRATION_RACES:
             all_immig_cohorts = all_immig_cohorts.with_columns((pl.col(race) * pl.col('NET')).alias(race))
 
@@ -397,7 +432,8 @@ class Projector():
 
         df = (county_weights.join(other=all_immig_cohorts,
                                   on=['RACE', 'AGE_GROUP', 'GENDER'],
-                                  how='left')
+                                  how='left',
+                                  coalesce=True)
                             .with_columns((pl.col('NET_IMMIGRATION') * pl.col('COUNTY_FRACTION'))
                             .alias('NET_IMMIGRATION'))
                             .drop('COUNTY_FRACTION'))
@@ -434,7 +470,7 @@ class Projector():
                                    if_table_exists='replace',
                                    engine='adbc')
 
-        total_immigrants_this_year = immigration.select(f'{self.current_projection_year}').sum().item()
+        total_immigrants_this_year = round(immigration.select(f'{self.current_projection_year}').sum().item())
         print(f"finished! ({total_immigrants_this_year:,} net immigrants this year)")
 
     def migration(self):
@@ -446,8 +482,8 @@ class Projector():
         migration_model = MigrationModel()
         migration_model.current_pop = self.current_pop.clone()
 
-        for race in ('BLACK',):
-        # for race in RACES:
+        # for race in ('BLACK',):
+        for race in RACES:
             print(f"\t{race}...")
 
             # compute all county to county migration flows
@@ -469,7 +505,8 @@ class Projector():
             lf = (ratios.join(other=gross_flows,
                               how='left',
                               left_on=['GEOID', 'AGE_GROUP'],
-                              right_on=['DESTINATION_FIPS', 'AGE_GROUP'])
+                              right_on=['DESTINATION_FIPS', 'AGE_GROUP'],
+                              coalesce=True)
                   .fill_null(value=0)
                   .fill_nan(value=0)
                   .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
@@ -483,7 +520,8 @@ class Projector():
             lf = (lf.join(other=gross_flows,
                           how='left',
                           left_on=['GEOID', 'AGE_GROUP'],
-                          right_on=['ORIGIN_FIPS', 'AGE_GROUP'])
+                          right_on=['ORIGIN_FIPS', 'AGE_GROUP'],
+                          coalesce=True)
                   .fill_null(value=0)
                   .fill_nan(value=0)
                   .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
@@ -495,71 +533,47 @@ class Projector():
             lf = lf.with_columns((pl.col('SUM_INFLOWS') - pl.col('SUM_OUTFLOWS'))
                                  .alias('NET_MIGRATION'))
             lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'NET_MIGRATION']).unique()
+            lf = lf.with_columns(pl.lit(race).alias('RACE'))
 
-            assert lf.shape == (111960, 4)
+            assert lf.shape == (111960, 5)
 
             if self.net_migration is None:
                 self.net_migration = lf.clone()
             else:
                 self.net_migration = pl.concat([self.net_migration, lf])
 
-            # assert self.net_migration.null_count().sum_horizontal().item() == 0
-            # assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
-
-        assert self.net_migration.shape == (671760, 4)
+        assert self.net_migration.shape == (671760, 5)
         assert self.net_migration.null_count().sum_horizontal().item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
-
-        # # using the % change in net migration by county from my model for the
-        # # years 2015 and the projected year, calculate new net migration by
-        # # county using observed net migration for 2015 (i.e., delta method)
-        # baseline_migration_estimate = retrieve_baseline_migration_estimate()
-        # net_migration_total = self.net_migration.group_by(by='GEOID').sum()
-        # county_change_factor = net_migration_total.div(other=baseline_migration_estimate, axis='index')
-        # baseline_migration = retrieve_intercensal_migration()
-        # new_net_migration = baseline_migration.mul(other=county_change_factor, axis='index')
-
-        # # the numbers get messy when the baseline migration estimate and
-        # # my model's projected migration have a different sign, e.g., negative
-        # # net migration in 2015 (the baseline) and positive net migration in
-        # # 2016 (projected). In those cases - for now - use the average of the
-        # # projected net migration and the 2015 value
-        # opposite_signs = net_migration_total.join(other=baseline_migration_estimate, lsuffix='proj', rsuffix='base')
-        # opposite_signs.query('MIGRATIONproj * MIGRATIONbase < 0', inplace=True)
-        # avg_for_opp_signs = baseline_migration.join(other=net_migration_total, lsuffix='obs', rsuffix='proj')
-        # # avg_for_opp_signs = avg_for_opp_signs.loc[avg_for_opp_signs.index.isin(opposite_signs.index)]
-        # avg_for_opp_signs = avg_for_opp_signs.loc[opposite_signs.index]
-        # avg_for_opp_signs.eval('MIGRATION = (MIGRATIONobs + MIGRATIONproj) / 2', inplace=True)
-        # new_net_migration.update(other=avg_for_opp_signs)
-
-        # net_change = new_net_migration.sub(other=net_migration_total, axis='index').div(other=216)
-        # self.net_migration = self.net_migration.add(other=net_change, axis='index')
-
-        # self.net_migration = self.net_migration.round().astype(int)
 
         # store time series of migration in sqlite3
         uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
-            migration = self.net_migration.rename({'NET_MIGRATION': self.current_projection_year}).clone()
+            migration = self.net_migration.rename({'NET_MIGRATION': str(self.current_projection_year)}).clone()
         else:
             query = f'SELECT * FROM migration_by_race_gender_age_{self.scenario}'
             migration = pl.read_database_uri(query=query, uri=uri)
-            current_migration = self.net_migration.clone()
-            current_migration.rename({'NET_MIGRATION': self.current_projection_year})
-            migration = migration.join(current_migration, on=['GEOID', 'AGE_GROUP', 'GENDER'], how='left')
-        migration.sort_values(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'], inplace=True)
+            current_migration = self.net_migration.clone().rename({'NET_MIGRATION': str(self.current_projection_year)})
+            migration = migration.join(current_migration,
+                                       on=['GEOID', 'AGE_GROUP', 'GENDER'],
+                                       how='left',
+                                       coalesce=True)
+        migration = migration.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
         assert migration.shape[0] == 671760
-        assert migration.null_count()[:] == 0
-        assert self.net_migration.select('NET_MIGRATION').filter(pl.all() == np.nan).shape[0]
+        assert sum(migration.null_count()).item() == 0
+        assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
         migration.write_database(table_name=f'migration_by_race_gender_age_{self.scenario}',
                                  connection=uri,
-                                 if_table_exists='replace')
+                                 if_table_exists='replace',
+                                 engine='adbc')
 
-        total_migrants_this_year = (self.net_migration.filter(pl.col('NET_MIGRATION') > 0)
-                                    .select('NET_MIGRATION').sum())
-        pct_migration = (((total_migrants_this_year / self.current_pop.sum().values[0]) * 100.0).round(1))
-        print(f"finished! ({total_migrants_this_year:,} total migrants this year; {pct_migration}% of the current population)")
+        total_migrants_this_year = round((self.net_migration.filter(pl.col('NET_MIGRATION') > 0)
+                                          .select('NET_MIGRATION')
+                                          .sum())
+                                          .item())
+        pct_migration = round(((total_migrants_this_year / self.current_pop.select('POPULATION').sum().item())) * 100.0, 1)
+        print(f"...finished! ({total_migrants_this_year:,} total migrants this year; {pct_migration}% of the current population)")
 
     def fertility(self):
         '''
