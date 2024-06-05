@@ -95,7 +95,8 @@ class Institutional():
                                       cell_assignment='CELL_CENTER',
                                       cellsize=30)
 
-        # Federal (except for NPS) lands inside urban areas
+        # National Forest or Other Federal Land (except for NPS) lands inside
+        # urban areas
         urban_fed_query = "MTFCC = 'K2182'"
         urban_fed_output_fc = 'in_memory\\fed_inst'
 

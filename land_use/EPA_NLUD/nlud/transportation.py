@@ -60,11 +60,11 @@ class Transportation():
         '''
         print(f"[Region {self.REGION_NUMBER}]   Creating transporation raster from NLCD_2011_Impervious_descriptor_L48_20190405...")
 
-        nlcd_raster = ap.Raster(os.path.join(self.INPUTS, 'NLCD_2011_Impervious_descriptor_L48_20190405'))
+        nlcd_raster = ap.Raster(os.path.join(self.INPUTS, 'NLCD_2011_Impervious_descriptor_l48_20210604'))
         tiger_transportation_raster = ap.Raster(os.path.join(self.INTERMEDIATE, 'TIGER_TRANSPORTATION'))
 
         # make a layer of primary roads and ramps
-        proads_ramps = Con(nlcd_raster == 1, self.raster_value, Con(nlcd_raster == 2, self.raster_value, Con(tiger_transportation_raster == self.raster_value, self.raster_value)))
+        proads_ramps = Con(nlcd_raster == 1, self.raster_value, Con(nlcd_raster == 20, self.raster_value, Con(tiger_transportation_raster == self.raster_value, self.raster_value)))
         proads_ramps.save(os.path.join(self.INTERMEDIATE, 'USGS_PROADS_RAMPS'))
 
         in_raster = os.path.join(self.INTERMEDIATE, 'USGS_PROADS_RAMPS')
@@ -81,7 +81,10 @@ class Transportation():
                                      zone_values=self.raster_value)
 
         # all primary and secondary roads identified by NLCD mapping program
-        usgs_transportation_raster = Con(((nlcd_raster >= 1) & (nlcd_raster <= 4)) | (~IsNull(proads_ramps_shrink)), self.raster_value)
+        # visual inspection of 'tertiary' roads shows that they are less than
+        # 15m in width, and therefore would not make up the 'primary use' of a
+        # 30m pixel
+        usgs_transportation_raster = Con(((nlcd_raster == 20) | (nlcd_raster == 21)) | (~IsNull(proads_ramps_shrink)), self.raster_value)
 
         usgs_transportation_raster.save(os.path.join(self.INTERMEDIATE, 'USGS_TRANSPORTATION'))
 

@@ -33,7 +33,7 @@ class MixedUse():
         '''
         Create a raster of mixed use (i.e., commercial and residential)
         '''
-        final_mixed_use_raster = Con((~IsNull(self.nlcd_ras)) & (~IsNull(self.urban_areas)), Con((self.huden > 5.0) & (self.comm > 5.0) & (self.nlcd_ras >= 23) & (self.nlcd_ras <= 24), self.raster_value))
+        final_mixed_use_raster = Con((~IsNull(self.nlcd_ras)) & (~IsNull(self.urban_areas)), Con((self.huden > 5.0) & (self.comm > 5.0) & (self.nlcd_ras == 23 | self.nlcd_ras == 24), self.raster_value))
         out_ras = os.path.join(self.OUTPUTS, 'FINAL_MIXEDUSE')
         final_mixed_use_raster.save(out_ras)
 
