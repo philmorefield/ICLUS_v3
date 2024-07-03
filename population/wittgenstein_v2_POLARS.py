@@ -220,22 +220,22 @@ class Projector():
             ###############
 
             # calculate domestic migration
-            self.migration()  # creates self.net_migration
-            self.current_pop = (self.current_pop.join(other=self.net_migration,
-                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
-                                                      how='left',
-                                                      coalesce=True)
-                                .fill_null(0)
-                                .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
-                                .alias('POPULATION')))
+            # self.migration()  # creates self.net_migration
+            # self.current_pop = (self.current_pop.join(other=self.net_migration,
+            #                                           on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+            #                                           how='left',
+            #                                           coalesce=True)
+            #                     .fill_null(0)
+            #                     .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
+            #                     .alias('POPULATION')))
 
-            # correct for any cohorts that have negative population
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # # correct for any cohorts that have negative population
+            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
 
-            assert self.current_pop.shape == (671760, 5)
-            assert sum(self.current_pop.null_count()).item() == 0
-            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
-            self.net_migration = None
+            # assert self.current_pop.shape == (671760, 6)
+            # assert sum(self.current_pop.null_count()).item() == 0
+            # assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
+            # self.net_migration = None
 
             ############
             ## BIRTHS ##
@@ -583,10 +583,10 @@ class Projector():
 
         # get CDC fertility rates by AGE_GROUP (15-44), RACE, and COUNTY
         con = sqlite3.connect(database=CDC_DB, timeout=60)
+        uri = f'sqlite:{CDC_DB}'
         query = 'SELECT COFIPS AS GEOID, RACE, AGE_GROUP, FERTILITY AS VALUE \
-                 FROM fertility_2013_2017_county_age_groups'
-        county_fert_rates = pl.read_sql(sql=query, con=con)
-        con.close()
+                 FROM fertility_2018_2022_county'
+        county_fert_rates = pl.read_database_uri(query=query, uri=uri)
 
         age_groups = list(county_fert_rates.AGE_GROUP.unique())
         # county_fert_rates = pl.DataFrame(data=county_fert_rates.eval('RACE = RACE.str.replace("MULTI", "TWO_OR_MORE")', engine='python'))
