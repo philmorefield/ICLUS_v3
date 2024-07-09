@@ -86,7 +86,8 @@ def set_launch_population(launch_year):
     df = pl.read_database_uri(query=query, uri=uri)
 
     df = make_fips_changes(df=df)
-    df = df.sort(['GEOID', 'RACE', 'AGE_GROUP'])
+    df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
+    df = df.sort(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'])
 
     assert df.shape[0] == 671760
     return df
@@ -285,12 +286,8 @@ class Projector():
         of the population in each cohorts to the next AGE_GROUP
         '''
         print("Advancing the age of the population by one year...", end='')
-        starting_pop = self.current_pop.sum().values[0]
-
-        self.current_pop.reset_index(level='AGE_GROUP', inplace=True)
-        self.current_pop['AGE_GROUP'] = self.current_pop['AGE_GROUP'].astype(age_group_dtype)
-        self.current_pop.set_index(keys='AGE_GROUP', append=True, inplace=True)
-        self.current_pop.sort_index(level=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'], inplace=True)
+        starting_pop = self.current_pop.select('POPULATION').sum().item()
+        self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'])
 
         # shift 20 percent of the population in each cohort
         advancers = pl.DataFrame(self.current_pop
@@ -325,7 +322,7 @@ class Projector():
         uri = f'sqlite:{CDC_DB}'
         query = 'SELECT RACE, AGE_GROUP, GENDER, COFIPS AS GEOID, MORTALITY AS MORTALITY_RATE_100K \
                  FROM mortality_2018_2022_county'
-        county_mort_rates = pl.read_database_uri(query=query, uri=uri)
+        county_mort_rates = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         df = self.current_pop.clone()
         df = df.join(other=county_mort_rates,
@@ -339,7 +336,7 @@ class Projector():
                   FROM age_specific_mortality \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year - 1}"'
-        mort_multiply = pl.read_database_uri(query=query, uri=uri)
+        mort_multiply = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         df = df.join(other=mort_multiply,
                      on=['AGE_GROUP', 'GENDER'],
@@ -426,9 +423,9 @@ class Projector():
             all_immig_cohorts = all_immig_cohorts.with_columns((pl.col(race) * pl.col('NET')).alias(race))
 
         all_immig_cohorts = all_immig_cohorts.drop('NET')
-        all_immig_cohorts = all_immig_cohorts.melt(id_vars=['AGE_GROUP', 'GENDER'],
-                                                   variable_name='RACE',
-                                                   value_name='NET_IMMIGRATION')
+        all_immig_cohorts = all_immig_cohorts.unpivot(index=['AGE_GROUP', 'GENDER'],
+                                                      variable_name='RACE',
+                                                      value_name='NET_IMMIGRATION')
 
         df = (county_weights.join(other=all_immig_cohorts,
                                   on=['RACE', 'AGE_GROUP', 'GENDER'],
@@ -448,6 +445,7 @@ class Projector():
                                .when(pl.col('RACE') == pl.lit('HISP_WHITE')).then(pl.lit('WHITE'))
                                .otherwise(pl.col('RACE')).alias('RACE'))
         df = df.group_by(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER']).agg(pl.col('NET_IMMIGRATION').sum())
+        df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         self.immigrants = df.clone()
 
@@ -581,74 +579,76 @@ class Projector():
         '''
         print("Calculating fertility...", end='')
 
+        fertility_age_groups = ('15-19',
+                                '20-24',
+                                '25-29',
+                                '30-34',
+                                '35-39',
+                                '40-44')
+
         # get CDC fertility rates by AGE_GROUP (15-44), RACE, and COUNTY
-        con = sqlite3.connect(database=CDC_DB, timeout=60)
         uri = f'sqlite:{CDC_DB}'
-        query = 'SELECT COFIPS AS GEOID, RACE, AGE_GROUP, FERTILITY AS VALUE \
+        query = 'SELECT COFIPS AS GEOID, RACE, AGE_GROUP, FERTILITY \
                  FROM fertility_2018_2022_county'
         county_fert_rates = pl.read_database_uri(query=query, uri=uri)
+        county_fert_rates = county_fert_rates.with_columns(pl.when(pl.col('RACE') == 'MULTI')
+                                             .then(pl.lit('TWO_OR_MORE'))
+                                             .otherwise(pl.col('RACE'))
+                                             .alias('RACE'))
+        county_fert_rates = county_fert_rates.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
-        age_groups = list(county_fert_rates.AGE_GROUP.unique())
-        # county_fert_rates = pl.DataFrame(data=county_fert_rates.eval('RACE = RACE.str.replace("MULTI", "TWO_OR_MORE")', engine='python'))
-        county_fert_rates['RACE'] = county_fert_rates['RACE'].str.replace('MULTI', 'TWO_OR_MORE')
-        county_fert_rates.set_index(keys=['GEOID', 'RACE', 'AGE_GROUP'], inplace=True)
-
-        # df = self.current_pop.query('GENDER == "FEMALE" & AGE_GROUP.isin(@age_groups)', engine='python').copy()
-        df = self.current_pop.loc[(self.current_pop.index.get_level_values(level='GENDER') == "FEMALE") & (self.current_pop.index.get_level_values(level='AGE_GROUP').isin(age_groups))].copy()
-        df.reset_index(level='GENDER', drop=True, inplace=True)
+        df = self.current_pop.filter(pl.col('GENDER').is_in(('FEMALE',)) & pl.col('AGE_GROUP').is_in(fertility_age_groups))
 
         # get Wittgenstein fertility rate adjustments
-        con = sqlite3.connect(database=WITT_DB, timeout=60)
-        query = f'SELECT AGE_GROUP, FERT_CHANGE_MULT AS VALUE \
-                  FROM age_specific_fertility_v2 \
+        uri = f'sqlite:{WITT_DB}'
+        query = f'SELECT AGE_GROUP, FERT_CHANGE_MULT AS FERT_MULT \
+                  FROM age_specific_fertility \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year - 1}"'
-        fert_multiply = pl.read_sql(sql=query, con=con, index_col='AGE_GROUP')
-        con.close()
+        fert_multiply = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         # adjust the county fertility rates using change factors from
         # Wittgenstein and then calculate births
-        county_fert_rates = county_fert_rates.mul(other=fert_multiply, axis='index')
-        county_fert_rates /= 1000.0  # fertility rates are births per 1,000
-        births = df.mul(other=county_fert_rates, axis='index')
+        df = df.join(other=county_fert_rates,
+                     on=['GEOID', 'AGE_GROUP', 'RACE'],
+                     how='left',
+                     coalesce=True)
 
-        births['MALE'] = births['VALUE'] * 0.512195122  # from Mathews, et al. (2005)
-        births['FEMALE'] = births['VALUE'] - births['MALE']
-        births = births.reset_index().drop(columns=['VALUE', 'AGE_GROUP'])
-        births = births.melt(id_vars=['GEOID', 'RACE'], var_name='GENDER', value_name='VALUE')
-        births = births.group_by(by=['GEOID', 'RACE', 'GENDER']).sum()
+        df = df.join(other=fert_multiply,
+                     on='AGE_GROUP',
+                     how='left',
+                     coalesce=True)
 
-        assert not df.isnull().any().any()
+        df = df.with_columns(((pl.col('FERTILITY') * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
+        df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
+        df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
+        df = (df.select(['GEOID', 'RACE', 'MALE', 'FEMALE'])
+                .unpivot(index=['GEOID', 'RACE'], variable_name='GENDER', value_name='BIRTHS')
+                .group_by(['GEOID', 'RACE', 'GENDER']).agg(pl.col('BIRTHS').sum()))
+        df = df.with_columns(pl.lit('0-4').alias('AGE_GROUP'))
+        assert sum(df.null_count()).item() == 0
 
-        self.births = births.round().astype(int).copy()
-        self.births['AGE_GROUP'] = '0-4'
-        self.births.set_index(keys='AGE_GROUP', append=True, inplace=True)
-
-        total_births_this_year = self.births.sum().values[0]
+        # store births
+        self.births = df.clone()
+        total_births_this_year = round(self.births.select('BIRTHS').sum().item())
 
         # store time series of fertility in sqlite3
-        db = OUTPUT_DATABASE
-        con = sqlite3.connect(database=db, timeout=60)
+        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
-            births = self.births.rename(columns={'VALUE': self.current_projection_year})
+            births = self.births.rename({'BIRTHS': str(self.current_projection_year)})
         else:
             query = f'SELECT * FROM births_by_race_age_{self.scenario}'
-            births = pl.read_sql(sql=query,
-                                 con=con,
-                                 index_col=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
-            current_births = self.births.copy()
-            current_births = current_births.rename(columns={'VALUE': self.current_projection_year}).copy()
-            births = pl.concat(objs=[births, current_births], axis=1)
-        births.reset_index(inplace=True)
-        births['AGE_GROUP'] = births['AGE_GROUP'].astype(age_group_dtype)
-        births.sort_values(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'], inplace=True)
+            births = pl.read_database_uri(query=query, uri=uri)
+            current_births = self.births.cone()
+            current_births = current_births.rename({'BIRTHS': self.current_projection_year}).clone()
+            births = pl.concat(items=[births, current_births], how='align')
+        births.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
         assert births.shape[0] == 37320
-        assert not births.isnull().any().any()
-        births.to_sql(name=f'births_by_race_age_{self.scenario}',
-                      con=con,
+        assert sum(births.null_count()).item() == 0
+        births.write_database(table_name=f'births_by_race_gender_age_{self.scenario}',
+                      connection=uri,
                       if_table_exists='replace',
-                      index=False)
-        con.close()
+                      engine='adbc')
 
         print(f"finished! ({total_births_this_year:,} births this year)")
 
