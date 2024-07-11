@@ -162,7 +162,7 @@ class Projector():
         # fertility-related attributes
         self.births = None
 
-    def run(self, launch_year=2020, final_projection_year=2050):
+    def run(self, launch_year=2020, final_projection_year=2025):
         '''
         TODO:
         '''
@@ -221,22 +221,23 @@ class Projector():
             ###############
 
             # calculate domestic migration
-            # self.migration()  # creates self.net_migration
-            # self.current_pop = (self.current_pop.join(other=self.net_migration,
-            #                                           on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
-            #                                           how='left',
-            #                                           coalesce=True)
-            #                     .fill_null(0)
-            #                     .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
-            #                     .alias('POPULATION')))
+            self.migration()  # creates self.net_migration
+            self.current_pop = (self.current_pop.join(other=self.net_migration,
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      how='left',
+                                                      coalesce=True)
+                                .fill_null(0)
+                                .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
+                                .alias('POPULATION')))
+            self.current_pop = self.current_pop.drop('NET_MIGRATION')
 
-            # # correct for any cohorts that have negative population
-            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # correct for any cohorts that have negative population
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
 
-            # assert self.current_pop.shape == (671760, 6)
-            # assert sum(self.current_pop.null_count()).item() == 0
-            # assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
-            # self.net_migration = None
+            assert self.current_pop.shape == (671760, 5)
+            assert sum(self.current_pop.null_count()).item() == 0
+            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
+            self.net_migration = None
 
             ############
             ## BIRTHS ##
@@ -247,28 +248,32 @@ class Projector():
 
             # age everyone by one year
             self.advance_age_groups()
-            assert self.current_pop.shape == (671760, 1)
+            assert self.current_pop.shape == (671760, 5)
 
             # add births
             self.current_pop = (self.current_pop.join(other=self.births,
                                                      on=['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'],
                                                      how='left',
                                                      coalesce=True)
-                                .with_columns(pl.col('POPULATION') + pl.col('BIRTHS')).
-                                alias('POPULATION'))
-            assert self.current_pop.shape == (671760, 1)
+                                .with_columns(pl.when(pl.col('BIRTHS').is_not_null())
+                                              .then(pl.col('POPULATION') + pl.col('BIRTHS'))
+                                              .otherwise(pl.col('POPULATION'))
+                                .alias('POPULATION'))
+                                .drop('BIRTHS'))
+
+            assert self.current_pop.shape == (671760, 5)
             self.births = None
 
-            self.current_pop = self.current_pop.sort(by=['GEOID', 'GENDER', 'RACE', 'AGE_GROUP'])
+            self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
 
             if self.population_time_series is None:
                 self.population_time_series = self.current_pop.clone()
             else:
-                self.population_time_series = pl.concat(objs=[self.population_time_series, self.current_pop], axis=1)
-            self.population_time_series = self.population_time_series.rename({'POPULATION': self.current_projection_year})
+                self.population_time_series = pl.concat(items=[self.population_time_series, self.current_pop], how='align')
+            self.population_time_series = self.population_time_series.rename({'POPULATION': str(self.current_projection_year)})
             self.current_projection_year += 1
 
-            print(f"Total population (end): {self.current_pop.sum().sum():,}\n")
+            print(f"Total population (end): {self.current_pop.select('POPULATION').sum().item():,}\n")
 
             # save results to sqlite3 database
             uri = f'sqlite:{OUTPUT_DATABASE}'
@@ -287,27 +292,29 @@ class Projector():
         '''
         print("Advancing the age of the population by one year...", end='')
         starting_pop = self.current_pop.select('POPULATION').sum().item()
-        self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'])
+
+        # VERY IMPORTANT that the dataframe is sorted exactly like this
+        self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
 
         # shift 20 percent of the population in each cohort
-        advancers = pl.DataFrame(self.current_pop
-                                 .group_by(by=['GEOID', 'RACE', 'GENDER'])
-                                 .VALUE
-                                 .transform(lambda x: x.shift() * 0.2))
+
+        self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') * 0.2)
+                                           .shift(fill_value=0)
+                                           .over('GEOID', 'RACE', 'GENDER')
+                                           .alias('AGE_ADVANCING'))
 
         # reduce the population in each age cohort by 20%, except for 85+
-        self.current_pop.loc[self.current_pop.index.get_level_values('AGE_GROUP') != "85+", 'VALUE'] *= 0.8
-        self.current_pop = self.current_pop.add(other=pl.DataFrame(advancers),
-                                                axis='index',
-                                                fill_value=0.0)
+        self.current_pop = self.current_pop.with_columns(pl.when(pl.col('AGE_GROUP') != pl.lit('85+'))
+                                                         .then(pl.col('POPULATION') * 0.8)
+                                                         .otherwise(pl.col('POPULATION'))
+                                                         .alias('POPULATION'))
+
+        self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') + pl.col('AGE_ADVANCING')).alias('POPULATION'))
+        self.current_pop = self.current_pop.drop('AGE_ADVANCING')
 
         # a rounding difference of << 1 is possible
-        assert starting_pop - self.current_pop.sum().values[0] < 1
-        self.current_pop = self.current_pop.round().astype(int)
-
-        self.current_pop.reset_index(level='AGE_GROUP', inplace=True)
-        self.current_pop['AGE_GROUP'] = self.current_pop['AGE_GROUP'].astype(object)
-        self.current_pop.set_index(keys='AGE_GROUP', append=True, inplace=True)
+        assert starting_pop - self.current_pop.select('POPULATION').sum().item() < 1
+        # self.current_pop = self.current_pop.round().astype(int)
 
         print("finished!")
 
@@ -360,9 +367,9 @@ class Projector():
             deaths = self.deaths.rename({'DEATHS': str(self.current_projection_year)})
         else:
             query = f'SELECT * FROM deaths_by_race_gender_age_{self.scenario}'
-            deaths = pl.read_database_uri(query=query, uri=uri)
+            deaths = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_deaths = self.deaths.clone()
-            current_deaths = current_deaths.rename({'DEATHS': self.current_projection_year}).clone()
+            current_deaths = current_deaths.rename({'DEATHS': str(self.current_projection_year)})
             deaths = pl.concat(items=[deaths, current_deaths], how='align')
         deaths.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
         assert deaths.shape[0] == 671760
@@ -450,19 +457,18 @@ class Projector():
         self.immigrants = df.clone()
 
         # store time series of immigration in sqlite3
+        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
             immigration = self.immigrants.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
         else:
             query = f'SELECT * FROM immigration_by_race_gender_age_{self.scenario}'
-            immigration = pl.read_database_uri(query=query,
-                                               uri=uri)
+            immigration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_immigration = self.immigrants.clone()
-            current_immigration = current_immigration.rename(columns={'NET_IMMIGRATION': self.current_projection_year}).clone()
-            immigration = pl.concat(objs=[immigration, current_immigration])
+            current_immigration = current_immigration.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
+            immigration = pl.concat(items=[immigration, current_immigration], how='align')
 
         assert sum(immigration.null_count()).item() == 0
 
-        uri = f'sqlite:{OUTPUT_DATABASE}'
         immigration.write_database(table_name=f'immigration_by_race_gender_age_{self.scenario}',
                                    connection=uri,
                                    if_table_exists='replace',
@@ -523,7 +529,8 @@ class Projector():
                   .fill_null(value=0)
                   .fill_nan(value=0)
                   .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
-                  .alias('GROSS_OUTFLOW')).collect())
+                  .alias('GROSS_OUTFLOW')))
+
             lf = lf.with_columns(pl.col('GROSS_OUTFLOW')
                         .sum()
                         .over(['GEOID', 'AGE_GROUP', 'GENDER'])
@@ -533,13 +540,14 @@ class Projector():
             lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'NET_MIGRATION']).unique()
             lf = lf.with_columns(pl.lit(race).alias('RACE'))
 
-            assert lf.shape == (111960, 5)
+            # assert lf.shape == (111960, 5)
 
             if self.net_migration is None:
                 self.net_migration = lf.clone()
             else:
-                self.net_migration = pl.concat([self.net_migration, lf])
+                self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical_relaxed')
 
+        self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP']).collect()
         assert self.net_migration.shape == (671760, 5)
         assert self.net_migration.null_count().sum_horizontal().item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
@@ -550,13 +558,13 @@ class Projector():
             migration = self.net_migration.rename({'NET_MIGRATION': str(self.current_projection_year)}).clone()
         else:
             query = f'SELECT * FROM migration_by_race_gender_age_{self.scenario}'
-            migration = pl.read_database_uri(query=query, uri=uri)
+            migration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_migration = self.net_migration.clone().rename({'NET_MIGRATION': str(self.current_projection_year)})
             migration = migration.join(current_migration,
-                                       on=['GEOID', 'AGE_GROUP', 'GENDER'],
+                                       on=['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'],
                                        how='left',
                                        coalesce=True)
-        migration = migration.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+        # migration = migration.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
         assert migration.shape[0] == 671760
         assert sum(migration.null_count()).item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
@@ -625,7 +633,7 @@ class Projector():
         df = (df.select(['GEOID', 'RACE', 'MALE', 'FEMALE'])
                 .unpivot(index=['GEOID', 'RACE'], variable_name='GENDER', value_name='BIRTHS')
                 .group_by(['GEOID', 'RACE', 'GENDER']).agg(pl.col('BIRTHS').sum()))
-        df = df.with_columns(pl.lit('0-4').alias('AGE_GROUP'))
+        df = df.with_columns(pl.lit('0-4').cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
         assert sum(df.null_count()).item() == 0
 
         # store births
@@ -637,10 +645,10 @@ class Projector():
         if self.current_projection_year == self.launch_year + 1:
             births = self.births.rename({'BIRTHS': str(self.current_projection_year)})
         else:
-            query = f'SELECT * FROM births_by_race_age_{self.scenario}'
-            births = pl.read_database_uri(query=query, uri=uri)
-            current_births = self.births.cone()
-            current_births = current_births.rename({'BIRTHS': self.current_projection_year}).clone()
+            query = f'SELECT * FROM births_by_race_gender_age_{self.scenario}'
+            births = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
+            current_births = self.births.clone()
+            current_births = current_births.rename({'BIRTHS': str(self.current_projection_year)}).clone()
             births = pl.concat(items=[births, current_births], how='align')
         births.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
         assert births.shape[0] == 37320

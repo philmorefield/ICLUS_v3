@@ -97,6 +97,7 @@ def get_age_weighted_population(race_pop, age_group):
     weights = pl.concat(items=[weights, row])
     weights = weights.with_columns((pl.col('WEIGHT') / pl.col('WEIGHT').max()).alias('WEIGHT'))  # standardize weights so that the largest weight is 1.0
 
+    weights = weights.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
     df = race_pop.join(other=weights,
                        on='AGE_GROUP',
                        how='left')
@@ -163,7 +164,7 @@ class migration_2_c_ii_3_a():
                       .alias('AGE_GROUP')))
         coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
                       .alias('AGE_GROUP')))
-        coefs = coefs.drop(columns=['DIST', 'LINK', 'CONVERGED'])
+        coefs = coefs.drop(['DIST', 'LINK'])
         coefs.rename(COLUMN_MAP)
         coefs = coefs.melt(id_vars=['RACE', 'AGE_GROUP'],
                            variable_name='VARIABLE',
@@ -176,7 +177,7 @@ class migration_2_c_ii_3_a():
                    .alias('AGE_GROUP')))
         sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
                     .alias('AGE_GROUP')))
-        sigs = sigs.drop(columns=['DIST', 'LINK', 'CONVERGED'])
+        sigs = sigs.drop(['DIST', 'LINK', 'CONVERGED'])
         sigs.rename(COLUMN_MAP)
         sigs = sigs.melt(id_vars=['RACE', 'AGE_GROUP'],
                          variable_name='VARIABLE',
@@ -206,7 +207,7 @@ class migration_2_c_ii_3_a():
 
             age_pop = (race_pop.filter(pl.col('AGE_GROUP') == age_group)
                        .select(['GEOID', 'POPULATION'])
-                       .groupby('GEOID')
+                       .group_by('GEOID')
                        .sum())
             df = self.compute_spatial_variables(age_pop=age_pop, age_weighted_population=age_weighted_population)
 
@@ -265,7 +266,7 @@ class migration_2_c_ii_3_a():
             # this rounding step preserves >99% of the total migration just calculated
             df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))
             df = df.select(['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION'])
-            df = df.with_columns(pl.lit(age_group).alias('AGE_GROUP'))
+            df = df.with_columns(pl.lit(age_group).cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
 
             if gross_migration_flows is None:
                 gross_migration_flows = df.clone()
