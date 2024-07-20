@@ -171,3 +171,6 @@ cython_debug/
 *.txt
 *.shx
 *.xml
+/geospatial/Census
+/geospatial/iclusv3_geospatial.gdb
+*.gpkg
