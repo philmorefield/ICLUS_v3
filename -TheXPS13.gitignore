@@ -171,10 +171,5 @@ cython_debug/
 *.txt
 *.shx
 *.xml
-/geospatial/Census
-/geospatial/iclusv3_geospatial.gdb
+/geospatial/Census/2020/tlgdb_2020_a_us_substategeo.gdb
 *.gpkg
-*.tfw
-*.tif
-*.ovr
-*.cpg
