@@ -59,6 +59,7 @@ def joint_attrs_to_near_table(near_table):
 
     assert not df.isnull().any().any()
     assert set(df['ORIGIN_FIPS']).issubset(valid_df['CYFIPS'])
+    assert set(df['DESTINATION_FIPS']).issubset(valid_df['CYFIPS'])
 
     df = df[['ORIGIN_FIPS',
              'ORIGIN_CYNAME',
