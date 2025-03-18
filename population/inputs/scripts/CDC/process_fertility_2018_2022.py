@@ -219,8 +219,8 @@ def impute_unid_county_values_by_state(co_fert, df):
     # urban/rural split
 
     co_fert_unid = co_fert.query('COFIPS.str.endswith("999")')
-    co_fert_unid['STFIPS'] = co_fert_unid.COFIPS.str[:2]
-    co_fert_unid.rename(columns={'FERTILITY': 'CO_FERT_UNID'}, inplace=True)
+    co_fert_unid.loc[:, 'STFIPS'] = co_fert_unid.COFIPS.str[:2]
+    co_fert_unid = co_fert_unid.rename(columns={'FERTILITY': 'CO_FERT_UNID'})
     co_fert_unid = co_fert_unid[['STFIPS', 'RACE', 'AGE_GROUP', 'CO_FERT_UNID']]
     df['STFIPS'] = df['COFIPS'].str[:2]
     df = df.merge(right=co_fert_unid, how='left', on=['STFIPS', 'RACE', 'AGE_GROUP'])
@@ -324,7 +324,7 @@ def main():
     df.eval('FERTILITY_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
 
     df = df[['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY']]
-    assert ~df.isnull().any().any()
+    assert not df.isnull().any().any()
 
     con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
     df.to_sql(name='fertility_2018_2022_county',

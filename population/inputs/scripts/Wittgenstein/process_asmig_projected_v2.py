@@ -29,30 +29,15 @@ def interpolate_years(df):
     df['NETMIG_INTERP'] = df['NETMIG']
     df.sort_values(by=['YEAR', 'AGE_GROUP', 'SCENARIO'], inplace=True)
 
-    df.loc[(~df.YEAR.astype(str).str.endswith('2')) & (~df.YEAR.astype(str).str.endswith('7')), 'NETMIG_INTERP'] = np.nan
+    df.loc[(~df.YEAR.astype(str).str.endswith('2')) &
+           (~df.YEAR.astype(str).str.endswith('7')) &
+           (df.YEAR != 2015), 'NETMIG_INTERP'] = np.nan
 
     for scenario, age_group, gender in product(scenarios, age_groups, genders):
         s = df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.GENDER == gender), 'NETMIG_INTERP']
-        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.GENDER == gender), 'NETMIG_INTERP'] = s.interpolate()
-        value2017 = df.query('SCENARIO == @scenario & AGE_GROUP == @age_group & GENDER == @gender & YEAR == 2017')['NETMIG_INTERP'].values[0]
-        value2018 = df.query('SCENARIO == @scenario & AGE_GROUP == @age_group & GENDER == @gender & YEAR == 2018')['NETMIG_INTERP'].values[0]
-        increment = value2018 - value2017
-        value2016 = value2017 - increment
-        value2015 = value2016 - increment
-        df.loc[(df['SCENARIO'] == scenario) & (df['AGE_GROUP'] == age_group) & (df['GENDER'] == gender) & (df['YEAR'] == 2016), 'NETMIG_INTERP'] = value2016
-        df.loc[(df['SCENARIO'] == scenario) & (df['AGE_GROUP'] == age_group) & (df['GENDER'] == gender) & (df['YEAR'] == 2015), 'NETMIG_INTERP'] = value2015
+        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.GENDER == gender), 'NETMIG_INTERP'] = s.interpolate(method='linear', limit_direction='both')
 
     assert ~df.isnull().any().any()
-
-    # this was just needed for troubleshooting/QA
-
-    # output_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    # con = sqlite3.connect(database=os.path.join(output_folder, 'wittgenstein', 'wittgenstein.sqlite'))
-    # df.to_sql(name='age_specific_net_migration_ORIG',
-    #           if_exists='replace',
-    #           con=con,
-    #           index=False)
-    # con.close()
 
     return df
 
@@ -74,7 +59,7 @@ def combine_85plus(df):
 def align_with_2020(df):
 
     scenarios = df.SCENARIO.unique()
-    years = range(2020, 2100)
+    years = range(2010, 2100)
 
     # this is the average estimated value for 2020-2023 taken from the Census
     # Intercensal Estimates. 2020 was an outlier because of Covid/Trump and
@@ -86,7 +71,6 @@ def align_with_2020(df):
     for scenario in scenarios:
         witt_total_2020 = None
         for year in years:
-
             if witt_total_2020 is None:
                 # total 2020 immigration from Wittgenstein; this does NOT match the observed value from Census
                 witt_total_2020 = df.query('SCENARIO == @scenario & YEAR == 2020').NETMIG_INTERP.sum()
@@ -104,12 +88,17 @@ def align_with_2020(df):
 
 
 def main():
-    csv = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Wittgenstein\\wcde_asmig.csv'
+    csv = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Wittgenstein\\v2\\wcde_asmig.csv'
     df = pd.read_csv(filepath_or_buffer=csv, skiprows=8)
     df.columns = ['SCENARIO', 'AREA', 'PERIOD', 'AGE_GROUP', 'GENDER', 'NETMIG']
     df = df[['SCENARIO', 'PERIOD', 'AGE_GROUP', 'GENDER', 'NETMIG']]
     df['GENDER'] = df['GENDER'].str.upper()
     df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('--', '-')
+
+    # add years for 2010 to 2015
+    temp = df.query('PERIOD == "2015-2020"')
+    temp.loc[:, 'PERIOD'] = "2010-2015"
+    df = pd.concat(objs=[temp, df], ignore_index=True)
 
     # expand time periods
     df['YEARS'] = df['PERIOD'].apply(lambda x: parse_years(x))
@@ -130,7 +119,7 @@ def main():
 
     output_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
     con = sqlite3.connect(database=os.path.join(output_folder, 'wittgenstein.sqlite'))
-    df.to_sql(name='age_specific_net_migration',
+    df.to_sql(name='age_specific_net_migration_v2',
               if_exists='replace',
               con=con,
               index=False)

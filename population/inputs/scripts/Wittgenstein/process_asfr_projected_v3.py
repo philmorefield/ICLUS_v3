@@ -33,12 +33,9 @@ def interpolate_years(df):
            (~df.YEAR.astype(str).str.endswith('7')) &
            (df.YEAR != 2020), 'FERT_INTERP'] = np.nan
 
-    # interpolate (backwards) to 2010
-    # df.loc[df.YEAR < 2020, 'FERT_INTERP'] = np.nan
-
     for scenario, age_group in product(scenarios, age_groups):
         s = df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group), 'FERT_INTERP']
-        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group), 'FERT_INTERP'] = s.interpolate(method='linear')
+        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group), 'FERT_INTERP'] = s.interpolate(method='linear', limit_direction='both')
         value_2020 = values_2020.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group), 'FERT_INTERP'].values[0]
         df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group), 'FERT_CHANGE_MULT'] = df['FERT_INTERP'] / value_2020
 
@@ -52,12 +49,11 @@ def main():
     df = df[['SCENARIO', 'PERIOD', 'AGE_GROUP', 'BIRTHS_PER_K']]
     df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('--', '_to_')
 
-    # # add years for 2010 to 2020
-    # for time_period in (('2015-2020'), ('2010-2015')):
-    #     temp = df.query('PERIOD == "2020-2025"')
-    #     temp['PERIOD'] = time_period
-    #     temp['BIRTHS_PER_K'] = 0.123
-    #     df = pd.concat(objs=[temp, df], ignore_index=True)
+    # add years for 2010 to 2020
+    for time_period in (('2015-2020'), ('2010-2015')):
+        temp = df.query('PERIOD == "2020-2025"')
+        temp.loc[:, 'PERIOD'] = time_period
+        df = pd.concat(objs=[temp, df], ignore_index=True)
 
     # expand time periods
     df['YEARS'] = df['PERIOD'].apply(lambda x: parse_years(x))
@@ -69,13 +65,15 @@ def main():
 
     df = interpolate_years(df)
 
-    df.query('YEAR >= 2020', inplace=True)
-    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'FERT_CHANGE_MULT']]
-    df.eval('AGE_GROUP = AGE_GROUP.str.replace("_to_", "-")', inplace=True)
+    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'BIRTHS_PER_K', 'FERT_INTERP', 'FERT_CHANGE_MULT']]
+    df.loc[:, 'AGE_GROUP'] = df.loc[:, 'AGE_GROUP'].str.replace("_to_", "-")
 
     output_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
     con = sqlite3.connect(database=os.path.join(output_folder, 'wittgenstein.sqlite'))
-    df.to_sql(name='age_specific_fertility_v3', if_exists='replace', con=con, index=False)
+    df.to_sql(name='age_specific_fertility_v3',
+              if_exists='replace',
+              con=con,
+              index=False)
     con.close()
 
     print("Finished!")

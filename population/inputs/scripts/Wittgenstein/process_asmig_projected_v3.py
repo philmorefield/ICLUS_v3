@@ -6,8 +6,6 @@ Created:
 import os
 import sqlite3
 
-from itertools import product
-
 import numpy as np
 import pandas as pd
 
@@ -35,16 +33,9 @@ def interpolate_years(df):
 
     for scenario in scenarios:
         s = df.loc[df.SCENARIO == scenario, 'NETMIG_INTERP']
-        df.loc[df.SCENARIO == scenario, 'NETMIG_INTERP'] = s.interpolate()
+        df.loc[df.SCENARIO == scenario, 'NETMIG_INTERP'] = s.interpolate(method='linear', limit_direction='both')
 
     assert ~df.isnull().any().any()
-
-    # con = sqlite3.connect(database=os.path.join(OUTPUT_FOLDER, 'wittgenstein', 'wittgenstein.sqlite'))
-    # df.to_sql(name='age_specific_net_migration_original_v3',
-    #           if_exists='replace',
-    #           con=con,
-    #           index=False)
-    # con.close()
 
     return df
 
@@ -66,12 +57,10 @@ def decompose_to_age_groups(df):
     # v3 doesn't have immigration by age; use the v2 proportions
     # age/gender fractions are not part of v3, so substituting v2 fractions
     # since there is no SSP4 and SSP5 in v2, using SSP2 fractions instead
-    db = 'D:\\OneDrive\\Dissertation\\analysis\\part_3\\inputs'
-    con = sqlite3.connect(database=os.path.join(db, 'wittgenstein', 'wittgenstein.sqlite'))
+    con = sqlite3.connect(database=os.path.join(OUTPUT_FOLDER, 'wittgenstein.sqlite'))
     query = 'SELECT * FROM age_specific_net_migration_v2'
     temp = pd.read_sql_query(sql=query, con=con)
     con.close()
-    temp.query('YEAR >= 2020', inplace=True)
     temp['TOTAL_IMM'] = temp.groupby(by=['YEAR', 'SCENARIO'], as_index=False)['NETMIG_INTERP'].transform('sum')
     temp.eval('IMM_FRACTION = NETMIG_INTERP / TOTAL_IMM', inplace=True)
     temp.drop(columns=['NETMIG_INTERP', 'TOTAL_IMM'], inplace=True)
@@ -82,26 +71,25 @@ def decompose_to_age_groups(df):
     ssp5 = ssp4.copy()
     ssp5['SCENARIO'] = 'SSP5'
 
-    df = df.set_index(['YEAR', 'SCENARIO'])
-    df.columns = ['VALUE']
+    df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP']
+    df = df.set_index(['YEAR', 'SCENARIO', 'PERIOD', 'NETMIG', 'NETMIG_INTERP'])
+
     temp = temp.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
     ssp4 = ssp4.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
     ssp5 = ssp5.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
-
     temp = pd.concat(objs=[temp, ssp4, ssp5])
-    temp.columns = ['VALUE']
+    temp.columns = ['NETMIG_INTERP_COHORT']
 
-    df = df * temp
-    df.columns = ['NETMIG_INTERP']
+    df = df.mul(other=temp, axis='index').reset_index()
 
-    return df.reset_index()
+    return df
 
 
 
 def align_with_2020(df):
 
     scenarios = df.SCENARIO.unique()
-    years = range(2020, 2100)
+    years = range(2010, 2100)
 
     census_avg_2324 = 2500000
 
@@ -132,6 +120,12 @@ def main():
     df.columns = ['SCENARIO', 'AREA', 'PERIOD', 'NETMIG']
     df = df[['SCENARIO', 'PERIOD', 'NETMIG']]
 
+    # add years for 2010 to 2020
+    for time_period in (('2015-2020'), ('2010-2015')):
+        temp = df.query('PERIOD == "2020-2025"')
+        temp.loc[:, 'PERIOD'] = time_period
+        df = pd.concat(objs=[temp, df], ignore_index=True)
+
     # expand time periods
     df['YEARS'] = df['PERIOD'].apply(lambda x: parse_years(x))
     exploded = df.apply(lambda x: pd.Series(x['YEARS']), axis=1).stack().reset_index(level=1, drop=True)
@@ -143,14 +137,15 @@ def main():
     df['NETMIG'] /= 5.0
 
     df = interpolate_years(df)
-
-    df.eval('NETMIG = NETMIG.astype("int")', inplace=True)
-    df.eval('NETMIG_INTERP = NETMIG_INTERP.astype("int")', inplace=True)
-    df = df[['YEAR', 'SCENARIO', 'NETMIG_INTERP']]
-
     df = decompose_to_age_groups(df)
     df = combine_85plus(df)
     df = align_with_2020(df)
+
+    df['NETMIG'] = df['NETMIG'].astype(int)
+    df['NETMIG_INTERP'] = df['NETMIG_INTERP'].astype(int)
+    df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP_COHORT'].round().astype(int)
+
+    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER', 'NETMIG', 'NETMIG_INTERP', 'NETMIG_INTERP_COHORT']]
 
     con = sqlite3.connect(database=os.path.join(OUTPUT_FOLDER, 'wittgenstein.sqlite'))
     df.to_sql(name='age_specific_net_migration_v3',
