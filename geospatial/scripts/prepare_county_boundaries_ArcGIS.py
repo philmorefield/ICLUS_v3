@@ -26,8 +26,8 @@ def get_fips_changes():
     return df
 
 def merge_attributes(df):
-    ap.Delete_management('memory')
-    arr = df.to_records(index=False)
+    ap.Delete_management('memory\\temp_merge_attributes')
+    arr = df.to_records(index=False).astype([('OLD_FIPS', '<S5'), ('NEW_FIPS', '<S5')])
     ap.da.NumPyArrayToTable(in_array=arr, out_table='memory\\temp_merge_attributes')
 
     in_table = os.path.join(CENSUS_GDB, 'County')
@@ -55,9 +55,10 @@ def check_valid_geoid(gdf):
 def main():
     rename_attribute()
     df = get_fips_changes()
-    gdf = merge_attributes(df=df)
+    merge_attributes(df=df)
     check_valid_geoid(gdf)
 
+    ...
 
 if __name__ == '__main__':
     main()
