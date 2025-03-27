@@ -1,6 +1,25 @@
+'''
+Revised: 2025-03-26
+
+This script processes fertility rates for 2018-2022 from the CDC. County level
+fertility rates are assigned to each county using the following logic:
+
+1) If there is a rate for the county/race/age group, use that rate.
+2) If the fertility rate for a county/race/age group is still undefined,
+   use the "Unidentified Counties" rate from the county level data.
+3) If the fertility rate for a county is still undefined, use the state-wide
+   rate for that race/age cohort.
+4) If the county and state rates are missing, use the HHS region rate.
+5) The NHPI rates for some counties are obviously spurious (e.g., >4,000 births
+   per 1,000 females). Through personal communication with CDC staff, I
+   confirmed that these artifacts are due to unusually low population estimates
+   from the Census. Based on histograms of fertility rates for all race/age
+   cohorts, all NHPI fertility rates >300 are replaced with the HHS region
+   rate.
+'''
+
 import os
 import sqlite3
-import warnings
 
 from itertools import product
 
@@ -25,27 +44,6 @@ CSV_FILES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\CDC')
 DATABASE_FOLDER = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 CDC_INPUTS = os.path.join(DATABASE_FOLDER, 'cdc')
-
-
-def get_fips_changes():
-    query = 'SELECT OLD_FIPS, NEW_FIPS \
-              FROM fips_or_name_changes'
-    con = sqlite3.connect(MIGRATION_DB)
-    df = pd.read_sql_query(sql=query, con=con)
-    con.close()
-
-    return df
-
-
-def get_co2hhs():
-    query = 'SELECT GEOID AS COFIPS, HHS_REGION \
-              FROM fips_to_state \
-              WHERE HHS_REGION != 0'
-    con = sqlite3.connect(MIGRATION_DB)
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    return df
 
 
 def get_cofips_and_state():
@@ -109,21 +107,6 @@ def apply_state_level_fertility(df):
     df = df.drop(columns=['STFIPS', 'STATE_FERTILITY'])
 
     return df
-
-
-def apply_fips_changes(df):
-    # make sure COFIPS is updated and use population-weighted average if merging
-    fips_changes = get_fips_changes()
-    fert = fert.merge(right=fips_changes, how='left', left_on='COFIPS', right_on='OLD_FIPS')
-    fert.loc[~pd.isnull(fert['NEW_FIPS']), 'COFIPS'] = fert['NEW_FIPS']
-    fert.drop(labels=['OLD_FIPS', 'NEW_FIPS'], axis=1, inplace=True)
-
-    fert.eval('FPOP_x_FERT = FERTILITY * FPOP', inplace=True)
-    fert['NUMERATOR'] = fert.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP_x_FERT'].transform('sum')
-    fert['DENOMENATOR'] = fert.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP'].transform('sum')
-    fert = fert.eval('FERTILITY_WAVG = NUMERATOR / DENOMENATOR')
-
-    fert = fert[['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY']]
 
 
 def apply_hhs_level_fertility(df):
