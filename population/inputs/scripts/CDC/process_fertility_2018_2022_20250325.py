@@ -16,8 +16,13 @@ RACE_MAP = {'2106-3': 'WHITE',
             'NHOPI': 'NHPI',
             'M': 'TWO_OR_MORE'}
 
-CSV_FILES = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\CDC'
-DATABASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
+if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
+    ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
+else:
+    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
+
+CSV_FILES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\CDC')
+DATABASE_FOLDER = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 CDC_INPUTS = os.path.join(DATABASE_FOLDER, 'cdc')
 
@@ -43,9 +48,9 @@ def get_co2hhs():
     return df
 
 
-def get_urban_counties():
-    query = 'SELECT GEOID AS COFIPS, UA10 AS URBAN_DESTINATION \
-             FROM ua10_counties'
+def get_cofips_and_state():
+    query = 'SELECT COFIPS, STUSPS AS STABBR \
+             FROM cofips_state_msa20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     df = pd.read_sql_query(sql=query, con=con)
     con.close()
@@ -53,235 +58,123 @@ def get_urban_counties():
     return df
 
 
-def get_county_to_bea_df():
-    query = 'SELECT * FROM county_to_BEA10'
-    con = sqlite3.connect(MIGRATION_DB)
-    df = pd.read_sql_query(sql=query, con=con)
-    con.close()
+def apply_county_level_fertility(df):
 
-    return df
-
-
-def get_county_level_fertility():
-
-    # single-year age groups for 15-49, and including <15 and 50+
+    # first apply county level fertility; not all cohorts will have values
     csv = os.path.join(CSV_FILES, 'Natality, 2018-2022_county.txt')
-    df = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    df = df[['County of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate', 'Female Population']]
-    df.columns = ['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY', 'FPOP']
-    df.dropna(how='all', inplace=True)
+    fert = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
+    fert = fert[['County of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate']]
+    fert.columns = ['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY']
+    fert.dropna(how='any', inplace=True)
 
-    df['COFIPS'] = df['COFIPS'].astype(int).astype(str).str.zfill(5)
-    df['RACE'] = df['RACE'].map(RACE_MAP)
+    fert['COFIPS'] = fert['COFIPS'].astype(int).astype(str).str.zfill(5)
+    fert['RACE'] = fert['RACE'].map(RACE_MAP)
 
-    df = df[~df.RACE.isnull()]  # 'na_values' parameter was set previously
+    df = df.merge(right=fert, how='left', on=['COFIPS', 'RACE', 'AGE_GROUP'])
+
+    # now apply the "Unidentified Counties" values
+    fert_uc = fert.loc[fert.COFIPS.str.endswith('999'), :]
+    fert_uc = fert_uc.rename(columns={'FERTILITY': 'FERT_UC'})
+    fert_uc['STFIPS'] = fert_uc.COFIPS.str[:2]
+    fert_uc = fert_uc.drop(columns='COFIPS')
+
+    df['STFIPS'] = df['COFIPS'].str[:2]
+
+    df = df.merge(right=fert_uc, how='left', on=['STFIPS', 'RACE', 'AGE_GROUP'])
+    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['FERT_UC']
+    df = df.drop(columns=['FERT_UC'])
 
     return df
 
 
-def get_state_level_df():
+def apply_state_level_fertility(df):
     # single-year age groups for 15-49, and including <15 and 50+
     csv = os.path.join(CSV_FILES, 'Natality, 2018-2022_state.txt')
-    df = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    df = df[['State of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate']]
-    df.columns = ['STFIPS', 'RACE', 'AGE_GROUP', 'STATE_FERTILITY']
-    df.dropna(how='all', inplace=True)
+    fert = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
+    fert = fert[['State of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate']]
+    fert.columns = ['STFIPS', 'RACE', 'AGE_GROUP', 'STATE_FERTILITY']
+    fert.dropna(how='any', inplace=True)
 
-    df['STFIPS'] = df['STFIPS'].astype(int).astype(str).str.zfill(2)
-    df['RACE'] = df['RACE'].map(RACE_MAP)
+    fert['STFIPS'] = fert['STFIPS'].astype(int).astype(str).str.zfill(2)
+    fert['RACE'] = fert['RACE'].map(RACE_MAP)
 
-    df = df[~df.RACE.isnull()]  # when race is "Not Available"
+    df = df.merge(right=fert, how='left', on=['STFIPS', 'RACE', 'AGE_GROUP'])
+    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['STATE_FERTILITY']
 
-    return df[['STFIPS', 'RACE', 'AGE_GROUP', 'STATE_FERTILITY']]
+    # several counties show obviously spurious NHPI rates, e.g., > 1000;
+    # visual inspection of other races show a limit of about 200-300, so use
+    # state averages for NHPI rates above 300
+    df.loc[(df.FERTILITY > 300) & (df.RACE == 'NHPI'), 'FERTILITY'] = df['STATE_FERTILITY']
+
+    df = df.drop(columns=['STFIPS', 'STATE_FERTILITY'])
+
+    return df
 
 
-def get_hhs_level_df():
+def apply_fips_changes(df):
+    # make sure COFIPS is updated and use population-weighted average if merging
+    fips_changes = get_fips_changes()
+    fert = fert.merge(right=fips_changes, how='left', left_on='COFIPS', right_on='OLD_FIPS')
+    fert.loc[~pd.isnull(fert['NEW_FIPS']), 'COFIPS'] = fert['NEW_FIPS']
+    fert.drop(labels=['OLD_FIPS', 'NEW_FIPS'], axis=1, inplace=True)
+
+    fert.eval('FPOP_x_FERT = FERTILITY * FPOP', inplace=True)
+    fert['NUMERATOR'] = fert.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP_x_FERT'].transform('sum')
+    fert['DENOMENATOR'] = fert.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP'].transform('sum')
+    fert = fert.eval('FERTILITY_WAVG = NUMERATOR / DENOMENATOR')
+
+    fert = fert[['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY']]
+
+
+def apply_hhs_level_fertility(df):
+    query = 'SELECT COFIPS, HHS AS HHS_REGION \
+             FROM cofips_state_msa20_bea10_hhs'
+    con = sqlite3.connect(MIGRATION_DB)
+    hhs = pd.read_sql_query(sql=query, con=con)
+    con.close()
 
     # single-year age groups for 15-49, and including <15 and 50+
     csv = os.path.join(CSV_FILES, 'Natality, 2018-2022_hhs.txt')
-    df = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    df = df[['HHS Region of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate']]
-    df.columns = ['HHS_REGION', 'RACE', 'AGE_GROUP', 'HHS_FERTILITY']
-    df.dropna(inplace=True)
-    df['HHS_REGION'] = df['HHS_REGION'].str.replace('HHS', '').astype(int)
-    df['RACE'] = df['RACE'].map(RACE_MAP)
-    df = df[~df.RACE.isnull()]  # when race is "Not Available"
+    fert = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
+    fert = fert[['HHS Region of Residence Code', 'Mother\'s Single Race 6 Code', 'Age of Mother 9 Code', 'Fertility Rate']]
+    fert.columns = ['HHS_REGION', 'RACE', 'AGE_GROUP', 'HHS_FERTILITY']
+    fert.dropna(how='any', inplace=True)
 
-    return df[['HHS_REGION', 'RACE', 'AGE_GROUP', 'HHS_FERTILITY']]
+    fert['HHS_REGION'] = fert['HHS_REGION'].str.replace('HHS', '').astype(int)
+    fert['RACE'] = fert['RACE'].map(RACE_MAP)
+
+    # identify the HHS region for each county
+    df = df.merge(right=hhs, how='left', on='COFIPS')
+
+    # join HHS-level fertility rates
+    df = df.merge(right=fert, how='left', on=['HHS_REGION', 'RACE', 'AGE_GROUP'])
+    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['HHS_FERTILITY']
+
+    # several counties show obviously spurious NHPI rates, e.g., > 1000;
+    # visual inspection of other races show a limit of about 200-300, so use
+    # HHS averages for NHPI rates above 300
+    df.loc[(df.FERTILITY > 300) & (df.RACE == 'NHPI'), 'FERTILITY'] = df['HHS_FERTILITY']
+
+    df = df.drop(columns=['HHS_REGION', 'HHS_FERTILITY'])
+
+    return df
 
 
 def create_template():
-    urban_rural = get_urban_counties()
+    cofips_all = get_cofips_and_state()
 
-    ages = ['<15',
-            '15-19',
+    ages = ['15-19',
             '20-24',
             '25-29',
             '30-34',
             '35-39',
-            '40-44',
-            '45-49',
-            '50+']
+            '40-44']
+
     races = list(RACE_MAP.values())
-    cofips = list(urban_rural.COFIPS.values)
+    cofips = list(cofips_all.COFIPS.values)
 
     df = pd.DataFrame(list(product(cofips, races, ages)),
                       columns=['COFIPS', 'RACE', 'AGE_GROUP'])
-
-    df = df.merge(right=urban_rural, how='left', on='COFIPS')
-
-    return df
-
-
-def imput_county_values_by_economic_area(df):
-    # impute values within BEA economic areas using a population-weighted average
-    start_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    # a table for mapping counties to BEA economic areas
-    cy2bea = get_county_to_bea_df()
-
-    df = df.merge(right=cy2bea, how='left', on='COFIPS')
-    df.loc[(~df.FPOP.isnull()) & (~df.FERTILITY.isnull()), 'FPOP_x_FERT'] = df.FPOP * df.FERTILITY
-    df.loc[~df.FPOP_x_FERT.isnull(), 'NUMERATOR'] = df.groupby(by=['BEA10', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP_x_FERT'].transform('sum')
-    df.loc[~df.FPOP_x_FERT.isnull(), 'DENOMENATOR'] = df.groupby(by=['BEA10', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP'].transform('sum')
-    df.eval('_BEA_FERT_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-    df['BEA_FERT_WAVG'] = df.groupby(by=['BEA10', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['_BEA_FERT_WAVG'].transform('max')
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['BEA_FERT_WAVG']
-    df.drop(columns=['BEA10', 'BEA_FERT_WAVG', '_BEA_FERT_WAVG'], inplace=True)
-
-    end_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    if start_nulls == end_nulls:
-        warnings.warn("The function 'impute_county_values_by_economic_area' did not reduce the number of null values")
-    elif end_nulls > start_nulls:
-        raise Exception
-
-    return df
-
-
-def impute_county_values_by_state(df):
-    # impute values within BEA economic areas using a population-weighted average
-    start_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    # impute values within states using a population-weighted average
-    df['STFIPS'] = df['COFIPS'].str[:2]
-    df.loc[(~df.FPOP.isnull()) & (~df.FERTILITY.isnull()), 'FPOP_x_FERT'] = df.FPOP * df.FERTILITY
-    df.loc[~df.FPOP_x_FERT.isnull(), 'NUMERATOR'] = df.groupby(by=['STFIPS', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP_x_FERT'].transform('sum')
-    df.loc[~df.FPOP_x_FERT.isnull(), 'DENOMENATOR'] = df.groupby(by=['STFIPS', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP'].transform('sum')
-    df.eval('_STATE_FERT_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-    df['STATE_FERT_WAVG'] = df.groupby(by=['STFIPS', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['_STATE_FERT_WAVG'].transform('max')
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['STATE_FERT_WAVG']
-    df.drop(columns=['STFIPS', 'STATE_FERT_WAVG', '_STATE_FERT_WAVG'], inplace=True)
-
-    end_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    if start_nulls == end_nulls:
-        warnings.warn("The function 'impute_county_values_by_state' did not reduce the number of null values")
-    elif end_nulls > start_nulls:
-        raise Exception
-
-    return df
-
-
-def impute_county_values_by_hhs_region(df):
-    # impute values within BEA economic areas using a population-weighted average
-    start_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    # a table for mapping states and counties to HHS regions
-    co2hhs = get_co2hhs()
-
-    # impute values with HHS regions
-    df = df.merge(right=co2hhs, how='left', on='COFIPS')
-    df.loc[(~df.FPOP.isnull()) & (~df.FERTILITY.isnull()), 'FPOP_x_FERT'] = df.FPOP * df.FERTILITY
-    df.loc[~df.FPOP_x_FERT.isnull(), 'NUMERATOR'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP_x_FERT'].transform('sum')
-    df.loc[~df.FPOP_x_FERT.isnull(), 'DENOMENATOR'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP'].transform('sum')
-    df.eval('_HHS_FERT_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-    df['HHS_FERT_WAVG'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['_HHS_FERT_WAVG'].transform('max')
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['HHS_FERT_WAVG']
-    df.drop(columns=['HHS_REGION', 'HHS_FERT_WAVG', '_HHS_FERT_WAVG'], inplace=True)
-
-    end_nulls = df.query('FERTILITY.isnull()').shape[0]
-
-    if start_nulls == end_nulls:
-        warnings.warn("The function 'impute_county_values_by_state' did not reduce the number of null values")
-    elif end_nulls > start_nulls:
-        raise Exception
-
-    return df
-
-
-def impute_unid_county_values_by_state(co_fert, df):
-    # impute values with state (Unidentified counties only)
-    # some age/race/urbanization counties are still null; use state-level
-    # aggregations - "Unidentified Counties" - from the county-level file. These
-    # values are the state-level average MINUS the reported county values, so
-    # they are preferred over simple state-level averages, but still lack the
-    # urban/rural split
-
-    co_fert_unid = co_fert.query('COFIPS.str.endswith("999")')
-    co_fert_unid.loc[:, 'STFIPS'] = co_fert_unid.COFIPS.str[:2]
-    co_fert_unid = co_fert_unid.rename(columns={'FERTILITY': 'CO_FERT_UNID'})
-    co_fert_unid = co_fert_unid[['STFIPS', 'RACE', 'AGE_GROUP', 'CO_FERT_UNID']]
-    df['STFIPS'] = df['COFIPS'].str[:2]
-    df = df.merge(right=co_fert_unid, how='left', on=['STFIPS', 'RACE', 'AGE_GROUP'])
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['CO_FERT_UNID']
-
-    return df
-
-
-def impute_unid_county_values_by_hhs(df):
-
-    co2hhs = get_co2hhs()
-
-    # impute values with HHS regions (Unidentified counties only)
-    df = df.merge(right=co2hhs, how='left', on='COFIPS')
-    df.loc[(~df.FPOP.isnull()) & (~df.CO_FERT_UNID.isnull()), 'FPOP_x_FERT'] = df.FPOP * df.CO_FERT_UNID
-    df.loc[~df.FPOP_x_FERT.isnull(), 'NUMERATOR'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP'])['FPOP_x_FERT'].transform('sum')
-    df.loc[~df.FPOP_x_FERT.isnull(), 'DENOMENATOR'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP'])['FPOP'].transform('sum')
-    df.eval('_HHS_FERT_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-    df['HHS_FERT_WAVG'] = df.groupby(by=['HHS_REGION', 'RACE', 'AGE_GROUP'])['_HHS_FERT_WAVG'].transform('max')
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['HHS_FERT_WAVG']
-    df.drop(columns=['CO_FERT_UNID', 'NUMERATOR', 'DENOMENATOR', 'HHS_REGION', 'HHS_FERT_WAVG', '_HHS_FERT_WAVG'], inplace=True)
-
-    return df
-
-
-def substitute_state_averges(df):
-    # NHPI 40-44 is still null in three HHS regions (1, 5, 2) so use the state
-    # average for now
-
-    stfert = get_state_level_df()
-    df['STFIPS'] = df['COFIPS'].str[:2]
-    df = df.merge(right=stfert, how='left', on=['STFIPS', 'RACE', 'AGE_GROUP'])
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['STATE_FERTILITY']
-    df.drop(columns=['STFIPS', 'STATE_FERTILITY'], inplace=True)
-
-    return df
-
-
-def substitute_hhs_averages(df):
-    co2hhs = get_co2hhs()
-
-    # still a few nulls, use HHS region averages
-    hhsfert = get_hhs_level_df()
-    df = df.merge(right=co2hhs, how='left', on='COFIPS')
-    df = df.merge(right=hhsfert, how='left', on=['HHS_REGION', 'RACE', 'AGE_GROUP'])
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['HHS_FERTILITY']
-    df.drop(columns=['HHS_REGION', 'HHS_FERTILITY'], inplace=True)
-
-    return df
-
-
-def substitute_national_average(df):
-    # still a few nulls, use national averages that account urban/rural
-    df['UNIT'] = 1
-    df.loc[(~df.FPOP.isnull()) & (~df.FERTILITY.isnull()), 'FPOP_x_FERT'] = df.FPOP * df.FERTILITY
-    df.loc[~df.FPOP_x_FERT.isnull(), 'NUMERATOR'] = df.groupby(by=['UNIT', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP_x_FERT'].transform('sum')
-    df.loc[~df.FPOP_x_FERT.isnull(), 'DENOMENATOR'] = df.groupby(by=['UNIT', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['FPOP'].transform('sum')
-    df.eval('_USA_FERT_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-    df['USA_FERT_WAVG'] = df.groupby(by=['UNIT', 'RACE', 'AGE_GROUP', 'URBAN_DESTINATION'])['_USA_FERT_WAVG'].transform('max')
-    df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['USA_FERT_WAVG']
-    df.drop(columns=['UNIT', 'USA_FERT_WAVG', '_USA_FERT_WAVG'], inplace=True)
 
     return df
 
@@ -292,38 +185,15 @@ def main():
     HHS Region, and then national rates as needed. Rates for the 85+ group are
     in a separate file, so a total of six files are needed.
     '''
-
-    # county level fertility from CDC; lots of missing values that we'll fill in
-    co_fert = get_county_level_fertility()
-
     # create the template Dataframe that hold all county/race/age combinations
     # and start merging information
     df = create_template()
-    df = df.merge(right=co_fert, how='left', on=['COFIPS', 'RACE', 'AGE_GROUP'])
 
-    df = imput_county_values_by_economic_area(df)
-    df = impute_county_values_by_state(df)
-    df = impute_county_values_by_hhs_region(df)
-    df = impute_unid_county_values_by_state(co_fert=co_fert, df=df)
-    df = impute_unid_county_values_by_hhs(df)
-    df = substitute_state_averges(df)
-    df = substitute_hhs_averages(df)
-    df = substitute_national_average(df)
+    # county level fertility from CDC; lots of missing values that we'll fill in
+    df = apply_county_level_fertility(df)
+    df = apply_state_level_fertility(df)
+    df = apply_hhs_level_fertility(df)
 
-    df = df.loc[~df.AGE_GROUP.isin(("<15", "45-49", "50+")), :]
-
-    # make sure COFIPS is updated and use population-weighted average if merging
-    FIPS_CHANGES = get_fips_changes()
-    df = df.merge(right=FIPS_CHANGES, how='left', left_on='COFIPS', right_on='OLD_FIPS')
-    df.loc[~pd.isnull(df['NEW_FIPS']), 'COFIPS'] = df['NEW_FIPS']
-    df.drop(labels=['OLD_FIPS', 'NEW_FIPS'], axis=1, inplace=True)
-
-    df.eval('FPOP_x_FERT = FERTILITY * FPOP', inplace=True)
-    df['NUMERATOR'] = df.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP_x_FERT'].transform('sum')
-    df['DENOMENATOR'] = df.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'])['FPOP'].transform('sum')
-    df.eval('FERTILITY_WAVG = NUMERATOR / DENOMENATOR', inplace=True)
-
-    df = df[['COFIPS', 'RACE', 'AGE_GROUP', 'FERTILITY']]
     assert not df.isnull().any().any()
 
     con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))

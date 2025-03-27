@@ -4,7 +4,6 @@ import sqlite3
 import arcpy as ap
 import pandas as pd
 
-# D:\OneDrive\Data\USGS\2021
 PROJECT_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
 CENSUS_GDB = os.path.join(PROJECT_FOLDER, 'geospatial', 'Census', '2020', 'tlgdb_2020_a_us_substategeo.gdb')
 MIGRATION_DATABASE = os.path.join(PROJECT_FOLDER, 'population\\inputs\\databases\\migration.sqlite')
@@ -36,13 +35,8 @@ def merge_attributes(df):
                             join_table='memory\\temp_merge_attributes',
                             join_field='OLD_FIPS')
 
-    # gdf = gdf.dissolve(by='GEOID').reset_index()[['GEOID', 'geometry']]
 
-    # gdf.to_file(GEOPKG, layer='conus_ak_hi_county_2020_DISSOLVED')
-
-    return
-
-def check_valid_geoid(gdf):
+def check_valid_geoid(df):
     sql = 'SELECT * FROM valid_cyfips'
     con = sqlite3.connect(MIGRATION_DATABASE, timeout=300)
     df = pd.read_sql(sql=sql, con=con)
@@ -56,7 +50,7 @@ def main():
     rename_attribute()
     df = get_fips_changes()
     merge_attributes(df=df)
-    check_valid_geoid(gdf)
+    check_valid_geoid(df=df)
 
     ...
 
