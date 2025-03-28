@@ -178,3 +178,8 @@ cython_debug/
 *.ovr
 *.cpg
 *.csv
+*.clr
+*.xlsx
+*.mxd
+*.docx
+*.xlsx
