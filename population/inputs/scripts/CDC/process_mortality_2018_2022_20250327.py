@@ -21,6 +21,25 @@ RACE_MAP = {'2106-3': 'WHITE',
             'NHOPI': 'NHPI',
             'M': 'TWO_OR_MORE'}
 
+AGE_GROUP_SORT_MAP = {'0-4': 0,
+                      '5-9': 1,
+                      '10-14': 2,
+                      '15-19': 3,
+                      '20-24': 4,
+                      '25-29': 5,
+                      '30-34': 6,
+                      '35-39': 7,
+                      '40-44': 8,
+                      '45-49': 9,
+                      '50-54': 10,
+                      '55-59': 11,
+                      '60-64': 12,
+                      '65-69': 13,
+                      '70-74': 14,
+                      '75-79': 15,
+                      '80-84': 16,
+                      '85+': 17}
+
 if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
     ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
 else:
@@ -115,9 +134,8 @@ def apply_state_level_mortality(df):
     # add 85+ age group to the dataframe
     csv = os.path.join(CSV_FILES, 'Underlying Cause of Death, 2018-2022, 85+, STATE.txt')
     temp = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    temp['RACE'] = temp['Single Race 6 Code'].map(RACE_MAP)
     temp['Five-Year Age Groups Code'] = '85+'
-    temp = temp[['State Code', 'RACE', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
+    temp = temp[['State Code', 'Single Race 6 Code', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
     temp.columns = ['STFIPS', 'RACE', 'SEX', 'AGE_GROUP', 'STATE_MORTALITY']
     temp.dropna(how='any', inplace=True)
 
@@ -152,9 +170,8 @@ def apply_hhs_level_mortality(df):
     # add 85+ age group to the dataframe
     csv = os.path.join(CSV_FILES, 'Underlying Cause of Death, 2018-2022, 85+, HHS.txt')
     temp = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    temp['RACE'] = temp['Single Race 6 Code'].map(RACE_MAP)
     temp['Five-Year Age Groups Code'] = '85+'
-    temp = temp[['HHS Region Code', 'RACE', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
+    temp = temp[['HHS Region Code', 'Single Race 6 Code', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
     temp.columns = ['HHS_REGION', 'RACE', 'SEX', 'AGE_GROUP', 'HHS_MORTALITY']
     temp.dropna(how='any', inplace=True)
 
@@ -187,9 +204,8 @@ def apply_national_mortality(df):
     # add 85+ age group to the dataframe
     csv = os.path.join(CSV_FILES, 'Underlying Cause of Death, 2018-2022, 85+, NATIONAL.txt')
     temp = pd.read_csv(filepath_or_buffer=csv, sep=None, engine='python', na_values=na_values)
-    temp['RACE'] = temp['Single Race 6 Code'].map(RACE_MAP)
     temp['Five-Year Age Groups Code'] = '85+'
-    temp = temp[['RACE', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
+    temp = temp[['Single Race 6 Code', 'Sex', 'Five-Year Age Groups Code', 'Crude Rate']]
     temp.columns = ['RACE', 'SEX', 'AGE_GROUP', 'NATIONAL_MORTALITY']
     temp.dropna(how='any', inplace=True)
 
@@ -215,10 +231,10 @@ def apply_national_mortality(df):
 
 def combine_under_5_age_groups(df):
     # combine <1 and 1-4 age groups using a weighted average
-    weight_map = {'<1': 0.2,
+    weight_map = {'1': 0.2,
                   '1-4': 0.8}
 
-    young = df.query('AGE_GROUP == "1" | AGE_GROUP == "1-4"')
+    young = df.copy().query('AGE_GROUP == "1" | AGE_GROUP == "1-4"')
     young['WEIGHT'] = young['AGE_GROUP'].map(weight_map)
     young['MORT_x_WEIGHT'] = young.eval('MORTALITY * WEIGHT')
     young['NUMERATOR'] = young.groupby(by=['COFIPS', 'RACE', 'SEX'])['MORT_x_WEIGHT'].transform('sum')
@@ -228,7 +244,7 @@ def combine_under_5_age_groups(df):
     young = young.drop(columns=['WEIGHT', 'NUMERATOR', 'DENOMENATOR', 'MORT_x_WEIGHT'])
     young = young.drop_duplicates()
 
-    df = df.query('AGE_GROUP != "<1" & AGE_GROUP != "1-4"')
+    df = df.query('AGE_GROUP != "1" & AGE_GROUP != "1-4"')
     df = pd.concat(objs=[df, young], ignore_index=True, verify_integrity=True)
     df.MORTALITY = df.MORTALITY.round(0).astype(int)
 
@@ -243,8 +259,9 @@ def main():
     df = apply_state_level_mortality(df)
     df = apply_hhs_level_mortality(df)
     df = apply_national_mortality(df)
-
     df = combine_under_5_age_groups(df)
+
+    df = df.sort_values(by=['AGE_GROUP', 'COFIPS', 'RACE'], key=lambda x: x.map(AGE_GROUP_SORT_MAP))
 
     con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
     df.to_sql(name='mortality_2018_2022_county',
