@@ -49,7 +49,6 @@ def apply_fips_changes():
                                          selection_type="REMOVE_FROM_SELECTION",
                                          where_clause="")
 
-
 def project_counties():
     print("\nProjecting county boundaries to Albers Equal Area...")
     ap.Delete_management('memory\\temp_county')

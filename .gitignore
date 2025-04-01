@@ -183,3 +183,4 @@ cython_debug/
 *.mxd
 *.docx
 *.xlsx
+/population/inputs/raw_files
