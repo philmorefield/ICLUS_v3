@@ -43,7 +43,6 @@ else:
 CSV_FILES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\CDC')
 DATABASE_FOLDER = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
-CDC_INPUTS = os.path.join(DATABASE_FOLDER, 'cdc')
 
 
 def get_cofips_and_state():
@@ -164,9 +163,8 @@ def create_template():
 
 def main():
     '''
-    Not all race/gender/age combinations are available at the state level. Use
-    HHS Region, and then national rates as needed. Rates for the 85+ group are
-    in a separate file, so a total of six files are needed.
+    Not all race/gender/age combinations are available at the county level. Use
+    state and then HHS Region rates as needed.
     '''
     # create the template Dataframe that hold all county/race/age combinations
     # and start merging information
