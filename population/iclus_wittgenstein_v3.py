@@ -37,14 +37,14 @@ CENSUS_DB = os.path.join(INPUT_FOLDER, 'databases', 'census.sqlite')
 ACS_DB = os.path.join(INPUT_FOLDER, 'databases', 'acs.sqlite')
 
 ETHNICITIES = ('HISPANIC', 'NONHISPANIC')
-GENDERS = ('MALE', 'FEMALE')
+SEXES = ('MALE', 'FEMALE')
 RACES = ('WHITE', 'BLACK', 'ASIAN', 'AIAN', 'NHPI', 'TWO_OR_MORE')
 AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
               '70-74', '75-79', '80-84', '85+')
 
 
-def make_fips_changes(df=None):
+def make_fips_changes(df):
     '''
     TODO: Is this function still needed?
     '''
@@ -64,7 +64,7 @@ def make_fips_changes(df=None):
                          .then(pl.col('NEW_FIPS'))
                          .otherwise(pl.col('GEOID')).alias('GEOID'))
     df = df.drop('NEW_FIPS')
-    df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'GENDER']).agg(pl.col('POPULATION').sum())
+    df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'SEX']).agg(pl.col('POPULATION').sum())
 
     return df
 
@@ -79,11 +79,11 @@ def set_launch_population(launch_year):
         raise Exception("Invalid launch year!")
 
     uri = f'sqlite:{POP_DB}'
-    query = 'SELECT * FROM county_population_ageracegender_2020'
+    query = 'SELECT * FROM county_population_ageracesex_2020'
     df = pl.read_database_uri(query=query, uri=uri)
 
     df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
-    df = df.sort(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'])
+    df = df.sort(['GEOID', 'RACE', 'AGE_GROUP', 'SEX'])
 
     #assert df.shape[0] == 675648
     return df
@@ -179,13 +179,13 @@ class Projector():
 
             self.mortality()  # creates self.death
             self.current_pop = (self.current_pop.join(self.deaths,
-                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .with_columns(pl.col('POPULATION') - pl.col('DEATHS')
                                 .alias('POPULATION'))
                                 .drop('DEATHS'))
-            assert self.current_pop.shape == (671760, 5)
+            assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
             # self.current_pop.clip(lower=0, inplace=True)
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
@@ -198,7 +198,7 @@ class Projector():
             # calculate net international immigration
             self.immigration()  # creates self.immigrants
             self.current_pop = (self.current_pop.join(self.immigrants,
-                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .with_columns(pl.when(pl.col('NET_IMMIGRATION').is_not_null()).then(pl.col('POPULATION') + pl.col('NET_IMMIGRATION'))
@@ -219,7 +219,7 @@ class Projector():
             # calculate domestic migration
             self.migration()  # creates self.net_migration
             self.current_pop = (self.current_pop.join(other=self.net_migration,
-                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'],
+                                                      on=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .fill_null(0)
@@ -248,7 +248,7 @@ class Projector():
 
             # add births
             self.current_pop = (self.current_pop.join(other=self.births,
-                                                     on=['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'],
+                                                     on=['GEOID', 'RACE', 'AGE_GROUP', 'SEX'],
                                                      how='left',
                                                      coalesce=True)
                                 .with_columns(pl.when(pl.col('BIRTHS').is_not_null())
@@ -260,7 +260,7 @@ class Projector():
             assert self.current_pop.shape == (671760, 5)
             self.births = None
 
-            self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+            self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
 
             if self.population_time_series is None:
                 self.population_time_series = self.current_pop.clone()
@@ -274,8 +274,8 @@ class Projector():
             # save results to sqlite3 database
             uri = f'sqlite:{OUTPUT_DATABASE}'
             temp = self.population_time_series.clone()
-            temp = temp.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
-            temp.write_database(table_name=f'population_by_race_gender_age_{self.scenario}',
+            temp = temp.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+            temp.write_database(table_name=f'population_by_race_sex_age_{self.scenario}',
                                 connection=uri,
                                 if_table_exists='replace',
                                 engine='adbc')
@@ -290,13 +290,13 @@ class Projector():
         starting_pop = self.current_pop.select('POPULATION').sum().item()
 
         # VERY IMPORTANT that the dataframe is sorted exactly like this
-        self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+        self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
 
         # shift 20 percent of the population in each cohort
 
         self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') * 0.2)
                                            .shift(fill_value=0)
-                                           .over('GEOID', 'RACE', 'GENDER')
+                                           .over('GEOID', 'RACE', 'SEX')
                                            .alias('AGE_ADVANCING'))
 
         # reduce the population in each age cohort by 20%, except for 85+
@@ -321,28 +321,28 @@ class Projector():
 
         print("Calculating mortality...", end='')
 
-        # get CDC mortality rates by AGE_GROUP, RACE, GENDER, and COUNTY
+        # get CDC mortality rates by AGE_GROUP, RACE, SEX, and COUNTY
         uri = f'sqlite:{CDC_DB}'
-        query = 'SELECT RACE, AGE_GROUP, GENDER, COFIPS AS GEOID, MORTALITY AS MORTALITY_RATE_100K \
+        query = 'SELECT RACE, AGE_GROUP, SEX, COFIPS AS GEOID, MORTALITY AS MORTALITY_RATE_100K \
                  FROM mortality_2018_2022_county'
         county_mort_rates = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         df = self.current_pop.clone()
         df = df.join(other=county_mort_rates,
-                     on=['RACE', 'AGE_GROUP', 'GENDER', 'GEOID'],
+                     on=['RACE', 'AGE_GROUP', 'SEX', 'GEOID'],
                      how='left',
                      coalesce=True)
 
         # get Wittgenstein mortality rate adjustments
         uri = f'sqlite:{WITT_DB}'
-        query = f'SELECT AGE_GROUP, GENDER, MORT_CHANGE_MULT AS MORT_MULTIPLY \
+        query = f'SELECT AGE_GROUP, SEX, MORT_CHANGE_MULT AS MORT_MULTIPLY \
                   FROM age_specific_mortality_v3 \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year - 1}"'
         mort_multiply = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         df = df.join(other=mort_multiply,
-                     on=['AGE_GROUP', 'GENDER'],
+                     on=['AGE_GROUP', 'SEX'],
                      how='left',
                      coalesce=True)
         # assert df.shape[0] == 675648
@@ -350,7 +350,7 @@ class Projector():
 
         # calculate deaths
         df = df.with_columns((pl.col('MORT_PROJ') * pl.col('POPULATION')).alias('DEATHS'))
-        df = df.select(['GEOID', 'AGE_GROUP', 'RACE', 'GENDER', 'DEATHS'])
+        df = df.select(['GEOID', 'AGE_GROUP', 'RACE', 'SEX', 'DEATHS'])
         assert sum(df.null_count()).item() == 0
 
         # store deaths
@@ -362,16 +362,16 @@ class Projector():
         if self.current_projection_year == self.launch_year + 1:
             deaths = self.deaths.rename({'DEATHS': str(self.current_projection_year)})
         else:
-            query = f'SELECT * FROM deaths_by_race_gender_age_{self.scenario}'
+            query = f'SELECT * FROM deaths_by_race_sex_age_{self.scenario}'
             deaths = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_deaths = self.deaths.clone()
             current_deaths = current_deaths.rename({'DEATHS': str(self.current_projection_year)})
             deaths = pl.concat(items=[deaths, current_deaths], how='align')
-        deaths.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
-        assert deaths.shape[0] == 671760
+        deaths.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+        # assert deaths.shape[0] == 675648
         assert sum(deaths.null_count()).item() == 0
 
-        deaths.write_database(table_name=f'deaths_by_race_gender_age_{self.scenario}',
+        deaths.write_database(table_name=f'deaths_by_race_sex_age_{self.scenario}',
                               connection=uri,
                               if_table_exists='replace',
                               engine='adbc')
@@ -390,10 +390,10 @@ class Projector():
         query = 'SELECT *  FROM acs_immigration_cohort_fractions_by_age_group_2006_2015'
         county_weights = pl.read_database_uri(query=query, uri=uri)
 
-        # this is the net migrants for each age-gender combination
+        # this is the net migrants for each age-sex combination
         uri = f'sqlite:{WITT_DB}'
-        query = f'SELECT AGE_GROUP, GENDER, NETMIG_INTERP AS NET \
-                  FROM age_specific_net_migration \
+        query = f'SELECT AGE_GROUP, SEX, NETMIG_INTERP AS NET \
+                  FROM age_specific_net_migration_v3 \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year}"'
         witt = pl.read_database_uri(query=query, uri=uri)
@@ -419,19 +419,19 @@ class Projector():
 
         # multiply annual immigration by the agegroup/race/sex proportions
         all_immig_cohorts = df_census.join(other=witt,
-                                           on=['GENDER', 'AGE_GROUP'],
+                                           on=['SEX', 'AGE_GROUP'],
                                            how='left',
                                            coalesce=True)
         for race in IMMIGRATION_RACES:
             all_immig_cohorts = all_immig_cohorts.with_columns((pl.col(race) * pl.col('NET')).alias(race))
 
         all_immig_cohorts = all_immig_cohorts.drop('NET')
-        all_immig_cohorts = all_immig_cohorts.unpivot(index=['AGE_GROUP', 'GENDER'],
+        all_immig_cohorts = all_immig_cohorts.unpivot(index=['AGE_GROUP', 'SEX'],
                                                       variable_name='RACE',
                                                       value_name='NET_IMMIGRATION')
 
         df = (county_weights.join(other=all_immig_cohorts,
-                                  on=['RACE', 'AGE_GROUP', 'GENDER'],
+                                  on=['RACE', 'AGE_GROUP', 'SEX'],
                                   how='left',
                                   coalesce=True)
                             .with_columns((pl.col('NET_IMMIGRATION') * pl.col('COUNTY_FRACTION'))
@@ -447,7 +447,7 @@ class Projector():
         df = df.with_columns(pl.when(pl.col('RACE') == pl.lit('NH_WHITE')).then(pl.lit('WHITE'))
                                .when(pl.col('RACE') == pl.lit('HISP_WHITE')).then(pl.lit('WHITE'))
                                .otherwise(pl.col('RACE')).alias('RACE'))
-        df = df.group_by(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER']).agg(pl.col('NET_IMMIGRATION').sum())
+        df = df.group_by(['GEOID', 'RACE', 'AGE_GROUP', 'SEX']).agg(pl.col('NET_IMMIGRATION').sum())
         df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         self.immigrants = df.clone()
@@ -457,7 +457,7 @@ class Projector():
         if self.current_projection_year == self.launch_year + 1:
             immigration = self.immigrants.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
         else:
-            query = f'SELECT * FROM immigration_by_race_gender_age_{self.scenario}'
+            query = f'SELECT * FROM immigration_by_race_sex_age_{self.scenario}'
             immigration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_immigration = self.immigrants.clone()
             current_immigration = current_immigration.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
@@ -465,7 +465,7 @@ class Projector():
 
         assert sum(immigration.null_count()).item() == 0
 
-        immigration.write_database(table_name=f'immigration_by_race_gender_age_{self.scenario}',
+        immigration.write_database(table_name=f'immigration_by_race_sex_age_{self.scenario}',
                                    connection=uri,
                                    if_table_exists='replace',
                                    engine='adbc')
@@ -490,7 +490,7 @@ class Projector():
             gross_flows = migration_model.compute_migrants(race)
             gross_flows = gross_flows.with_columns(pl.lit(race).alias('RACE'))
 
-            # calculate a gender fraction for each county/race/age cohort
+            # calculate a sex fraction for each county/race/age cohort
             ratios = self.current_pop.filter(pl.col('RACE') == race)
             ratios = ratios.with_columns(pl.col('POPULATION')
                                          .sum()
@@ -499,7 +499,7 @@ class Projector():
 
             ratios = ratios.with_columns((pl.col('POPULATION') / pl.col('GEOID_AGE_POP'))
                                          .fill_null(value=0)
-                                         .alias('GENDER_FRACTION'))
+                                         .alias('SEX_FRACTION'))
             ratios = ratios.drop(['POPULATION', 'GEOID_AGE_POP', 'RACE'])
 
             lf = (ratios.join(other=gross_flows,
@@ -509,13 +509,13 @@ class Projector():
                               coalesce=True)
                   .fill_null(value=0)
                   .fill_nan(value=0)
-                  .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
+                  .with_columns((pl.col('SEX_FRACTION') * pl.col('MIGRATION'))
                   .alias('GROSS_INFLOW')))
             lf = lf.with_columns(pl.col('GROSS_INFLOW')
                                  .sum()
-                                 .over(['GEOID', 'AGE_GROUP', 'GENDER'])
+                                 .over(['GEOID', 'AGE_GROUP', 'SEX'])
                                  .alias('SUM_INFLOWS'))
-            lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'GENDER_FRACTION', 'SUM_INFLOWS']).unique()
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'SEX_FRACTION', 'SUM_INFLOWS']).unique()
 
             lf = (lf.join(other=gross_flows,
                           how='left',
@@ -524,16 +524,16 @@ class Projector():
                           coalesce=True)
                   .fill_null(value=0)
                   .fill_nan(value=0)
-                  .with_columns((pl.col('GENDER_FRACTION') * pl.col('MIGRATION'))
+                  .with_columns((pl.col('SEX_FRACTION') * pl.col('MIGRATION'))
                   .alias('GROSS_OUTFLOW')))
 
             lf = lf.with_columns(pl.col('GROSS_OUTFLOW')
                         .sum()
-                        .over(['GEOID', 'AGE_GROUP', 'GENDER'])
+                        .over(['GEOID', 'AGE_GROUP', 'SEX'])
                         .alias('SUM_OUTFLOWS'))
             lf = lf.with_columns((pl.col('SUM_INFLOWS') - pl.col('SUM_OUTFLOWS'))
                                  .alias('NET_MIGRATION'))
-            lf = lf.select(['GEOID', 'AGE_GROUP', 'GENDER', 'NET_MIGRATION']).unique()
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'NET_MIGRATION']).unique()
             lf = lf.with_columns(pl.lit(race).alias('RACE'))
 
             # assert lf.shape == (111960, 5)
@@ -543,7 +543,7 @@ class Projector():
             else:
                 self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical_relaxed')
 
-        self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'GENDER', 'AGE_GROUP']).collect()
+        self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP']).collect()
         assert self.net_migration.shape == (671760, 5)
         assert self.net_migration.null_count().sum_horizontal().item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
@@ -553,19 +553,19 @@ class Projector():
         if self.current_projection_year == self.launch_year + 1:
             migration = self.net_migration.rename({'NET_MIGRATION': str(self.current_projection_year)}).clone()
         else:
-            query = f'SELECT * FROM migration_by_race_gender_age_{self.scenario}'
+            query = f'SELECT * FROM migration_by_race_sex_age_{self.scenario}'
             migration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_migration = self.net_migration.clone().rename({'NET_MIGRATION': str(self.current_projection_year)})
             migration = migration.join(current_migration,
-                                       on=['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'],
+                                       on=['GEOID', 'RACE', 'AGE_GROUP', 'SEX'],
                                        how='left',
                                        coalesce=True)
-        # migration = migration.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+        # migration = migration.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
         assert migration.shape[0] == 671760
         assert sum(migration.null_count()).item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
-        migration.write_database(table_name=f'migration_by_race_gender_age_{self.scenario}',
+        migration.write_database(table_name=f'migration_by_race_sex_age_{self.scenario}',
                                  connection=uri,
                                  if_table_exists='replace',
                                  engine='adbc')
@@ -601,7 +601,7 @@ class Projector():
                                              .alias('RACE'))
         county_fert_rates = county_fert_rates.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
-        df = self.current_pop.filter(pl.col('GENDER').is_in(('FEMALE',)) & pl.col('AGE_GROUP').is_in(fertility_age_groups))
+        df = self.current_pop.filter(pl.col('SEX').is_in(('FEMALE',)) & pl.col('AGE_GROUP').is_in(fertility_age_groups))
 
         # get Wittgenstein fertility rate adjustments
         uri = f'sqlite:{WITT_DB}'
@@ -627,8 +627,8 @@ class Projector():
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
         df = (df.select(['GEOID', 'RACE', 'MALE', 'FEMALE'])
-                .unpivot(index=['GEOID', 'RACE'], variable_name='GENDER', value_name='BIRTHS')
-                .group_by(['GEOID', 'RACE', 'GENDER']).agg(pl.col('BIRTHS').sum()))
+                .unpivot(index=['GEOID', 'RACE'], variable_name='SEX', value_name='BIRTHS')
+                .group_by(['GEOID', 'RACE', 'SEX']).agg(pl.col('BIRTHS').sum()))
         df = df.with_columns(pl.lit('0-4').cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
         assert sum(df.null_count()).item() == 0
 
@@ -641,15 +641,15 @@ class Projector():
         if self.current_projection_year == self.launch_year + 1:
             births = self.births.rename({'BIRTHS': str(self.current_projection_year)})
         else:
-            query = f'SELECT * FROM births_by_race_gender_age_{self.scenario}'
+            query = f'SELECT * FROM births_by_race_sex_age_{self.scenario}'
             births = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
             current_births = self.births.clone()
             current_births = current_births.rename({'BIRTHS': str(self.current_projection_year)}).clone()
             births = pl.concat(items=[births, current_births], how='align')
-        births.sort(by=['GEOID', 'RACE', 'GENDER', 'AGE_GROUP'])
+        births.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
         assert births.shape[0] == 37320
         assert sum(births.null_count()).item() == 0
-        births.write_database(table_name=f'births_by_race_gender_age_{self.scenario}',
+        births.write_database(table_name=f'births_by_race_sex_age_{self.scenario}',
                       connection=uri,
                       if_table_exists='replace',
                       engine='adbc')

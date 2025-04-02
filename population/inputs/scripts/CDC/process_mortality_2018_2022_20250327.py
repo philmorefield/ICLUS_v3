@@ -155,7 +155,7 @@ def apply_state_level_mortality(df):
 
 def apply_hhs_level_mortality(df):
     query = 'SELECT COFIPS, HHS AS HHS_REGION \
-             FROM cofips_state_msa20_bea10_hhs'
+             FROM fips_to_urb20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     hhs = pd.read_sql_query(sql=query, con=con)
     con.close()
@@ -251,6 +251,26 @@ def combine_under_5_age_groups(df):
     return df
 
 
+def make_fips_changes(df):
+    con =sqlite3.connect(MIGRATION_DB)
+    query = 'SELECT OLD_FIPS AS COFIPS, NEW_FIPS \
+             FROM fips_or_name_changes'
+    df_fips = pd.read_sql_query(sql=query, con=con)
+    con.close()
+
+    df = df.merge(right=df_fips,
+                  how='left',
+                  on='COFIPS')
+
+    df.loc[~df.NEW_FIPS.isnull(), 'COFIPS'] = df['NEW_FIPS']
+    df = df.drop(columns='NEW_FIPS')
+
+    # TODO: this mean should be weighted by population, technically
+    df = df.groupby(by=['COFIPS', 'AGE_GROUP', 'RACE', 'SEX'], as_index=False).mean()
+
+    return df
+
+
 def main():
     # create the template Dataframe that hold all county/race/age combinations
     # and start merging information
@@ -260,6 +280,7 @@ def main():
     df = apply_hhs_level_mortality(df)
     df = apply_national_mortality(df)
     df = combine_under_5_age_groups(df)
+    df = make_fips_changes(df)
 
     df = df.sort_values(by=['AGE_GROUP', 'COFIPS', 'RACE'], key=lambda x: x.map(AGE_GROUP_SORT_MAP))
 

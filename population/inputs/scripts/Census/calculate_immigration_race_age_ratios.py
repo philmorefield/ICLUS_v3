@@ -4,9 +4,16 @@ import sqlite3
 import pandas as pd
 
 
+if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
+    ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
+else:
+    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
+
+DATABASES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
+
 def main():
 
-    RACE_MAP = {2: 'BLACK',
+    race_map = {2: 'BLACK',
                 3: 'AIAN',
                 4: 'ASIAN',
                 5: 'NHPI',
@@ -14,11 +21,11 @@ def main():
                 9: 'NH_WHITE',
                 10: 'HISP_WHITE'}
 
-    GENDER_MAP = {1: 'MALE',
+    sex_map = {1: 'MALE',
                   2: 'FEMALE'}
 
     for scenario in ('low', 'mid', 'high'):
-        p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Census'
+        p = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\Census\\2017')
         f = f'np2017_d4_{scenario}.csv'
 
         df = pd.read_csv(filepath_or_buffer=os.path.join(p, f))
@@ -36,8 +43,8 @@ def main():
 
         df = df.loc[~df.RACE_HISP.isin((1, 7, 8))]
         df = df.append(other=hisp_white)
-        df['RACE_HISP'] = df['RACE_HISP'].map(RACE_MAP)
-        df['SEX'] = df['SEX'].map(GENDER_MAP)
+        df['RACE_HISP'] = df['RACE_HISP'].map(race_map)
+        df['SEX'] = df['SEX'].map(sex_map)
         df.set_index(keys=['YEAR', 'RACE_HISP', 'SEX'], inplace=True)
         df = df.melt(var_name='AGE', value_name='NIM', ignore_index=False)
         df['AGE'] = df['AGE'].str.replace('NIM_', '').astype(int)
@@ -84,9 +91,8 @@ def main():
         df.columns = df.columns.droplevel(0)
         df.columns.name = None
         df.reset_index(inplace=True)
-        df.rename(columns={'SEX': 'GENDER'}, inplace=True)
 
-        db = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases\\census.sqlite'
+        db = os.path.join(DATABASES, 'census.sqlite')
         con = sqlite3.connect(db)
 
         df.to_sql(name=f'annual_immigration_fraction_{scenario}',

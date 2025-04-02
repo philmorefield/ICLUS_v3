@@ -1,8 +1,3 @@
-"""
-Author:  Phil Morefield (pmorefie@gmu.edu)
-Purpose:
-Created:
-"""
 import os
 import sqlite3
 
@@ -10,6 +5,13 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+
+if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
+    ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
+else:
+    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
+
+DATABASES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 
 
 def parse_years(s):
@@ -33,9 +35,9 @@ def interpolate_years(df):
            (~df.YEAR.astype(str).str.endswith('7')) &
            (df.YEAR != 2015), 'NETMIG_INTERP'] = np.nan
 
-    for scenario, age_group, gender in product(scenarios, age_groups, genders):
-        s = df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.GENDER == gender), 'NETMIG_INTERP']
-        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.GENDER == gender), 'NETMIG_INTERP'] = s.interpolate(method='linear', limit_direction='both')
+    for scenario, age_group, sex in product(scenarios, age_groups, genders):
+        s = df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'NETMIG_INTERP']
+        df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'NETMIG_INTERP'] = s.interpolate(method='linear', limit_direction='both')
 
     assert ~df.isnull().any().any()
 
@@ -45,8 +47,8 @@ def interpolate_years(df):
 def combine_85plus(df):
 
     older = df.query('AGE_GROUP == "85-89" | AGE_GROUP == "90-94" | AGE_GROUP == "95-99" | AGE_GROUP == "100+"')
-    older = older[['YEAR', 'SCENARIO', 'GENDER', 'NETMIG_INTERP']]
-    older = older.groupby(by=['YEAR', 'SCENARIO', 'GENDER'], as_index=False).sum()
+    older = older[['YEAR', 'SCENARIO', 'SEX', 'NETMIG_INTERP']]
+    older = older.groupby(by=['YEAR', 'SCENARIO', 'SEX'], as_index=False).sum()
     older['AGE_GROUP'] = "85+"
     older.drop_duplicates(inplace=True)
 
@@ -67,7 +69,7 @@ def align_with_2020(df):
     # annual immigration.
     census_total_2020 = 1672321
 
-    df.sort_values(by=['SCENARIO', 'YEAR', 'GENDER', 'AGE_GROUP'], inplace=True)
+    df.sort_values(by=['SCENARIO', 'YEAR', 'SEX', 'AGE_GROUP'], inplace=True)
     for scenario in scenarios:
         witt_total_2020 = None
         for year in years:
@@ -88,11 +90,11 @@ def align_with_2020(df):
 
 
 def main():
-    csv = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Wittgenstein\\v2\\wcde_asmig.csv'
+    csv = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\Wittgenstein\\v2\\wcde_asmig.csv')
     df = pd.read_csv(filepath_or_buffer=csv, skiprows=8)
-    df.columns = ['SCENARIO', 'AREA', 'PERIOD', 'AGE_GROUP', 'GENDER', 'NETMIG']
-    df = df[['SCENARIO', 'PERIOD', 'AGE_GROUP', 'GENDER', 'NETMIG']]
-    df['GENDER'] = df['GENDER'].str.upper()
+    df.columns = ['SCENARIO', 'AREA', 'PERIOD', 'AGE_GROUP', 'SEX', 'NETMIG']
+    df = df[['SCENARIO', 'PERIOD', 'AGE_GROUP', 'SEX', 'NETMIG']]
+    df['SEX'] = df['SEX'].str.upper()
     df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('--', '-')
 
     # add years for 2010 to 2015
@@ -111,14 +113,14 @@ def main():
     df['NETMIG'] /= 5.0
 
     df = interpolate_years(df)
-    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER', 'NETMIG_INTERP']]
+    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX', 'NETMIG_INTERP']]
 
     df = combine_85plus(df)
     df = align_with_2020(df)
     df.eval('NETMIG_INTERP = NETMIG_INTERP.astype("int")', inplace=True)
 
-    output_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    con = sqlite3.connect(database=os.path.join(output_folder, 'wittgenstein.sqlite'))
+    db = os.path.join(DATABASES, 'wittgenstein.sqlite')
+    con = sqlite3.connect(database=db)
     df.to_sql(name='age_specific_net_migration_v2',
               if_exists='replace',
               con=con,

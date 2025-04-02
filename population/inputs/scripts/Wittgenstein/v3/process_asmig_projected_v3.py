@@ -9,7 +9,12 @@ import sqlite3
 import numpy as np
 import pandas as pd
 
-OUTPUT_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
+if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
+    ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
+else:
+    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
+
+DATABASES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 
 
 def parse_years(s):
@@ -43,8 +48,8 @@ def interpolate_years(df):
 def combine_85plus(df):
 
     older = df.query('AGE_GROUP == "85-89" | AGE_GROUP == "90-94" | AGE_GROUP == "95-99" | AGE_GROUP == "100+"')
-    older = older[['YEAR', 'SCENARIO', 'GENDER', 'NETMIG_INTERP']]
-    older = older.groupby(by=['YEAR', 'SCENARIO', 'GENDER'], as_index=False).sum()
+    older = older[['YEAR', 'SCENARIO', 'SEX', 'NETMIG_INTERP']]
+    older = older.groupby(by=['YEAR', 'SCENARIO', 'SEX'], as_index=False).sum()
     older['AGE_GROUP'] = "85+"
     older.drop_duplicates(inplace=True)
 
@@ -55,9 +60,9 @@ def combine_85plus(df):
 
 def decompose_to_age_groups(df):
     # v3 doesn't have immigration by age; use the v2 proportions
-    # age/gender fractions are not part of v3, so substituting v2 fractions
+    # age/sex fractions are not part of v3, so substituting v2 fractions
     # since there is no SSP4 and SSP5 in v2, using SSP2 fractions instead
-    con = sqlite3.connect(database=os.path.join(OUTPUT_FOLDER, 'wittgenstein.sqlite'))
+    con = sqlite3.connect(database=os.path.join(DATABASES, 'wittgenstein.sqlite'))
     query = 'SELECT * FROM age_specific_net_migration_v2'
     temp = pd.read_sql_query(sql=query, con=con)
     con.close()
@@ -74,9 +79,9 @@ def decompose_to_age_groups(df):
     df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP']
     df = df.set_index(['YEAR', 'SCENARIO', 'PERIOD', 'NETMIG', 'NETMIG_INTERP'])
 
-    temp = temp.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
-    ssp4 = ssp4.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
-    ssp5 = ssp5.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER'])
+    temp = temp.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
+    ssp4 = ssp4.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
+    ssp5 = ssp5.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
     temp = pd.concat(objs=[temp, ssp4, ssp5])
     temp.columns = ['NETMIG_INTERP_COHORT']
 
@@ -93,7 +98,7 @@ def align_with_2020(df):
 
     census_avg_2324 = 2500000
 
-    df.sort_values(by=['SCENARIO', 'YEAR', 'GENDER', 'AGE_GROUP'], inplace=True)
+    df.sort_values(by=['SCENARIO', 'YEAR', 'SEX', 'AGE_GROUP'], inplace=True)
     for scenario in scenarios:
         witt_total_2020 = None
         for year in years:
@@ -115,7 +120,7 @@ def align_with_2020(df):
 
 
 def main():
-    csv = 'D:\\OneDrive\\Dissertation\\data\\Wittgenstein\\v3\\wcde_asmig.csv'
+    csv = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\Wittgenstein\\v3\\wcde_asmig.csv')
     df = pd.read_csv(filepath_or_buffer=csv, skiprows=8)
     df.columns = ['SCENARIO', 'AREA', 'PERIOD', 'NETMIG']
     df = df[['SCENARIO', 'PERIOD', 'NETMIG']]
@@ -145,9 +150,9 @@ def main():
     df['NETMIG_INTERP'] = df['NETMIG_INTERP'].astype(int)
     df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP_COHORT'].round().astype(int)
 
-    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'GENDER', 'NETMIG', 'NETMIG_INTERP', 'NETMIG_INTERP_COHORT']]
+    df = df[['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX', 'NETMIG', 'NETMIG_INTERP', 'NETMIG_INTERP_COHORT']]
 
-    con = sqlite3.connect(database=os.path.join(OUTPUT_FOLDER, 'wittgenstein.sqlite'))
+    con = sqlite3.connect(database=os.path.join(DATABASES, 'wittgenstein.sqlite'))
     df.to_sql(name='age_specific_net_migration_v3',
               if_exists='replace',
               con=con,

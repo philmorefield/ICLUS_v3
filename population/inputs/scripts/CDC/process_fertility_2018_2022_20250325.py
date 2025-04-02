@@ -47,7 +47,7 @@ MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 
 def get_cofips_and_state():
     query = 'SELECT COFIPS, STUSPS AS STABBR \
-             FROM cofips_state_msa20_bea10_hhs'
+             FROM fips_to_urb20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     df = pd.read_sql_query(sql=query, con=con)
     con.close()
@@ -110,7 +110,7 @@ def apply_state_level_fertility(df):
 
 def apply_hhs_level_fertility(df):
     query = 'SELECT COFIPS, HHS AS HHS_REGION \
-             FROM cofips_state_msa20_bea10_hhs'
+             FROM fips_to_urb20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     hhs = pd.read_sql_query(sql=query, con=con)
     con.close()
@@ -161,6 +161,26 @@ def create_template():
     return df
 
 
+def make_fips_changes(df):
+    con =sqlite3.connect(MIGRATION_DB)
+    query = 'SELECT OLD_FIPS AS COFIPS, NEW_FIPS \
+             FROM fips_or_name_changes'
+    df_fips = pd.read_sql_query(sql=query, con=con)
+    con.close()
+
+    df = df.merge(right=df_fips,
+                  how='left',
+                  on='COFIPS')
+
+    df.loc[~df.NEW_FIPS.isnull(), 'COFIPS'] = df['NEW_FIPS']
+    df = df.drop(columns='NEW_FIPS')
+
+    # TODO: this mean should be weighted by population, technically
+    df = df.groupby(by=['COFIPS', 'AGE_GROUP', 'RACE'], as_index=False).mean()
+
+    return df
+
+
 def main():
     '''
     Not all race/gender/age combinations are available at the county level. Use
@@ -174,6 +194,7 @@ def main():
     df = apply_county_level_fertility(df)
     df = apply_state_level_fertility(df)
     df = apply_hhs_level_fertility(df)
+    df = make_fips_changes(df)
 
     assert not df.isnull().any().any()
 
