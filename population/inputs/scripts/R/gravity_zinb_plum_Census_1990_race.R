@@ -11,8 +11,8 @@ age_groups = c("5_TO_9", "10_TO_14", "15_TO_19", "20_TO_24", "25_TO_29",
                "55_TO_59", "60_TO_64", "65_TO_69", "70_TO_74", "75_TO_79",
                "80_TO_84", "85_AND_OVER")
 
-input_db = "D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases\\zinb_regression_inputs.sqlite"
-output_db = "D:\\OneDrive\\ICLUS_v3\\population\\outputs\\zinb_regression_outputs.sqlite"
+input_db = "D:\\projects\\ICLUS_v3\\population\\inputs\\databases\\zinb_regression_inputs.sqlite"
+output_db = "D:\\projects\\ICLUS_v3\\population\\outputs\\zinb_regression_outputs.sqlite"
 
 idb = dbConnect(SQLite(), dbname = input_db)
 odb = dbConnect(SQLite(), dbname = output_db)
@@ -31,7 +31,7 @@ for (race in c("WHITE", "BLACK", "AIAN", "API", "OTHER"))
     df$ln_Cij = log(df$Cij + df$Pj + 1)
     df$ln_Pj_star = log(df$Pj_star + 1)
 
-    m1 = zeroinfl(formula = FLOW ~ ln_Pi + ln_Pj + ln_Tij + ln_Cij + ln_Pj_star + factor(SAME_LABOR_MARKET) + factor(URBAN20), data = df, dist = 'negbin', link = 'cloglog')
+    m1 = zeroinfl(formula = FLOW ~ ln_Pi + ln_Pj + ln_Tij + ln_Cij + ln_Pj_star + factor(SAME_LABOR_MARKET) + factor(URBANDESTINATION20), data = df, dist = 'negbin', link = 'cloglog')
     print(summary(m1))
     robust = coeftest(x = m1, vcov = sandwich)
     new_row_coef = data.frame(t(robust[,1]))
