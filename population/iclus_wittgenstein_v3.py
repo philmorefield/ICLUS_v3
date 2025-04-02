@@ -1,14 +1,11 @@
 """
-Author: Phil Morefield (pmorefie@gmu.edu)
-Purpose: Create county-level population projections using Wittgenstein
+Author:  Phil Morefield
+Purpose: Create county-level population projections using Wittgenstein v3
          projections
-Created: May 13th, 2021
-
-Note: v3 of this script uses immigration age-race ratios from the 2017 Census
-      projections to disaggregate Wittgenstein immigration projections
+Created: April 1st, 2025
 """
 import os
-import sqlite3
+# import sqlite3
 import time
 
 from datetime import datetime
@@ -16,7 +13,7 @@ from datetime import datetime
 import numpy as np
 import polars as pl
 
-from migration_POLARS import migration_2_c_ii_3_a as MigrationModel
+from iclus_migration_v3 import migration_plum_v3 as MigrationModel
 
 
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
@@ -31,7 +28,7 @@ TIME_STAMP = f'{d.year}{d.month}{d.day}{d.hour}{d.minute}{d.second}'
 
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
-OUTPUT_DATABASE = os.path.join(OUTPUT_FOLDER, f'wittgenstein_v2_{TIME_STAMP}.sqlite')
+OUTPUT_DATABASE = os.path.join(OUTPUT_FOLDER, f'wittgenstein_v3_{TIME_STAMP}.sqlite')
 POP_DB = os.path.join(INPUT_FOLDER, 'databases', 'population.sqlite')
 MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
 CDC_DB = os.path.join(INPUT_FOLDER, 'databases', 'cdc.sqlite')
@@ -49,7 +46,7 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
 
 def make_fips_changes(df=None):
     '''
-    TODO: Add docstring
+    TODO: Is this function still needed?
     '''
 
     uri = f'sqlite:{MIG_DB}'
@@ -79,48 +76,47 @@ def set_launch_population(launch_year):
     '''
 
     if launch_year != 2020:
-        raise Exception
+        raise Exception("Invalid launch year!")
 
     uri = f'sqlite:{POP_DB}'
     query = 'SELECT * FROM county_population_ageracegender_2020'
     df = pl.read_database_uri(query=query, uri=uri)
 
-    df = make_fips_changes(df=df)
     df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
     df = df.sort(['GEOID', 'RACE', 'AGE_GROUP', 'GENDER'])
 
-    assert df.shape[0] == 671760
+    #assert df.shape[0] == 675648
     return df
 
 
-def retrieve_baseline_migration_estimate():
-    p = os.path.join(INPUT_FOLDER, 'part_4')
-    db = os.path.join(p, 'baseline_migration_2015_2_c_ii_3_a.sqlite')
-    con = sqlite3.connect(db, timeout=60)
-    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, MIGRATION as BASELINE\
-             FROM gross_migration_by_race_2015'
-    df = pl.read_sql(sql=query, con=con, index_col=['ORIGIN_FIPS', 'DESTINATION_FIPS'])
-    con.close()
+# def retrieve_baseline_migration_estimate():
+#     p = os.path.join(INPUT_FOLDER, 'part_4')
+#     db = os.path.join(p, 'baseline_migration_2015_2_c_ii_3_a.sqlite')
+#     con = sqlite3.connect(db, timeout=60)
+#     query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, MIGRATION as BASELINE\
+#              FROM gross_migration_by_race_2015'
+#     df = pl.read_sql(sql=query, con=con, index_col=['ORIGIN_FIPS', 'DESTINATION_FIPS'])
+#     con.close()
 
-    TOTAL_IN = df.group_by(by='DESTINATION_FIPS')['BASELINE'].sum()
-    TOTAL_OUT = df.group_by(by='ORIGIN_FIPS')['BASELINE'].sum()
-    df = pl.DataFrame(data=TOTAL_IN.sub(other=TOTAL_OUT, axis='index'))
-    # df = df.round().astype(int)
-    df.index.rename(name='GEOID', inplace=True)
-    df.columns = ['MIGRATION']
+#     TOTAL_IN = df.group_by(by='DESTINATION_FIPS')['BASELINE'].sum()
+#     TOTAL_OUT = df.group_by(by='ORIGIN_FIPS')['BASELINE'].sum()
+#     df = pl.DataFrame(data=TOTAL_IN.sub(other=TOTAL_OUT, axis='index'))
+#     # df = df.round().astype(int)
+#     df.index.rename(name='GEOID', inplace=True)
+#     df.columns = ['MIGRATION']
 
-    return df
+#     return df
 
 
-def retrieve_intercensal_migration():
-    p = os.path.join(INPUT_FOLDER, 'part_5')
-    db = os.path.join(p, 'part_5_inputs.sqlite')
-    con = sqlite3.connect(db, timeout=60)
-    query = 'SELECT COFIPS AS GEOID, DOMESTICMIG2015 AS MIGRATION FROM baseline_net_migration_2015'
-    df = pl.read_sql(sql=query, con=con, index_col='GEOID')
-    con.close()
+# def retrieve_intercensal_migration():
+#     p = os.path.join(INPUT_FOLDER, 'part_5')
+#     db = os.path.join(p, 'part_5_inputs.sqlite')
+#     con = sqlite3.connect(db, timeout=60)
+#     query = 'SELECT COFIPS AS GEOID, DOMESTICMIG2015 AS MIGRATION FROM baseline_net_migration_2015'
+#     df = pl.read_sql(sql=query, con=con, index_col='GEOID')
+#     con.close()
 
-    return df
+#     return df
 
 
 def main(scenario):
@@ -144,7 +140,7 @@ class Projector():
         # scenario-related attributes
         self.scenario = scenario
         if self.scenario not in ('SSP1', 'SSP2', 'SSP3'):
-            raise Exception
+            raise Exception("Invalid scenario!")
 
         # population-related attributes
         self.current_pop = None
@@ -340,7 +336,7 @@ class Projector():
         # get Wittgenstein mortality rate adjustments
         uri = f'sqlite:{WITT_DB}'
         query = f'SELECT AGE_GROUP, GENDER, MORT_CHANGE_MULT AS MORT_MULTIPLY \
-                  FROM age_specific_mortality \
+                  FROM age_specific_mortality_v3 \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year - 1}"'
         mort_multiply = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
@@ -349,7 +345,7 @@ class Projector():
                      on=['AGE_GROUP', 'GENDER'],
                      how='left',
                      coalesce=True)
-        assert df.shape[0] == 671760
+        # assert df.shape[0] == 675648
         df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
         # calculate deaths

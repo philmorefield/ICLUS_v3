@@ -56,6 +56,7 @@ for (race in c("WHITE", "BLACK", "AIAN", "API", "OTHER"))
     }
 
     predictions = cbind(subset(df, select = c('ORIGIN_FIPS', 'DESTINATION_FIPS', 'FLOW')), PREDICTED = predict(m1, newdata = df))
+    predictions$PREDICTED = as.integer(round(predictions$PREDICTED))
     dbWriteTable(conn = odb, name = paste("zinb", "Census_1990", race, age_group, sep = "_"), value = predictions, overwrite = TRUE)
     }
   }

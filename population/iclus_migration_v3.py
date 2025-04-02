@@ -16,7 +16,7 @@ else:
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
 ANALYSIS_DB = os.path.join(INPUT_FOLDER, 'databases', 'analysis.sqlite')
-CORR_DB = MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'correlations.sqlite')
+# CORR_DB = MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'correlations.sqlite')
 MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
 
 AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
@@ -128,7 +128,7 @@ def get_intra_labor_market_moves():
     return df
 
 
-class migration_2_c_ii_3_a():
+class migration_plum_v3():
     '''
     Pull the coefficients of a zeroinflated negative bionomical regression model
     fit to 1990 Census data.

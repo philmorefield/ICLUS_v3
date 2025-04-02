@@ -52,7 +52,7 @@ MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 
 def get_cofips_and_state():
     query = 'SELECT COFIPS, STUSPS AS STABBR \
-             FROM cofips_state_msa20_bea10_hhs'
+             FROM fips_to_urb20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     df = pd.read_sql_query(sql=query, con=con)
     con.close()

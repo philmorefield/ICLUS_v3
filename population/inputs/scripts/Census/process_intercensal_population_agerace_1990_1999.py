@@ -62,7 +62,8 @@ def main():
     for year in range(1990, 2000):
         file_name = f'stch-icen{year}.txt'
         csv = os.path.join(FILE_PATH, file_name)
-        temp = pd.read_csv(filepath_or_buffer=csv, sep='\s+', names=COLUMNS)
+        # temp = pd.read_csv(filepath_or_buffer=csv, sep='\s+', names=COLUMNS)
+        temp = pd.read_csv(filepath_or_buffer=csv, names=COLUMNS)
 
         temp['YEAR'] = year
         temp['COFIPS'] = temp['COFIPS'].astype(int).astype(str).str.zfill(5)

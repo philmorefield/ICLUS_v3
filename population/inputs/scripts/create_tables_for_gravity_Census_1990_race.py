@@ -135,7 +135,7 @@ def label_urban_destinations(df):
 
     df = df.drop(columns=['Dij'])
 
-    query = 'SELECT COFIPS, URBAN20 AS URBANDEST20 \
+    query = 'SELECT COFIPS, URBANDESTINATION20 \
              FROM fips_to_urb20_bea10_hhs'
     con = sqlite3.connect(MIGRATION_DB)
     urb_df = pd.read_sql_query(sql=query, con=con)
@@ -145,7 +145,7 @@ def label_urban_destinations(df):
                   how='left',
                   left_on='DESTINATION_FIPS',
                   right_on='COFIPS')
-    df['URBANDEST20'] = df['URBANDEST20'].astype(int)
+    df['URBANDESTINATION20'] = df['URBANDESTINATION20'].astype(int)
     df.drop(columns='COFIPS', inplace=True)
 
     return df
@@ -179,7 +179,7 @@ def main():
             # competing migrants
             df['Cij'] = df.groupby('DESTINATION_FIPS')['Pi'].transform(lambda x: x.shift(1).cumsum()).fillna(0).astype(int)
 
-            columns = ['ORIGIN_FIPS', 'DESTINATION_FIPS', 'Dij', 'SAME_LABOR_MARKET', 'URBANDEST20', 'Tij', 'Cij', 'Pi', 'Pj', 'Pj_star', 'FLOW']
+            columns = ['ORIGIN_FIPS', 'DESTINATION_FIPS', 'Dij', 'SAME_LABOR_MARKET', 'URBANDESTINATION20', 'Tij', 'Cij', 'Pi', 'Pj', 'Pj_star', 'FLOW']
             df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'], inplace=True)
             df = df.loc[:, columns]
             df['Pj'] = df['Pj'].astype(int)

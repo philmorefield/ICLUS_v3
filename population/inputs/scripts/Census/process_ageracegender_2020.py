@@ -2,7 +2,7 @@ import os
 import sqlite3
 
 import pandas as pd
-import polars as pl
+
 
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
@@ -42,46 +42,30 @@ RACE_MAP = {'WA': 'WHITE',
             'TOM': 'TWO_OR_MORE'}
 
 
-def make_fips_changes(df=None):
+def make_fips_changes(df):
     '''
     TODO: Add docstring
     '''
 
-    uri = f'sqlite:{MIG_DB}'
-    query = 'SELECT OLD_FIPS, NEW_FIPS \
+    con =sqlite3.connect(MIG_DB)
+    query = 'SELECT OLD_FIPS AS GEOID, NEW_FIPS \
              FROM fips_or_name_changes'
-    df_fips = pl.read_database_uri(query=query, uri=uri)
-
-    df = df.join(other=df_fips,
-                 how='left',
-                 left_on='GEOID',
-                 right_on='OLD_FIPS',
-                 coalesce=True)
-
-    df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
-                         .then(pl.col('NEW_FIPS'))
-                         .otherwise(pl.col('GEOID')).alias('GEOID'))
-    df = df.drop('NEW_FIPS')
-    df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'GENDER']).agg(pl.col('POPULATION').sum())
-
-    return df
-
-
-def get_valid_fips():
-    db = 'D:\\OneDrive\\Dissertation\\databases\\migration.sqlite'
-    con = sqlite3.connect(db)
-    query = 'SELECT CYFIPS, CYNAME FROM valid_cyfips'
-    df = pd.read_sql(sql=query, con=con)
+    df_fips = pd.read_sql_query(sql=query, con=con)
     con.close()
 
-    df = make_fips_changes(df=df)
+    df = df.merge(right=df_fips,
+                  how='left',
+                  on='GEOID')
+
+    df.loc[~df.NEW_FIPS.isnull(), 'GEOID'] = df['NEW_FIPS']
+    df = df.drop(columns='NEW_FIPS')
+    df = df.groupby(by=['GEOID', 'AGE_GROUP', 'RACE', 'GENDER'], as_index=False).sum()
 
     return df
 
-def main():
-    valid_fips = get_valid_fips()
 
-    csv = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Census\\cc-est2023-alldata.csv'
+def main():
+    csv = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\Census\\2023\\cc-est2023-alldata.csv'
     df = pd.read_csv(filepath_or_buffer=csv, encoding='latin1')
     df = df[['STATE', 'COUNTY', 'YEAR', 'AGEGRP', 'WA_MALE', 'WA_FEMALE', 'BA_MALE', 'BA_FEMALE', 'IA_MALE', 'IA_FEMALE', 'AA_MALE', 'AA_FEMALE', 'NA_MALE', 'NA_FEMALE', 'TOM_MALE', 'TOM_FEMALE']]
     df.query('YEAR == 2 & AGEGRP >= 1', inplace=True)  # estimate for 7/1/2020
@@ -98,6 +82,8 @@ def main():
     df.RACE = df.RACE.map(RACE_MAP)
     df = df[['GEOID', 'AGE_GROUP', 'RACE', 'GENDER', 'POPULATION']]
     df['POPULATION'] = df['POPULATION'].astype(int)
+
+    df = make_fips_changes(df)
 
     output_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
     db = os.path.join(output_folder, 'population.sqlite')
