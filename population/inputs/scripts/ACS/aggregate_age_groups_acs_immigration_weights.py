@@ -106,7 +106,6 @@ def main():
 
     df.rename(columns={'DESTINATION_FIPS': 'GEOID',
                        'ETHNICITY_RACE': 'RACE',
-                       'SEX': 'GENDER',
                        'VALUE': 'COUNTY_FRACTION'},
               inplace=True)
     df.to_sql(name='acs_immigration_cohort_fractions_by_age_group_2006_2015',

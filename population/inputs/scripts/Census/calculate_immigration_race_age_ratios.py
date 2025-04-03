@@ -42,7 +42,7 @@ def main():
         hisp_white['RACE_HISP'] = 10
 
         df = df.loc[~df.RACE_HISP.isin((1, 7, 8))]
-        df = df.append(other=hisp_white)
+        df = pd.concat(objs=[df, hisp_white], ignore_index=True)
         df['RACE_HISP'] = df['RACE_HISP'].map(race_map)
         df['SEX'] = df['SEX'].map(sex_map)
         df.set_index(keys=['YEAR', 'RACE_HISP', 'SEX'], inplace=True)
@@ -79,12 +79,12 @@ def main():
         for year in (2015, 2016):
             new = df.query('YEAR == 2017')
             new['YEAR'] = year
-            df = df.append(other=new, ignore_index=True)
+            df = pd.concat(objs=[df, new], ignore_index=True)
 
         for year in range(2061, 2101):
             new = df.query('YEAR == 2060')
             new['YEAR'] = year
-            df = df.append(other=new, ignore_index=True)
+            df = pd.concat(objs=[df, new], ignore_index=True)
 
         df.sort_values(by=['YEAR', 'AGE_GROUP', 'SEX'], inplace=True)
         df = df.pivot(index=['YEAR', 'SEX', 'AGE_GROUP'], columns='RACE_HISP')

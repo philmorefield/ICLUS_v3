@@ -28,7 +28,7 @@ AGE_GROUPS = ('5_TO_9',
               '70_TO_74',
               '75_TO_79',
               '80_TO_84',
-              '85_AND_OVER')
+              '85_TO_115')
 
 
 def get_migration(race, age_group):
