@@ -9,11 +9,12 @@ import os
 import time
 
 from datetime import datetime
+from itertools import product
 
 import numpy as np
 import polars as pl
 
-from iclus_migration_v3 import migration_plum_v3 as MigrationModel
+from iclus_migration_v3_single_race_and_age import migration_plum_v3 as MigrationModel
 
 
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
@@ -230,7 +231,7 @@ class Projector():
             # correct for any cohorts that have negative population
             self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
 
-            assert self.current_pop.shape == (675648, 5)
+            assert self.current_pop.shape == (671760, 5)
             assert sum(self.current_pop.null_count()).item() == 0
             # assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.net_migration = None
@@ -482,12 +483,11 @@ class Projector():
         migration_model = MigrationModel()
         migration_model.current_pop = self.current_pop.clone()
 
-        for race in ('WHITE',):
-        # for race in RACES:
-            print(f"\t{race}...")
+        for race, age_group in product(RACES, AGE_GROUPS):
+            print(f"\t{race}...{age_group}")
 
             # compute all county to county migration flows
-            gross_flows = migration_model.compute_migrants(race)
+            gross_flows = migration_model.compute_migrants(race, age_group)
             gross_flows = gross_flows.with_columns(pl.lit(race).alias('RACE'))
 
             # calculate a sex fraction for each county/race/age cohort

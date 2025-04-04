@@ -9,6 +9,16 @@ import pandas as pd
            breakouts from the 2017 Census immigration projections
 '''
 
+
+if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+elif os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
+
+DATABASES = os.path.join(BASE_FOLDER, 'inputs\\databases')
+ACS_DB = os.path.join(DATABASES, 'acs.sqlite')
+MIGRATION_DB = os.path.join(DATABASES, 'migration.sqlite')
+
 RENAME_DICT = {'HISPANIC_WHITE': 'HISP_WHITE',
                'HISPANIC_BLACK': 'BLACK',
                'HISPANIC_ASIAN': 'ASIAN',
@@ -24,9 +34,7 @@ RENAME_DICT = {'HISPANIC_WHITE': 'HISP_WHITE',
 
 
 def main():
-    p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    f = 'acs.sqlite'
-    con = sqlite3.connect(os.path.join(p, f))
+    con = sqlite3.connect(ACS_DB)
     query = 'SELECT * FROM \
              acs_immigration_cohort_fractions_2006_2015'
     df = pd.read_sql(sql=query, con=con)
@@ -89,7 +97,7 @@ def main():
         if int(col) >= 85:
             df.rename(columns={col: '85+'}, inplace=True)
 
-    df = df.groupby(axis=1, level=0).sum()
+    df = df.T.groupby(level=0).sum().T
     df['ETHNICITY_RACE'] = df['ETHNICITY_RACE'].map(RENAME_DICT)
     df = df.groupby(by=['DESTINATION_FIPS', 'ETHNICITY_RACE', 'SEX']).sum()
 
@@ -98,7 +106,7 @@ def main():
     df = pd.DataFrame(data=df.stack())
     df.columns = ['VALUE']
 
-    df['DENOMENATOR'] = df.groupby(by=['ETHNICITY_RACE', 'SEX', 'AGE_GROUP'])['VALUE'].transform(sum)
+    df['DENOMENATOR'] = df.groupby(by=['ETHNICITY_RACE', 'SEX', 'AGE_GROUP'])['VALUE'].transform('sum')
     df.VALUE /= df.DENOMENATOR
     df = df[['VALUE']]
     df.reset_index(inplace=True)
@@ -108,6 +116,7 @@ def main():
                        'ETHNICITY_RACE': 'RACE',
                        'VALUE': 'COUNTY_FRACTION'},
               inplace=True)
+
     df.to_sql(name='acs_immigration_cohort_fractions_by_age_group_2006_2015',
               if_exists='replace',
               con=con,

@@ -185,7 +185,7 @@ def main():
             df['Pj'] = df['Pj'].astype(int)
             df['FLOW'] = df['FLOW'].astype(int)
 
-            db = os.path.join(DATABASE_FOLDER, 'zeroinflated_regression.sqlite')
+            db = os.path.join(DATABASE_FOLDER, 'zinb_regression_inputs.sqlite')
             con = sqlite3.connect(db)
             df.to_sql(name=f'zinb_inputs_Census_1990_{race}_{age_group}',
                     con=con,
