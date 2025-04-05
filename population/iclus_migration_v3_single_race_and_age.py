@@ -104,100 +104,83 @@ class migration_plum_v3():
         # df.loc[(df.P_VALUE >= self.ALPHA) & (df.AGE_GROUP != '85+') & (~df.index.get_level_values('VARIABLE').isin(['c_int', 'z_int'])), 'COEFF'] = 0.0
         self.coefs = df.clone()
 
-    def compute_migrants(self, race):
+    def compute_migrants(self, race, age_group):
         '''
         Placeholder
         '''
-        race_pop = (self.current_pop
-                    .filter(pl.col('RACE') == race)
-                    .select(['GEOID', 'POPULATION'])
-                    .group_by('GEOID')
-                    .sum())
+        race_pop = self.current_pop.filter(pl.col('RACE') == race)
+        cohort_pop = (race_pop.filter(pl.col('AGE_GROUP') == age_group)
+                      .select(['GEOID', 'POPULATION'])
+                      .group_by('GEOID')
+                      .sum())
 
-        gross_migration_flows = None
+        df = self.compute_spatial_variables(cohort_pop=cohort_pop, race_pop=race_pop)
 
-        # for age_group in ('50-54',):
-        for age_group in AGE_GROUPS:
-            print(f"\t\t{age_group}")
+        race_label = race
+        if race not in ('BLACK', 'WHITE'):
+            race_label = 'OTHER'
 
-            age_pop = (self.current_pop
-                       .filter((pl.col('RACE') == race) & (pl.col('AGE_GROUP') == age_group))
-                       .select(['GEOID', 'POPULATION'])
-                       .group_by('GEOID')
-                       .sum())
+        age_group_label = age_group
+        if age_group in ('0-4', '5-9'):
+            age_group_label = '0-9'
 
-            df = self.compute_spatial_variables(age_pop=age_pop, race_pop=race_pop)
+        coefs = self.coefs.filter((pl.col('RACE') == race_label) & (pl.col('AGE_GROUP') == age_group_label))
+        assert coefs.shape == (16, 5)
 
-            race_label = race
-            if race not in ('BLACK', 'WHITE'):
-                race_label = 'OTHER'
+        # calculate the zero model first
+        z_int = coefs.filter(pl.col('VARIABLE') == 'zero_.Intercept.')['COEFF'][0]
+        z_Pi = coefs.filter(pl.col('VARIABLE') == 'zero_ln_mi')['COEFF'][0]
+        z_Pj = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj')['COEFF'][0]
+        z_Cij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Cij')['COEFF'][0]
+        z_Tij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Tij')['COEFF'][0]
+        z_Pj_star = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj_star')['COEFF'][0]
 
-            age_group_label = age_group
-            if age_group in ('0-4', '5-9'):
-                age_group_label = '0-9'
+        z_labor = coefs.filter(pl.col('VARIABLE') == 'zero_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
+        z_urban = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBAN_DESTINATION.1')['COEFF'][0]
 
-            coefs = self.coefs.filter((pl.col('RACE') == race_label) & (pl.col('AGE_GROUP') == age_group_label))
-            assert coefs.shape == (16, 5)
+        df = df.with_columns(1 - np.exp(-np.exp(z_int +
+                                                (z_Pi * np.log(pl.col('Pi') + 1)) +
+                                                (z_Pj * np.log(pl.col('Pj') + 1)) +
+                                                (z_Cij * np.log(pl.col('Cij') + pl.col('Pj') + 1)) +
+                                                (z_Tij * np.log(pl.col('Tij') + 1)) +
+                                                (z_Pj_star * np.log(pl.col('Pj_star') + 1)) +
+                                                (z_labor * pl.col('SAME_LABOR_MARKET')) +
+                                                (z_urban * pl.col('URBANDESTINATION20')))))
+        df = df.rename({'literal': 'ZERO_RESULT'})
 
-            # calculate the zero model first
-            z_int = coefs.filter(pl.col('VARIABLE') == 'zero_.Intercept.')['COEFF'][0]
-            z_Pi = coefs.filter(pl.col('VARIABLE') == 'zero_ln_mi')['COEFF'][0]
-            z_Pj = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj')['COEFF'][0]
-            z_Cij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Cij')['COEFF'][0]
-            z_Tij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Tij')['COEFF'][0]
-            z_Pj_star = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj_star')['COEFF'][0]
+        # calculate the count model
+        c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
+        c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_mi')['COEFF'][0]
+        c_Pj = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj')['COEFF'][0]
+        c_Cij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Cij')['COEFF'][0]
+        c_Tij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Tij')['COEFF'][0]
+        c_Pj_star = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj_star')['COEFF'][0]
+        c_labor = coefs.filter(pl.col('VARIABLE') == 'count_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
+        c_urban = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBAN_DESTINATION.1')['COEFF'][0]
 
-            z_labor = coefs.filter(pl.col('VARIABLE') == 'zero_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
-            z_urban = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBAN_DESTINATION.1')['COEFF'][0]
+        df = df.with_columns(np.exp(c_int +
+                                    (c_Pi * np.log(pl.col('Pi') + 1)) +
+                                    (c_Pj * np.log(pl.col('Pj') + 1)) +
+                                    (c_Cij * np.log(pl.col('Cij') + pl.col('Pj') + 1)) +
+                                    (c_Tij * np.log(pl.col('Tij') + 1)) +
+                                    (c_Pj_star * np.log(pl.col('Pj_star') + 1)) +
+                                    (c_labor * pl.col('SAME_LABOR_MARKET')) +
+                                    (c_urban * pl.col('URBANDESTINATION20'))))
+        df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug
 
-            df = df.with_columns(1 - np.exp(-np.exp(z_int +
-                                                   (z_Pi * np.log(pl.col('Pi') + 1)) +
-                                                   (z_Pj * np.log(pl.col('Pj') + 1)) +
-                                                   (z_Cij * np.log(pl.col('Cij') + pl.col('Pj') + 1)) +
-                                                   (z_Tij * np.log(pl.col('Tij') + 1)) +
-                                                   (z_Pj_star * np.log(pl.col('Pj_star') + 1)) +
-                                                   (z_labor * pl.col('SAME_LABOR_MARKET')) +
-                                                   (z_urban * pl.col('URBANDESTINATION20')))))
-            df = df.rename({'literal': 'ZERO_RESULT'})
+        # this rounding step preserves >99% of the total migration just calculated
+        gross_flows = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))
+        gross_flows = gross_flows.select(['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION'])
+        gross_flows = gross_flows.with_columns(pl.lit(age_group).cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
 
-            # calculate the count model
-            c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
-            c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_mi')['COEFF'][0]
-            c_Pj = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj')['COEFF'][0]
-            c_Cij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Cij')['COEFF'][0]
-            c_Tij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Tij')['COEFF'][0]
-            c_Pj_star = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj_star')['COEFF'][0]
-            c_labor = coefs.filter(pl.col('VARIABLE') == 'count_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
-            c_urban = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBAN_DESTINATION.1')['COEFF'][0]
+        return gross_flows
 
-            df = df.with_columns(np.exp(c_int +
-                                       (c_Pi * np.log(pl.col('Pi') + 1)) +
-                                       (c_Pj * np.log(pl.col('Pj') + 1)) +
-                                       (c_Cij * np.log(pl.col('Cij') + pl.col('Pj') + 1)) +
-                                       (c_Tij * np.log(pl.col('Tij') + 1)) +
-                                       (c_Pj_star * np.log(pl.col('Pj_star') + 1)) +
-                                       (c_labor * pl.col('SAME_LABOR_MARKET')) +
-                                       (c_urban * pl.col('URBANDESTINATION20'))))
-            df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug
-
-            # this rounding step preserves >99% of the total migration just calculated
-            df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))
-            df = df.select(['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION'])
-            df = df.with_columns(pl.lit(age_group).cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
-
-            if gross_migration_flows is None:
-                gross_migration_flows = df.clone()
-            else:
-                gross_migration_flows = pl.concat(items=[gross_migration_flows, df])
-
-        return gross_migration_flows
-
-    def compute_spatial_variables(self, age_pop, race_pop):
+    def compute_spatial_variables(self, cohort_pop, race_pop):
         '''
         Placeholder
         '''
         # origin population
-        df = self.distance.join(other=age_pop,
+        df = self.distance.join(other=cohort_pop,
                                 how='left',
                                 left_on='ORIGIN_FIPS',
                                 right_on='GEOID').lazy()

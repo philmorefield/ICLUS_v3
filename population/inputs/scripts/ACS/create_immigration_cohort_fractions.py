@@ -5,12 +5,9 @@ from itertools import product
 
 import pandas as pd
 
-DISSERTATION_FOLDER = 'D:\\OneDrive\\Dissertation'
-PART_3_FOLDER = os.path.join(DISSERTATION_FOLDER, 'analysis\\part_3')
-ACS_DB = os.path.join(PART_3_FOLDER, 'inputs\\acs\\acs.sqlite')
-MIG_DB = os.path.join(DISSERTATION_FOLDER, 'databases', 'migration.sqlite')
-
-p = 'D:\\OneDrive\\Dissertation\\data\\ACS\\2011_2015'
+DATABASES = 'D:\\projects\\ICLUS_v3\\population\\inputs\\databases'
+ACS_DB = os.path.join(DATABASES, 'acs.sqlite')
+MIGRATION_DB = os.path.join(DATABASES, 'migration.sqlite')
 
 ETHNICITIES = ('HISPANIC', 'NONHISPANIC')
 RACES = ('WHITE', 'BLACK', 'ASIAN', 'NHPI', 'AIAN', 'OTHER', 'TWO_OR_MORE')
@@ -24,7 +21,7 @@ def retrieve_race_weights():
     print("Processing race weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_race'
+    query = 'SELECT * FROM acs_immigration_weights_race_2006_2015'
     df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
     con.close()
 
@@ -35,8 +32,11 @@ def retrieve_sex_weights():
     print("Processing sex weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_sex'
-    df = pd.read_sql(sql=query, index_col=['DESTINATION_FIPS', 'SEX'], con=con)
+    query = 'SELECT * FROM acs_immigration_weights_sex_2006_2015'
+    # df = pd.read_sql(sql=query, index_col=['DESTINATION_FIPS', 'SEX'], con=con)
+    df = pd.read_sql(sql=query, con=con)
+    df = df.melt(id_vars=['DESTINATION_FIPS'], var_name='SEX', value_name='SEX_FRACTION')
+    df = df.set_index(keys=['DESTINATION_FIPS', 'SEX'])
     con.close()
 
     return df
@@ -46,7 +46,7 @@ def retrieve_age_weights():
     print("Processing age weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_age'
+    query = 'SELECT * FROM acs_immigration_weights_age_2006_2015'
     df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
     con.close()
 
@@ -57,7 +57,7 @@ def retrieve_hispanic_weights():
     print("Processing hispanic weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_hispanic'
+    query = 'SELECT * FROM acs_immigration_weights_hispanic_2006_2015'
     df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
     con.close()
 
@@ -107,16 +107,14 @@ def main():
         if df is None:
             df = temp.copy()
         else:
-            df = df.append(other=temp, ignore_index=True, verify_integrity=True)
+            df = pd.concat(objs=[df, temp], ignore_index=True)
 
         del temp
 
     df.set_index(keys=['DESTINATION_FIPS', 'ETHNICITY_RACE', 'SEX'], inplace=True)
     df.reset_index(inplace=True)
 
-    p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    f = 'acs.sqlite'
-    con = sqlite3.connect(os.path.join(p, f))
+    con = sqlite3.connect(ACS_DB)
     df.to_sql(name='acs_immigration_cohort_fractions_2006_2015',
               con=con,
               if_exists='replace',
