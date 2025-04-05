@@ -9,7 +9,7 @@ library(sandwich)
 age_groups = c("5_TO_9", "10_TO_14", "15_TO_19", "20_TO_24", "25_TO_29",
                "30_TO_34", "35_TO_39", "40_TO_44", "45_TO_49", "50_TO_54",
                "55_TO_59", "60_TO_64", "65_TO_69", "70_TO_74", "75_TO_79",
-               "80_TO_84", "85_AND_OVER")
+               "80_TO_84", "85_TO_115")
 
 input_db = "D:\\projects\\ICLUS_v3\\population\\inputs\\databases\\zinb_regression_inputs.sqlite"
 output_db = "D:\\projects\\ICLUS_v3\\population\\outputs\\zinb_regression_outputs.sqlite"
