@@ -22,10 +22,10 @@ def main():
                 10: 'HISP_WHITE'}
 
     sex_map = {1: 'MALE',
-                  2: 'FEMALE'}
+               2: 'FEMALE'}
 
     for scenario in ('low', 'mid', 'high'):
-        p = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\Census\\2017')
+        p = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\Census\\2017\\projections')
         f = f'np2017_d4_{scenario}.csv'
 
         df = pd.read_csv(filepath_or_buffer=os.path.join(p, f))

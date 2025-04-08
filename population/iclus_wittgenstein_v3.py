@@ -44,31 +44,6 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '70-74', '75-79', '80-84', '85+')
 
 
-# def make_fips_changes(df):
-#     '''
-#     TODO: Is this function still needed?
-#     '''
-
-#     uri = f'sqlite:{MIG_DB}'
-#     query = 'SELECT OLD_FIPS, NEW_FIPS \
-#              FROM fips_or_name_changes'
-#     df_fips = pl.read_database_uri(query=query, uri=uri)
-
-#     df = df.join(other=df_fips,
-#                  how='left',
-#                  left_on='GEOID',
-#                  right_on='OLD_FIPS',
-#                  coalesce=True)
-
-#     df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
-#                          .then(pl.col('NEW_FIPS'))
-#                          .otherwise(pl.col('GEOID')).alias('GEOID'))
-#     df = df.drop('NEW_FIPS')
-#     df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'SEX']).agg(pl.col('POPULATION').sum())
-
-#     return df
-
-
 def set_launch_population(launch_year):
     '''
     2020 launch population is taken from Census 2020-2023 Intercensal Population
