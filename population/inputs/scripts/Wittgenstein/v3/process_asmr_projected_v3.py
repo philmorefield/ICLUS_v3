@@ -44,11 +44,6 @@ def interpolate_years(df):
         value_2020 = values_2020.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT_INTERP'].values[0]
         df.loc[(df.SCENARIO == scenario) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT_CHANGE_MULT'] = df['MORT_INTERP'] / value_2020
 
-    # From Wittgenstein: FEMALES in the 5-9 age group have a mortality rate of
-    # 0.0, resulting in a meaningless mortality change multiplier calculation,
-    # so we will set to 1.0
-    df.loc[(df.SEX == 'FEMALE') & (df.AGE_GROUP == '5-9') & (df.MORT_CHANGE_MULT.isnull())] = 1.0
-
     assert not df.MORT_CHANGE_MULT.isnull().any(), "Mortality change multiplier is null!"
     return df
 
@@ -59,7 +54,7 @@ def combine_85plus(df):
                   '95-99': 0.43,
                   '100+': 0.07}
 
-    older = df.query('AGE_GROUP == "85-89" | AGE_GROUP == "90-94" | AGE_GROUP == "95-99" | AGE_GROUP == "100+"')
+    older = df.copy().query('AGE_GROUP == "85-89" | AGE_GROUP == "90-94" | AGE_GROUP == "95-99" | AGE_GROUP == "100+"')
     older.loc[:, 'WEIGHT'] = older['AGE_GROUP'].map(WEIGHT_MAP)
     older.loc[:, 'MORT_x_WEIGHT'] = older['MORT_CHANGE_MULT'] * older['WEIGHT']
     older.loc[:, 'NUMERATOR'] = older.groupby(by=['SCENARIO', 'YEAR', 'SEX'])['MORT_x_WEIGHT'].transform('sum')
@@ -100,8 +95,14 @@ def main():
     df = df.drop(columns='YEARS').join(exploded)
     df['YEAR'] = df.YEAR.astype(int)
     df.reset_index(drop=True, inplace=True)
-    df['MORT_RATE_K'] = (1.0 - df.SURV_RATIO) * 1000.0
 
+    # Some cohorts (mostly FEMALE) have a survival ratio of 1.0 in some
+    # scenarios (i.e., mortality is 0). This doesn't make sense conceptually,
+    # but it also creates numerical issues when calculating a change factor,
+    # so we will set those survival ratios to 0.999 to ease the calculations.
+    df.loc[df.SURV_RATIO == 1.0, 'SURV_RATIO'] = 0.999
+
+    df['MORT_RATE_K'] = (1.0 - df.SURV_RATIO) * 1000.0
     df = interpolate_years(df)
     df = combine_85plus(df)
 

@@ -44,29 +44,29 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '70-74', '75-79', '80-84', '85+')
 
 
-def make_fips_changes(df):
-    '''
-    TODO: Is this function still needed?
-    '''
+# def make_fips_changes(df):
+#     '''
+#     TODO: Is this function still needed?
+#     '''
 
-    uri = f'sqlite:{MIG_DB}'
-    query = 'SELECT OLD_FIPS, NEW_FIPS \
-             FROM fips_or_name_changes'
-    df_fips = pl.read_database_uri(query=query, uri=uri)
+#     uri = f'sqlite:{MIG_DB}'
+#     query = 'SELECT OLD_FIPS, NEW_FIPS \
+#              FROM fips_or_name_changes'
+#     df_fips = pl.read_database_uri(query=query, uri=uri)
 
-    df = df.join(other=df_fips,
-                 how='left',
-                 left_on='GEOID',
-                 right_on='OLD_FIPS',
-                 coalesce=True)
+#     df = df.join(other=df_fips,
+#                  how='left',
+#                  left_on='GEOID',
+#                  right_on='OLD_FIPS',
+#                  coalesce=True)
 
-    df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
-                         .then(pl.col('NEW_FIPS'))
-                         .otherwise(pl.col('GEOID')).alias('GEOID'))
-    df = df.drop('NEW_FIPS')
-    df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'SEX']).agg(pl.col('POPULATION').sum())
+#     df = df.with_columns(pl.when(pl.col('NEW_FIPS').is_not_null())
+#                          .then(pl.col('NEW_FIPS'))
+#                          .otherwise(pl.col('GEOID')).alias('GEOID'))
+#     df = df.drop('NEW_FIPS')
+#     df = df.group_by(['GEOID', 'AGE_GROUP', 'RACE', 'SEX']).agg(pl.col('POPULATION').sum())
 
-    return df
+#     return df
 
 
 def set_launch_population(launch_year):
@@ -158,7 +158,7 @@ class Projector():
         # fertility-related attributes
         self.births = None
 
-    def run(self, launch_year=2020, final_projection_year=2025):
+    def run(self, launch_year=2020, final_projection_year=2100):
         '''
         TODO:
         '''
@@ -244,7 +244,7 @@ class Projector():
 
             # age everyone by one year
             self.advance_age_groups()
-            assert self.current_pop.shape == (671760, 5)
+            assert self.current_pop.shape == (675648, 5)
 
             # add births
             self.current_pop = (self.current_pop.join(other=self.births,
@@ -257,7 +257,7 @@ class Projector():
                                 .alias('POPULATION'))
                                 .drop('BIRTHS'))
 
-            assert self.current_pop.shape == (671760, 5)
+            assert self.current_pop.shape == (675648, 5)
             self.births = None
 
             self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
@@ -482,8 +482,8 @@ class Projector():
         migration_model = MigrationModel()
         migration_model.current_pop = self.current_pop.clone()
 
-        for race in ('WHITE',):
-        # for race in RACES:
+        # for race in ('WHITE',):
+        for race in RACES:
             print(f"\t{race}...")
 
             # compute all county to county migration flows
@@ -495,7 +495,7 @@ class Projector():
             ratios = ratios.with_columns(pl.col('POPULATION')
                                          .sum()
                                          .over(['GEOID', 'AGE_GROUP'])
-                                         .alias('GEOID_AGE_POP')).lazy()
+                                         .alias('GEOID_AGE_POP'))
 
             ratios = ratios.with_columns((pl.col('POPULATION') / pl.col('GEOID_AGE_POP'))
                                          .fill_null(value=0)
@@ -541,10 +541,10 @@ class Projector():
             if self.net_migration is None:
                 self.net_migration = lf.clone()
             else:
-                self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical_relaxed')
+                self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical')
 
-        self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP']).collect()
-        # assert self.net_migration.shape[0] == 675648
+        self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+        assert self.net_migration.shape[0] == 675648
         assert self.net_migration.null_count().sum_horizontal().item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
 
@@ -560,8 +560,8 @@ class Projector():
                                        on=['GEOID', 'RACE', 'AGE_GROUP', 'SEX'],
                                        how='left',
                                        coalesce=True)
-        # migration = migration.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
-        # assert migration.shape[0] == 671760
+        migration = migration.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+        assert self.net_migration.shape[0] == 675648
         assert sum(migration.null_count()).item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
@@ -606,7 +606,7 @@ class Projector():
         # get Wittgenstein fertility rate adjustments
         uri = f'sqlite:{WITT_DB}'
         query = f'SELECT AGE_GROUP, FERT_CHANGE_MULT AS FERT_MULT \
-                  FROM age_specific_fertility \
+                  FROM age_specific_fertility_v3 \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year - 1}"'
         fert_multiply = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
@@ -647,7 +647,7 @@ class Projector():
             current_births = current_births.rename({'BIRTHS': str(self.current_projection_year)}).clone()
             births = pl.concat(items=[births, current_births], how='align')
         births.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
-        assert births.shape[0] == 37320
+        assert births.shape[0] == 37536
         assert sum(births.null_count()).item() == 0
         births.write_database(table_name=f'births_by_race_sex_age_{self.scenario}',
                       connection=uri,
@@ -659,5 +659,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('SSP3')
+    main('SSP1')
     print(time.ctime())

@@ -96,7 +96,11 @@ def align_with_2020(df):
     scenarios = df.SCENARIO.unique()
     years = range(2010, 2100)
 
+    # from co-est2024-alldata.csv
     census_avg_2324 = 2500000
+
+    # from co-est2020-alldata.csv'
+    census_2020 = 477029
 
     df.sort_values(by=['SCENARIO', 'YEAR', 'SEX', 'AGE_GROUP'], inplace=True)
     for scenario in scenarios:
@@ -114,7 +118,7 @@ def align_with_2020(df):
             df.loc[(df.SCENARIO == scenario) & (df.YEAR == year), 'NETMIG_INTERP'] /= witt_total_proj
 
             # use the delta method to base Wittgenstein changes on the actual immigration in 2020
-            df.loc[(df.SCENARIO == scenario) & (df.YEAR == year), 'NETMIG_INTERP'] *= (census_avg_2324 * (witt_total_proj / witt_total_2020))
+            df.loc[(df.SCENARIO == scenario) & (df.YEAR == year), 'NETMIG_INTERP'] *= (census_2020 * (witt_total_proj / witt_total_2020))
 
     return df
 

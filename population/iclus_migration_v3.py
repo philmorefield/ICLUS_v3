@@ -7,12 +7,9 @@ import numpy as np
 import polars as pl
 
 
-if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
-    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
-elif os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
-else:
-    raise Exception
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
 ANALYSIS_DB = os.path.join(INPUT_FOLDER, 'databases', 'analysis.sqlite')
@@ -67,7 +64,7 @@ class migration_plum_v3():
         '''
         # set up the regression coefficients
         # uri = f"sqlite:{os.path.join(INPUT_FOLDER, 'databases', 'zeroinflated_regression.sqlite')}"
-        uri = "sqlite: \D:\\projects\\ICLUS_v3\\population\\inputs\\old\\part_2_c_ii_3_a\\zeroinfl_outputs.sqlite"
+        uri = r"sqlite: \D:\\OneDrive\\ICLUS_v3\\population\\inputs\\old\\part_2_c_ii_3_a\\zeroinfl_outputs.sqlite"
         query = 'SELECT * FROM coefficients_Census_1990'
         coefs = pl.read_database_uri(query=query, uri=uri)
 
@@ -181,9 +178,12 @@ class migration_plum_v3():
             df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug
 
             # this rounding step preserves >99% of the total migration just calculated
-            df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(2).alias('MIGRATION'))
+            df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(0).cast(pl.Int32).alias('MIGRATION'))
             df = df.select(['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION'])
             df = df.with_columns(pl.lit(age_group).cast(pl.Enum(AGE_GROUPS)).alias('AGE_GROUP'))
+
+            df = df.collect()
+            assert df.shape[0] == 9781256
 
             if gross_migration_flows is None:
                 gross_migration_flows = df.clone()
