@@ -7,12 +7,9 @@ import numpy as np
 import pandas as pd
 
 
-if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
-    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
-elif os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
-else:
-    raise Exception
 
 
 def parse_years(s):
