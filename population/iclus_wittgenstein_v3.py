@@ -16,12 +16,9 @@ import polars as pl
 from iclus_migration_v3 import migration_plum_v3 as MigrationModel
 
 
-if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
-    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
-elif os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('D:\\projects\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
-else:
-    raise Exception
 
 d = datetime.now()
 TIME_STAMP = f'{d.year}{d.month}{d.day}{d.hour}{d.minute}{d.second}'
@@ -44,15 +41,11 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '70-74', '75-79', '80-84', '85+')
 
 
-def set_launch_population(launch_year):
+def set_launch_population(launch_year=2020):
     '''
     2020 launch population is taken from Census 2020-2023 Intercensal Population
     Estimates.
     '''
-
-    if launch_year != 2020:
-        raise Exception("Invalid launch year!")
-
     uri = f'sqlite:{POP_DB}'
     query = 'SELECT * FROM county_population_ageracesex_2020'
     df = pl.read_database_uri(query=query, uri=uri)
@@ -62,37 +55,6 @@ def set_launch_population(launch_year):
 
     #assert df.shape[0] == 675648
     return df
-
-
-# def retrieve_baseline_migration_estimate():
-#     p = os.path.join(INPUT_FOLDER, 'part_4')
-#     db = os.path.join(p, 'baseline_migration_2015_2_c_ii_3_a.sqlite')
-#     con = sqlite3.connect(db, timeout=60)
-#     query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, MIGRATION as BASELINE\
-#              FROM gross_migration_by_race_2015'
-#     df = pl.read_sql(sql=query, con=con, index_col=['ORIGIN_FIPS', 'DESTINATION_FIPS'])
-#     con.close()
-
-#     TOTAL_IN = df.group_by(by='DESTINATION_FIPS')['BASELINE'].sum()
-#     TOTAL_OUT = df.group_by(by='ORIGIN_FIPS')['BASELINE'].sum()
-#     df = pl.DataFrame(data=TOTAL_IN.sub(other=TOTAL_OUT, axis='index'))
-#     # df = df.round().astype(int)
-#     df.index.rename(name='GEOID', inplace=True)
-#     df.columns = ['MIGRATION']
-
-#     return df
-
-
-# def retrieve_intercensal_migration():
-#     p = os.path.join(INPUT_FOLDER, 'part_5')
-#     db = os.path.join(p, 'part_5_inputs.sqlite')
-#     con = sqlite3.connect(db, timeout=60)
-#     query = 'SELECT COFIPS AS GEOID, DOMESTICMIG2015 AS MIGRATION FROM baseline_net_migration_2015'
-#     df = pl.read_sql(sql=query, con=con, index_col='GEOID')
-#     con.close()
-
-#     return df
-
 
 def main(scenario):
     '''
@@ -181,7 +143,7 @@ class Projector():
                                 .alias('POPULATION'))
                                 .drop('NET_IMMIGRATION'))
             # correct for any cohorts that have negative population
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
             # assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
@@ -203,7 +165,7 @@ class Projector():
             self.current_pop = self.current_pop.drop('NET_MIGRATION')
 
             # correct for any cohorts that have negative population
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
 
             assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
@@ -634,5 +596,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('SSP1')
+    main('SSP3')
     print(time.ctime())

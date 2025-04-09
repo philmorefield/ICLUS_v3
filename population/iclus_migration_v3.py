@@ -175,7 +175,7 @@ class migration_plum_v3():
                                        (c_Pj_star * np.log(pl.col('Pj_star') + 1)) +
                                        (c_labor * pl.col('SAME_LABOR_MARKET')) +
                                        (c_urban * pl.col('URBANDESTINATION20'))))
-            df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug
+            df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug?
 
             # this rounding step preserves >99% of the total migration just calculated
             df = df.with_columns(((1 - pl.col('ZERO_RESULT')) * pl.col('COUNT_RESULT')).round(0).cast(pl.Int32).alias('MIGRATION'))

@@ -3,13 +3,14 @@ import sqlite3
 
 import pandas as pd
 
+from matplotlib import pyplot as plt
 
+ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
 if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
     ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
-else:
-    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
 
 DATABASES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
+
 
 def main():
 
@@ -45,11 +46,10 @@ def main():
         df = pd.concat(objs=[df, hisp_white], ignore_index=True)
         df['RACE_HISP'] = df['RACE_HISP'].map(race_map)
         df['SEX'] = df['SEX'].map(sex_map)
-        df.set_index(keys=['YEAR', 'RACE_HISP', 'SEX'], inplace=True)
-        df = df.melt(var_name='AGE', value_name='NIM', ignore_index=False)
+        df = df.melt(id_vars=['YEAR', 'RACE_HISP', 'SEX'], var_name='AGE', value_name='NIM')
         df['AGE'] = df['AGE'].str.replace('NIM_', '').astype(int)
 
-        df['AGE_GROUP'] = 0
+        df['AGE_GROUP'] = '0'
         df.loc[df.AGE <= 4, 'AGE_GROUP'] = '0-4'
         df.loc[(df.AGE >= 5) & (df.AGE <= 9), 'AGE_GROUP'] = '5-9'
         df.loc[(df.AGE >= 10) & (df.AGE <= 14), 'AGE_GROUP'] = '10-14'
@@ -69,20 +69,36 @@ def main():
         df.loc[(df.AGE >= 80) & (df.AGE <= 84), 'AGE_GROUP'] = '80-84'
         df.loc[df.AGE >= 85, 'AGE_GROUP'] = '85+'
 
-        df = df.drop(columns='AGE').reset_index()
+        # exploratory plot
+        # temp = df[['YEAR', 'RACE_HISP', 'NIM']].groupby(by=['YEAR', 'RACE_HISP'], as_index=False).sum()
+        # temp = temp.pivot(columns='RACE_HISP', index='YEAR', values='NIM').reset_index()
+        # temp.plot.area(x='YEAR')
+        # plt.legend(reverse=True, bbox_to_anchor=(1.05, 0.5))
+        # plt.tight_layout()
+        # plt.show()
+
+        df = df.drop(columns='AGE')
         df = df.groupby(by=['YEAR', 'RACE_HISP', 'SEX', 'AGE_GROUP'], as_index=False).sum()
-        df['ANN_TOTAL_NIM'] = df.groupby(by=['YEAR', 'AGE_GROUP', 'SEX'])['NIM'].transform(sum)
+
+        # The Census projects that some age/sex/race cohorts will be net
+        # emigrants in many years. For the purposes of allocating immigrants,
+        # we will set negative values to 0, and no immigrants of that cohort
+        # will be allocated in the respective year.
+        df['NIM'] = df['NIM'].clip(lower=0)
+
+        df['ANN_TOTAL_NIM'] = df.groupby(by=['YEAR', 'AGE_GROUP', 'SEX'])['NIM'].transform("sum")
         df['ANN_NIM_FRAC'] = df['NIM'] / df['ANN_TOTAL_NIM']
+        df = df.fillna(value=0)
 
         df = df[['YEAR', 'RACE_HISP', 'SEX', 'AGE_GROUP', 'ANN_NIM_FRAC']]
 
         for year in (2015, 2016):
-            new = df.query('YEAR == 2017')
+            new = df.query('YEAR == 2017').copy()
             new['YEAR'] = year
             df = pd.concat(objs=[df, new], ignore_index=True)
 
         for year in range(2061, 2101):
-            new = df.query('YEAR == 2060')
+            new = df.query('YEAR == 2060').copy()
             new['YEAR'] = year
             df = pd.concat(objs=[df, new], ignore_index=True)
 
@@ -94,7 +110,6 @@ def main():
 
         db = os.path.join(DATABASES, 'census.sqlite')
         con = sqlite3.connect(db)
-
         df.to_sql(name=f'annual_immigration_fraction_{scenario}',
                   con=con,
                   if_exists='replace',

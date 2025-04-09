@@ -12,9 +12,9 @@ if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'wittgenstein_v3_202545215141.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'wittgenstein_v3_202547221553.sqlite')
 
-SCENARIO = 'SSP3'
+SCENARIO = 'SSP1'
 
 
 def main():
@@ -52,8 +52,9 @@ def main():
     df = pd.concat([hist_pop, proj_pop], axis=0, ignore_index=True)
     df['YEAR'] = df['YEAR'].astype(int)
     df.plot.area(x='YEAR', ax=ax_pop)
+    plt.axvline(x=2020, color='black', linestyle='--')
 
-    plt.title('TOTAL POPULATION')
+    plt.title(f'TOTAL U.S. POPULATION: {SCENARIO}')
     plt.gca().set_xlabel("")
     plt.gca().set_ylabel('')
     xmin = df.YEAR.astype(int).min()
@@ -62,8 +63,6 @@ def main():
     plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
     # plt.gca().get_legend().set_bbox_to_anchor((1.05, 1.10))
     # plt.gca().get_legend().reversed = True
-
-
 
     ############
     ## BIRTHS ##
