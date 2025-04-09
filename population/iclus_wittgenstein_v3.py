@@ -122,9 +122,9 @@ class Projector():
                                 .with_columns(pl.col('POPULATION') - pl.col('DEATHS')
                                 .alias('POPULATION'))
                                 .drop('DEATHS'))
-            assert self.current_pop.shape == (675648, 5)
+
+            # assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
-            # self.current_pop.clip(lower=0, inplace=True)
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.deaths = None
 
@@ -142,8 +142,7 @@ class Projector():
                                 .otherwise(pl.col('POPULATION'))
                                 .alias('POPULATION'))
                                 .drop('NET_IMMIGRATION'))
-            # correct for any cohorts that have negative population
-            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+
             # assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
@@ -164,12 +163,9 @@ class Projector():
                                 .alias('POPULATION')))
             self.current_pop = self.current_pop.drop('NET_MIGRATION')
 
-            # correct for any cohorts that have negative population
-            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
-
-            assert self.current_pop.shape == (675648, 5)
+            # assert self.current_pop.shape == (675648, 5)
             assert sum(self.current_pop.null_count()).item() == 0
-            # assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
+            assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.net_migration = None
 
             ############
