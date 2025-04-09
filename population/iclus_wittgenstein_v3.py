@@ -5,7 +5,6 @@ Purpose: Create county-level population projections using Wittgenstein v3
 Created: April 1st, 2025
 """
 import os
-# import sqlite3
 import time
 
 from datetime import datetime
@@ -41,7 +40,7 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '70-74', '75-79', '80-84', '85+')
 
 
-def set_launch_population(launch_year=2020):
+def set_launch_population():
     '''
     2020 launch population is taken from Census 2020-2023 Intercensal Population
     Estimates.
@@ -76,8 +75,6 @@ class Projector():
 
         # scenario-related attributes
         self.scenario = scenario
-        if self.scenario not in ('SSP1', 'SSP2', 'SSP3'):
-            raise Exception("Invalid scenario!")
 
         # population-related attributes
         self.current_pop = None
@@ -95,11 +92,11 @@ class Projector():
         # fertility-related attributes
         self.births = None
 
-    def run(self, launch_year=2020, final_projection_year=2100):
+    def run(self, final_projection_year=2100):
         '''
         TODO:
         '''
-        self.current_pop = set_launch_population(launch_year=launch_year)
+        self.current_pop = set_launch_population()
 
         while self.current_projection_year <= final_projection_year:
             print("##############")

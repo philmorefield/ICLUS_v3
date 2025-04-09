@@ -20,21 +20,23 @@ AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
               '70-74', '75-79', '80-84', '85+')
 
 COLUMN_MAP = {'count_.Intercept.': 'c_int',
-              'count_ln_mi': 'c_ln_mi',
-              'count_ln_nj': 'c_ln_nj',
+              'count_ln_Pi': 'c_ln_Pi',
+              'count_ln_Pj': 'c_ln_Pj',
               'count_ln_Cij': 'c_ln_Cij',
               'count_ln_Tij': 'c_ln_Tij',
-              'count_ln_nj_star': 'c_ln_nj_star',
+              'count_ln_Pj_star': 'c_ln_Pj_star',
               'count_factor.SAME_LABOR_MARKET.1': 'c_same_labor_market',
-              'count_factor.URBAN_DESTINATION.1': 'c_urban_destination',
+              'count_factor.URBANDESTINATION20.2': 'c_micro_destination',
+              'count_factor.URBANDESTINATION20.3': 'c_metro_destination',
               'zero_.Intercept.': 'z_int',
-              'zero_ln_mi': 'z_ln_mi',
-              'zero_ln_nj': 'z_ln_nj',
+              'zero_ln_Pi': 'z_ln_Pi',
+              'zero_ln_Pj': 'z_ln_Pj',
               'zero_ln_Cij': 'z_ln_Cij',
               'zero_ln_Tij': 'z_ln_Tij',
-              'zero_ln_nj_star': 'z_ln_nj_star',
+              'zero_ln_Pj_star': 'z_ln_Pj_star',
               'zero_factor.SAME_LABOR_MARKET.1': 'z_same_labor_market',
-              'zero_factor.URBAN_DESTINATION.1': 'z_urban_destination'}
+              'zero_factor.URBANDESTINATION20.2': 'z_micro_destination',
+              'zero_factor.URBANDESTINATION20.3': 'z_metro_destination'}
 
 
 class migration_plum_v3():
@@ -63,8 +65,8 @@ class migration_plum_v3():
         then set the result as self.coefficients
         '''
         # set up the regression coefficients
-        # uri = f"sqlite:{os.path.join(INPUT_FOLDER, 'databases', 'zeroinflated_regression.sqlite')}"
-        uri = r"sqlite: \D:\\OneDrive\\ICLUS_v3\\population\\inputs\\old\\part_2_c_ii_3_a\\zeroinfl_outputs.sqlite"
+        uri = f"sqlite:{os.path.join(OUTPUT_FOLDER, 'zinb_regression_outputs.sqlite')}"
+        #uri = r"sqlite: \D:\\OneDrive\\ICLUS_v3\\population\\inputs\\old\\part_2_c_ii_3_a\\zeroinfl_outputs.sqlite"
         query = 'SELECT * FROM coefficients_Census_1990'
         coefs = pl.read_database_uri(query=query, uri=uri)
 
@@ -73,7 +75,6 @@ class migration_plum_v3():
                       .alias('AGE_GROUP')))
         coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
                       .alias('AGE_GROUP')))
-        coefs = coefs.drop(['DIST', 'LINK'])
         coefs.rename(COLUMN_MAP)
         coefs = coefs.melt(id_vars=['RACE', 'AGE_GROUP'],
                            variable_name='VARIABLE',
@@ -86,7 +87,7 @@ class migration_plum_v3():
                    .alias('AGE_GROUP')))
         sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
                     .alias('AGE_GROUP')))
-        sigs = sigs.drop(['DIST', 'LINK', 'CONVERGED'])
+        sigs = sigs.drop(['CONVERGED'])
         sigs.rename(COLUMN_MAP)
         sigs = sigs.melt(id_vars=['RACE', 'AGE_GROUP'],
                          variable_name='VARIABLE',
@@ -125,27 +126,27 @@ class migration_plum_v3():
 
             df = self.compute_spatial_variables(age_pop=age_pop, race_pop=race_pop)
 
-            race_label = race
-            if race not in ('BLACK', 'WHITE'):
-                race_label = 'OTHER'
-
             age_group_label = age_group
-            if age_group in ('0-4', '5-9'):
-                age_group_label = '0-9'
+            if age_group == '0-4':
+                age_group_label = '5-9'
 
-            coefs = self.coefs.filter((pl.col('RACE') == race_label) & (pl.col('AGE_GROUP') == age_group_label))
-            assert coefs.shape == (16, 5)
+            if age_group == '85+':
+                age_group_label = '85-115'
+
+            coefs = self.coefs.filter((pl.col('RACE') == race) & (pl.col('AGE_GROUP') == age_group_label))
+            assert coefs.shape == (18, 5)
 
             # calculate the zero model first
             z_int = coefs.filter(pl.col('VARIABLE') == 'zero_.Intercept.')['COEFF'][0]
-            z_Pi = coefs.filter(pl.col('VARIABLE') == 'zero_ln_mi')['COEFF'][0]
-            z_Pj = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj')['COEFF'][0]
+            z_Pi = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Pi')['COEFF'][0]
+            z_Pj = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Pj')['COEFF'][0]
             z_Cij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Cij')['COEFF'][0]
             z_Tij = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Tij')['COEFF'][0]
-            z_Pj_star = coefs.filter(pl.col('VARIABLE') == 'zero_ln_nj_star')['COEFF'][0]
+            z_Pj_star = coefs.filter(pl.col('VARIABLE') == 'zero_ln_Pj_star')['COEFF'][0]
 
             z_labor = coefs.filter(pl.col('VARIABLE') == 'zero_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
-            z_urban = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBAN_DESTINATION.1')['COEFF'][0]
+            z_micro = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBANDESTINATION20.2')['COEFF'][0]
+            z_metro = coefs.filter(pl.col('VARIABLE') == 'zero_factor.URBANDESTINATION20.3')['COEFF'][0]
 
             df = df.with_columns(1 - np.exp(-np.exp(z_int +
                                                    (z_Pi * np.log(pl.col('Pi') + 1)) +
@@ -154,18 +155,20 @@ class migration_plum_v3():
                                                    (z_Tij * np.log(pl.col('Tij') + 1)) +
                                                    (z_Pj_star * np.log(pl.col('Pj_star') + 1)) +
                                                    (z_labor * pl.col('SAME_LABOR_MARKET')) +
-                                                   (z_urban * pl.col('URBANDESTINATION20')))))
+                                                   (z_micro * pl.col('MICRO_DESTINATION20')) +
+                                                   (z_metro * pl.col('METRO_DESTINATION20')))))
             df = df.rename({'literal': 'ZERO_RESULT'})
 
             # calculate the count model
             c_int = coefs.filter(pl.col('VARIABLE') == 'count_.Intercept.')['COEFF'][0]
-            c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_mi')['COEFF'][0]
-            c_Pj = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj')['COEFF'][0]
+            c_Pi = coefs.filter(pl.col('VARIABLE') == 'count_ln_Pi')['COEFF'][0]
+            c_Pj = coefs.filter(pl.col('VARIABLE') == 'count_ln_Pj')['COEFF'][0]
             c_Cij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Cij')['COEFF'][0]
             c_Tij = coefs.filter(pl.col('VARIABLE') == 'count_ln_Tij')['COEFF'][0]
-            c_Pj_star = coefs.filter(pl.col('VARIABLE') == 'count_ln_nj_star')['COEFF'][0]
+            c_Pj_star = coefs.filter(pl.col('VARIABLE') == 'count_ln_Pj_star')['COEFF'][0]
             c_labor = coefs.filter(pl.col('VARIABLE') == 'count_factor.SAME_LABOR_MARKET.1')['COEFF'][0]
-            c_urban = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBAN_DESTINATION.1')['COEFF'][0]
+            c_micro = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBANDESTINATION20.2')['COEFF'][0]
+            c_metro = coefs.filter(pl.col('VARIABLE') == 'count_factor.URBANDESTINATION20.3')['COEFF'][0]
 
             df = df.with_columns(np.exp(c_int +
                                        (c_Pi * np.log(pl.col('Pi') + 1)) +
@@ -174,7 +177,8 @@ class migration_plum_v3():
                                        (c_Tij * np.log(pl.col('Tij') + 1)) +
                                        (c_Pj_star * np.log(pl.col('Pj_star') + 1)) +
                                        (c_labor * pl.col('SAME_LABOR_MARKET')) +
-                                       (c_urban * pl.col('URBANDESTINATION20'))))
+                                       (c_micro * pl.col('MICRO_DESTINATION20')) +
+                                       (c_metro * pl.col('METRO_DESTINATION20'))))
             df = df.rename({'literal': 'COUNT_RESULT'})  #TODO: polars bug?
 
             # this rounding step preserves >99% of the total migration just calculated
@@ -288,10 +292,30 @@ class migration_plum_v3():
         return df
 
     def get_urban_counties(self):
+        # TODO: When performing the regression I coded rural, Micropolitan and
+        # Metropolitan counties as 1, 2, 3 respectively. Instead, I should have
+        # one column that is "Micro" (values 0 or 1) and another column that is
+        # "Metro" (values 0 or 1). I'm mimicking that arrangement here, since
+        # the coefficients should be somewhat similar. Nonetheless, this should
+        # be corrected for the final model.
         uri = f'sqlite:{MIGRATION_DB}'
         query = 'SELECT COFIPS, URBANDESTINATION20 \
                  FROM fips_to_urb20_bea10_hhs'
         df = pl.read_database_uri(query=query, uri=uri)
+
+        df = df.with_columns(pl.lit(0).alias('MICRO_DESTINATION20'))
+        df = df.with_columns(pl.lit(0).alias('METRO_DESTINATION20'))
+
+        df = df.with_columns(pl.when(pl.col('URBANDESTINATION20') == 2)
+                               .then(pl.lit(1))
+                               .alias('MICRO_DESTINATION20'))
+        df = df.with_columns(pl.col("MICRO_DESTINATION20").fill_null(strategy="zero"))
+
+        df = df.with_columns(pl.when(pl.col('URBANDESTINATION20') == 3)
+                               .then(pl.lit(1))
+                               .alias('METRO_DESTINATION20'))
+        df = df.with_columns(pl.col("METRO_DESTINATION20").fill_null(strategy="zero"))
+        df = df.drop('URBANDESTINATION20')
 
         return df
 
