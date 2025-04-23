@@ -38,6 +38,12 @@ COLUMN_MAP = {'count_.Intercept.': 'c_int',
               'zero_factor.URBANDESTINATION20.2': 'z_micro_destination',
               'zero_factor.URBANDESTINATION20.3': 'z_metro_destination'}
 
+COEF_RACE_MAP = {'WHITE': 'WHITE',
+                 'BLACK': 'BLACK',
+                 'ASIAN': 'API',
+                 'AIAN': 'AIAN',
+                 'NHPI': 'API',
+                 'TWO_OR_MORE': 'OTHER'}
 
 class migration_plum_v3():
     '''
@@ -65,15 +71,13 @@ class migration_plum_v3():
         then set the result as self.coefficients
         '''
         # set up the regression coefficients
-        uri = f"sqlite:{os.path.join(OUTPUT_FOLDER, 'zinb_regression_outputs.sqlite')}"
+        uri = f"sqlite:{os.path.join(INPUT_FOLDER, 'databases\\zinb_regression_outputs.sqlite')}"
         #uri = r"sqlite: \D:\\OneDrive\\ICLUS_v3\\population\\inputs\\old\\part_2_c_ii_3_a\\zeroinfl_outputs.sqlite"
         query = 'SELECT * FROM coefficients_Census_1990'
         coefs = pl.read_database_uri(query=query, uri=uri)
 
         coefs = pl.read_database_uri(query=query, uri=uri)
         coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('_TO_', '-')
-                      .alias('AGE_GROUP')))
-        coefs = (coefs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
                       .alias('AGE_GROUP')))
         coefs.rename(COLUMN_MAP)
         coefs = coefs.melt(id_vars=['RACE', 'AGE_GROUP'],
@@ -85,8 +89,6 @@ class migration_plum_v3():
         sigs = pl.read_database_uri(query=query, uri=uri)
         sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('_TO_', '-')
                    .alias('AGE_GROUP')))
-        sigs = (sigs.with_columns(pl.col('AGE_GROUP').str.replace('85_AND_OVER', '85+')
-                    .alias('AGE_GROUP')))
         sigs = sigs.drop(['CONVERGED'])
         sigs.rename(COLUMN_MAP)
         sigs = sigs.melt(id_vars=['RACE', 'AGE_GROUP'],
@@ -133,7 +135,7 @@ class migration_plum_v3():
             if age_group == '85+':
                 age_group_label = '85-115'
 
-            coefs = self.coefs.filter((pl.col('RACE') == race) & (pl.col('AGE_GROUP') == age_group_label))
+            coefs = self.coefs.filter((pl.col('RACE') == COEF_RACE_MAP[race]) & (pl.col('AGE_GROUP') == age_group_label))
             assert coefs.shape == (18, 5)
 
             # calculate the zero model first

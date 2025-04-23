@@ -12,9 +12,9 @@ if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'wittgenstein_v3_202547221553.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'wittgenstein_v3_202549211314.sqlite')
 
-SCENARIO = 'SSP1'
+SCENARIO = 'SSP3'
 
 
 def main():

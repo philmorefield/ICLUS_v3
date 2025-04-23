@@ -17,14 +17,14 @@ POP2020 = 331.526933
 
 
 def get_census_2017_projections():
-    data_dir = os.path.join(CENSUS_CSV_PATH, '2017\\projections')
+    data_dir = os.path.join(CENSUS_CSV_PATH, '2017\\projections\\total_population')
     df = None
     for scenario in ('0', 'high', 'low', 'mid'):
-        fp = os.path.join(data_dir, f'np2017_d4_{scenario}.csv')
-        result = (pd.read_csv(filepath_or_buffer=fp, usecols=['RACE_HISP', 'SEX', 'YEAR', 'TOTAL_NIM'])
-                  .query('RACE_HISP == 0 & SEX == 0')
-                  .drop(columns=['RACE_HISP', 'SEX'])
-                  .rename(columns={'TOTAL_NIM': f'np2017_d4_{scenario}'})
+        fp = os.path.join(data_dir, f'np2017_d1_{scenario}.csv')
+        result = (pd.read_csv(filepath_or_buffer=fp, usecols=['SEX', 'ORIGIN', 'RACE', 'YEAR', 'TOTAL_POP'])
+                  .query('SEX == 0 & RACE == 0 & ORIGIN == 0')
+                  .drop(columns=['SEX', 'ORIGIN', 'RACE'])
+                  .rename(columns={'TOTAL_POP': f'np2017_d1_{scenario}'})
                   .set_index(keys='YEAR'))
         if df is None:
             df = result.copy()
@@ -32,12 +32,12 @@ def get_census_2017_projections():
             df = df.join(other=result)
 
     df = df.melt(var_name='Scenario', value_name='Total Population', ignore_index=False)
-    # df['Total Population'] = (df['Total Population'] / 1000000.0).round().astype(int)
+    df['Total Population'] = (df['Total Population'] / 1000000.0).round().astype(int)
     df['Data Source'] = 'U.S. Census (2017)'
-    df['Scenario'] = df['Scenario'].map(arg={'np2017_d4_0': 'Zero immigration (Census)',
-                                             'np2017_d4_low': 'Low immigration (Census)',
-                                             'np2017_d4_mid': 'Medium immigration (Census)',
-                                             'np2017_d4_high': 'High immigration (Census)'})
+    df['Scenario'] = df['Scenario'].map(arg={'np2017_d1_0': 'Zero immigration (Census)',
+                                             'np2017_d1_low': 'Low immigration (Census)',
+                                             'np2017_d1_mid': 'Medium immigration (Census)',
+                                             'np2017_d1_high': 'High immigration (Census)'})
     df.reset_index(inplace=True)
     df.rename(columns={'YEAR': 'Year'}, inplace=True)
 
