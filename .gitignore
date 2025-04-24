@@ -182,3 +182,4 @@ cython_debug/
 *.mxd
 *.docx
 /population/inputs/raw_files
+*.sqlite-journal
