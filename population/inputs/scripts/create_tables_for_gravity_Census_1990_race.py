@@ -148,6 +148,14 @@ def label_urban_destinations(df):
     df['URBANDESTINATION20'] = df['URBANDESTINATION20'].astype(int)
     df.drop(columns='COFIPS', inplace=True)
 
+    df.loc[df.URBANDESTINATION20 == 3, 'METRODEST20'] = 1
+    df.loc[df.URBANDESTINATION20 == 2, 'MICRODEST20'] = 1
+    df.drop(columns='URBANDESTINATION20', inplace=True)
+    df.fillna(value=0, inplace=True)
+
+    df['MICRODEST20'] = df['MICRODEST20'].astype(int)
+    df['METRODEST20'] = df['METRODEST20'].astype(int)
+
     return df
 
 
@@ -179,7 +187,7 @@ def main():
             # competing migrants
             df['Cij'] = df.groupby('DESTINATION_FIPS')['Pi'].transform(lambda x: x.shift(1).cumsum()).fillna(0).astype(int)
 
-            columns = ['ORIGIN_FIPS', 'DESTINATION_FIPS', 'Dij', 'SAME_LABOR_MARKET', 'URBANDESTINATION20', 'Tij', 'Cij', 'Pi', 'Pj', 'Pj_star', 'FLOW']
+            columns = ['ORIGIN_FIPS', 'DESTINATION_FIPS', 'Dij', 'SAME_LABOR_MARKET', 'MICRODEST20', 'METRODEST20', 'Tij', 'Cij', 'Pi', 'Pj', 'Pj_star', 'FLOW']
             df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'], inplace=True)
             df = df.loc[:, columns]
             df['Pj'] = df['Pj'].astype(int)

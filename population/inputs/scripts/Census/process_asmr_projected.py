@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import sqlite3
 
+from itertools import product
+
 import pandas as pd
 
 
@@ -29,11 +31,12 @@ AGE_GROUPS = ['0-4',
 
 def main():
     df = pd.read_csv(filepath_or_buffer=CSV)
-    df.query('NATIVITY == 0 & GROUP == 0', inplace=True)
-    df.drop(columns='GROUP', inplace=True)
+    df.query('NATIVITY == 0 & GROUP == 0 & SEX != 0', inplace=True)
+    df.drop(columns=['NATIVITY', 'GROUP'], inplace=True)
+    df['SEX'] = df['SEX'].map({1: 'MALE', 2: 'FEMALE'})
 
-    df = df.melt(id_vars='YEAR', var_name='AGE', value_name='MORT')
-    df.loc[:, 'AGE'] = df.loc[:, 'AGE'].str.replace('ASMR_', '').astype(int)
+    df = df.melt(id_vars=['YEAR', 'SEX'], var_name='AGE', value_name='MORT')
+    df.loc[:, 'AGE'] = df.loc[:, 'AGE'].str.replace('ASDR_', '').astype(int)
     df = df.sort_values(by=['YEAR', 'AGE'])
 
     for age_group in AGE_GROUPS:
@@ -41,7 +44,7 @@ def main():
         df.loc[(df.AGE >= int(age1)) & (df.AGE <= int(age2)), 'AGE_GROUP'] = age_group
 
     df.drop(columns='AGE', inplace=True)
-    df = df.groupby(['YEAR', 'AGE_GROUP'], as_index=False).mean()
+    df = df.groupby(['YEAR', 'SEX', 'AGE_GROUP'], as_index=False).mean()
 
     for age_group in AGE_GROUPS:
         temp2020 = df.loc[(df.YEAR == 2023) & (df.AGE_GROUP == age_group)]
@@ -57,9 +60,10 @@ def main():
 
     df.sort_values(by=['AGE_GROUP', 'YEAR'], inplace=True)
 
-    for age_group in AGE_GROUPS:
-        value2020 = df.loc[(df.YEAR == 2020) & (df.AGE_GROUP == age_group), 'MORT'].values[0]
-        df.loc[df.AGE_GROUP == age_group, 'MORT_MULTIPLIER'] = df.loc[df.AGE_GROUP == age_group, 'MORT'] / value2020
+    for age_group, sex in product(AGE_GROUPS, ('MALE', 'FEMALE')):
+        value2020 = df.loc[(df.YEAR == 2020) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT'].values[0]
+        df.loc[(df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT_MULTIPLIER'] = df.loc[(df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT'] / value2020
+        ...
 
     con = sqlite3.connect(database=OUTPUT_DB)
     df.to_sql(name='census_np2023_asmr',
