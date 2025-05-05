@@ -31,7 +31,7 @@ for (race in c("WHITE", "BLACK", "AIAN", "API", "OTHER"))
     df$ln_Cij = log(df$Cij + df$Pj + 1)
     df$ln_Pj_star = log(df$Pj_star + 1)
 
-    m1 = zeroinfl(formula = FLOW ~ ln_Pi + ln_Pj + ln_Tij + ln_Cij + ln_Pj_star + factor(SAME_LABOR_MARKET) + factor(URBANDESTINATION20), data = df, dist = 'negbin', link = 'cloglog')
+    m1 = zeroinfl(formula = FLOW ~ ln_Pi + ln_Pj + ln_Tij + ln_Cij + ln_Pj_star + factor(SAME_LABOR_MARKET) + factor(MICRODEST20) + factor(METRODEST20), data = df, dist = 'negbin', link = 'cloglog')
     print(summary(m1))
     robust = coeftest(x = m1, vcov = sandwich)
     new_row_coef = data.frame(t(robust[,1]))
