@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+from matplotlib.transforms import BboxTransform
 from numpy import int64
 import pandas as pd
 import seaborn as sns
@@ -17,8 +18,11 @@ POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sql
 # # this run had erroneously large immigration values for 2023 and 2024
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551163547.sqlite')
 
+# # immigration values were corrected; no adustments to CDC fertility or mortality
+# PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202553173742.sqlite')
+
 # immigration values were corrected; no adustments to CDC fertility or mortality
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202553173742.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_20255416653.sqlite')
 
 SCENARIO = 'mid'
 
@@ -46,7 +50,20 @@ class FigureMaker():
         self.get_census_projected_deaths()
         self.plot_deaths()
 
+        # domestic migration
+        self.get_historical_migration()
+        self.get_iclus_v3_projected_migration()
+        self.plot_migration()
+
+        # immigration
+        self.get_historical_immigration()
+        self.get_iclus_v3_projected_immigration()
+        self.get_census_projected_immigration()
+        self.plot_immigration()
+
+        self.fig.suptitle(f"ICLUS v3 vs Census: '{SCENARIO}' scenario")
         plt.tight_layout()
+        self.ax_births.legend(bbox_to_anchor=(1.9, 2.75))
         plt.show()
 
     def get_historical_total_population(self):
@@ -82,16 +99,17 @@ class FigureMaker():
         self.census_pop['POPULATION'] /= 1000000
 
     def plot_total_population(self):
-        self.ax_pop = self.fig.add_subplot(self.gs[0, :])
+        self.ax_pop = self.fig.add_subplot(self.gs[0, :1])
         self.hist_pop.plot(x='YEAR', y='POPULATION', color='black', label='Historical', ax=self.ax_pop)
         self.iclusv3_pop.plot(x='YEAR', y='POPULATION', color='orange', label='ICLUS v3', ax=self.ax_pop)
         self.census_pop.plot(x='YEAR', y='POPULATION', color='blue', label='Census', ax=self.ax_pop)
 
-        plt.title(f'TOTAL U.S. POPULATION: {SCENARIO}')
+        plt.title('TOTAL POPULATION')
         plt.gca().set_xlabel("")
         plt.gca().set_ylabel("")
         plt.gca().set_xlim(xmin=2010, xmax=2100)
-        # plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
+
+        self.ax_pop.get_legend().remove()
 
     def get_historical_births(self):
         # historical births, 2010-2020
@@ -148,13 +166,10 @@ class FigureMaker():
         self.iclusv3_births.plot(x='YEAR', y='BIRTHS', color='orange', label='ICLUS v3', ax=self.ax_births)
         self.census_births.plot(x='YEAR', y='BIRTHS', color='blue', label='Census', ax=self.ax_births)
 
-        self.ax_births.get_legend().remove()
-
         plt.title('BIRTHS')
         plt.gca().set_xlabel("")
         plt.gca().set_ylabel("Millions")
         plt.gca().set_xlim(xmin=2010, xmax=2100)
-        # plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
 
     def get_historical_deaths(self):
         # historical deaths, 2010-2020
@@ -219,120 +234,126 @@ class FigureMaker():
         plt.gca().set_xlim(xmin=2010, xmax=2100)
         # plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
 
+    def get_historical_migration(self):
+        # historical migration, 2010-2020
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        self.hist_migration_one = pd.read_csv(csv, encoding='latin-1')
+        columns = ['SUMLEV'] + ['NETMIG' + str(year) for year in range(2010, 2021)]
+        self.hist_migration_one = self.hist_migration_one[columns]
+        self.hist_migration_one = self.hist_migration_one.query('SUMLEV == 50')
+        self.hist_migration_one = self.hist_migration_one.drop(columns='SUMLEV').sum().reset_index()
+        self.hist_migration_one.columns = ['YEAR', 'MIGRATION']
+        self.hist_migration_one['YEAR'] = self.hist_migration_one['YEAR'].str[-4:].astype(int)
+        self.hist_migration_one.loc[self.hist_migration_one['YEAR'] == 2010, 'MIGRATION'] *= 4
+        self.hist_migration_one['MIGRATION'] /= 1000000
 
+        # historical migration, 2020-2024
+        csv = os.path.join(CENSUS_CSV_PATH, '2024\\co-est2024-alldata.csv')
+        self.hist_migration_two = pd.read_csv(csv, encoding='latin-1')
+        columns = ['SUMLEV'] + ['NETMIG' + str(year) for year in range(2020, 2025)]
+        self.hist_migration_two = self.hist_migration_two[columns]
+        self.hist_migration_two = self.hist_migration_two.query('SUMLEV == 50')
+        self.hist_migration_two = self.hist_migration_two.drop(columns='SUMLEV').sum().reset_index()
+        self.hist_migration_two.columns = ['YEAR', 'MIGRATION']
+        self.hist_migration_two['YEAR'] = self.hist_migration_two['YEAR'].str[-4:].astype(int)
+        self.hist_migration_two.loc[self.hist_migration_two['YEAR'] == 2020, 'MIGRATION'] *= 4
+        self.hist_migration_two['MIGRATION'] /= 1000000
 
+    def get_iclus_v3_projected_migration(self):
+        query = f'SELECT * FROM migration_by_race_sex_age_{SCENARIO}'
+        con = sqlite3.connect(PROJECTIONS_DB)
+        self.iclusv3_migration = pd.read_sql_query(sql=query, con=con)
+        con.close()
 
+        self.iclusv3_migration = self.iclusv3_migration.melt(id_vars=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
+                                                             var_name='YEAR',
+                                                             value_name='MIGRATION')
+        self.iclusv3_migration = self.iclusv3_migration[['YEAR', 'MIGRATION']].groupby(by='YEAR', as_index=False).sum()
+        self.iclusv3_migration['YEAR'] = self.iclusv3_migration['YEAR'].astype(int64)
+        self.iclusv3_migration['MIGRATION'] = self.iclusv3_migration['MIGRATION'].astype(int64)
+        self.iclusv3_migration['MIGRATION'] /= 1000000
 
+    def plot_migration(self):
+        self.ax_migration = self.fig.add_subplot(self.gs[1, 1:])
+        self.hist_migration_one.plot(x='YEAR', y='MIGRATION', color='gray', label='Historical', ax=self.ax_migration)
+        self.hist_migration_two.plot(x='YEAR', y='MIGRATION', color='black', label='Historical', ax=self.ax_migration)
+        self.iclusv3_migration.plot(x='YEAR', y='MIGRATION', color='orange', label='ICLUS v3', ax=self.ax_migration)
 
+        self.ax_migration.get_legend().remove()
 
+        plt.title('MIGRATION')
+        plt.gca().set_xlabel("")
+        plt.gca().set_ylabel("")
+        plt.gca().set_xlim(xmin=2010, xmax=2100)
+        # plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
+
+    def get_historical_immigration(self):
+        # historical immigration, 2010-2020
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        self.hist_immigration_one = pd.read_csv(csv, encoding='latin-1')
+        columns = ['SUMLEV'] + ['INTERNATIONALMIG' + str(year) for year in range(2010, 2021)]
+        self.hist_immigration_one = self.hist_immigration_one[columns]
+        self.hist_immigration_one = self.hist_immigration_one.query('SUMLEV == 50')
+        self.hist_immigration_one = self.hist_immigration_one.drop(columns='SUMLEV').sum().reset_index()
+        self.hist_immigration_one.columns = ['YEAR', 'IMMIGRATION']
+        self.hist_immigration_one['YEAR'] = self.hist_immigration_one['YEAR'].str[-4:].astype(int)
+        self.hist_immigration_one.loc[self.hist_immigration_one['YEAR'] == 2010, 'IMMIGRATION'] *= 4
+        self.hist_immigration_one['IMMIGRATION'] /= 1000000
+
+        # historical immigration, 2020-2024
+        csv = os.path.join(CENSUS_CSV_PATH, '2024\\co-est2024-alldata.csv')
+        self.hist_immigration_two = pd.read_csv(csv, encoding='latin-1')
+        columns = ['SUMLEV'] + ['INTERNATIONALMIG' + str(year) for year in range(2020, 2025)]
+        self.hist_immigration_two = self.hist_immigration_two[columns]
+        self.hist_immigration_two = self.hist_immigration_two.query('SUMLEV == 50')
+        self.hist_immigration_two = self.hist_immigration_two.drop(columns='SUMLEV').sum().reset_index()
+        self.hist_immigration_two.columns = ['YEAR', 'IMMIGRATION']
+        self.hist_immigration_two['YEAR'] = self.hist_immigration_two['YEAR'].str[-4:].astype(int)
+        self.hist_immigration_two.loc[self.hist_immigration_two['YEAR'] == 2020, 'IMMIGRATION'] *= 4
+        self.hist_immigration_two['IMMIGRATION'] /= 1000000
+
+    def get_iclus_v3_projected_immigration(self):
+        query = f'SELECT * FROM immigration_by_race_sex_age_{SCENARIO}'
+        con = sqlite3.connect(PROJECTIONS_DB)
+        self.iclusv3_immigration = pd.read_sql_query(sql=query, con=con)
+        con.close()
+
+        self.iclusv3_immigration = self.iclusv3_immigration.melt(id_vars=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
+                                                 var_name='YEAR',
+                                                 value_name='IMMIGRATION')
+        self.iclusv3_immigration = self.iclusv3_immigration[['YEAR', 'IMMIGRATION']].groupby(by='YEAR', as_index=False).sum()
+        self.iclusv3_immigration['YEAR'] = self.iclusv3_immigration['YEAR'].astype(int64)
+        self.iclusv3_immigration['IMMIGRATION'] = self.iclusv3_immigration['IMMIGRATION'].astype(int64)
+        self.iclusv3_immigration['IMMIGRATION'] /= 1000000
+
+    def get_census_projected_immigration(self):
+        csv = os.path.join(CENSUS_CSV_PATH, f'2023\\projections\\immigration\\np2023_d4_{SCENARIO}.csv')
+
+        self.census_immigration = pd.read_csv(csv, encoding='latin-1')
+        self.census_immigration = self.census_immigration.query('RACE_HISP == 0 & SEX == 0')
+        self.census_immigration = self.census_immigration[['YEAR', 'TOTAL_NIM']]
+        self.census_immigration.columns = ['YEAR', 'IMMIGRATION']
+        self.census_immigration['IMMIGRATION'] /= 1000000
+
+    def plot_immigration(self):
+        self.ax_immigration = self.fig.add_subplot(self.gs[2, 1:])
+        self.hist_immigration_one.plot(x='YEAR', y='IMMIGRATION', color='gray', label='Historical', ax=self.ax_immigration)
+        self.hist_immigration_two.plot(x='YEAR', y='IMMIGRATION', color='black', label='Historical', ax=self.ax_immigration)
+        self.iclusv3_immigration.plot(x='YEAR', y='IMMIGRATION', color='orange', linestyle='--', label='ICLUS v3', zorder=10, ax=self.ax_immigration)
+        self.census_immigration.plot(x='YEAR', y='IMMIGRATION', color='blue', label='Census', ax=self.ax_immigration)
+
+        self.ax_immigration.get_legend().remove()
+
+        plt.title('IMMIGRATION')
+        plt.gca().set_xlabel("")
+        plt.gca().set_ylabel("")
+        plt.gca().set_xlim(xmin=2010, xmax=2100)
+        # plt.gca().legend(bbox_to_anchor=(1.05, 1.10), reverse=True)
 
 
 def main():
-
-
-
-    ############################
-    ## NET DOMESTIC MIGRATION ##
-    ############################
-
-    # historical migration
-    ax_migration = fig.add_subplot(gs[1, 1:])
-
-    columns = ['SUMLEV'] + ['DOMESTICMIG' + str(year) for year in range(2010, 2021)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
-    hist_migration = pd.read_csv(csv, encoding='latin-1')
-
-    hist_migration = hist_migration[columns]
-    hist_migration = hist_migration.query('SUMLEV == 50').clip(lower=0)
-    hist_migration = hist_migration.drop(columns='SUMLEV').sum().reset_index()
-    hist_migration.columns = ['YEAR', 'MIGRATION']
-    hist_migration['YEAR'] = hist_migration['YEAR'].str[-4:].astype(int)
-    hist_migration.loc[hist_migration['YEAR'] == 2010, 'MIGRATION'] *= 4
-
-    # historical migration, 2020-2024
-    columns = ['SUMLEV'] + ['DOMESTICMIG' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\co-est2024-alldata.csv')
-    post2020_migration = pd.read_csv(csv, encoding='latin-1')
-    post2020_migration = post2020_migration[columns]
-    post2020_migration = post2020_migration.query('SUMLEV == 50').clip(lower=0)
-    post2020_migration = post2020_migration.drop(columns='SUMLEV').sum().reset_index()
-    post2020_migration.columns = ['YEAR', 'MIGRATION']
-    post2020_migration['YEAR'] = post2020_migration['YEAR'].str[-4:].astype(int)
-    post2020_migration.loc[post2020_migration['YEAR'] == 2020, 'MIGRATION'] *= 4
-
-    # future births
-    query = f'SELECT * FROM migration_by_race_sex_age_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_migration = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_migration = proj_migration.drop(columns=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
-    proj_migration = proj_migration.clip(lower=0).sum().T.reset_index()
-    proj_migration.columns = ['YEAR', 'MIGRATION']
-    proj_migration['YEAR'] = proj_migration['YEAR'].astype(int)
-
-    sns.lineplot(x='YEAR', y='MIGRATION', data=hist_migration, color='gray', legend=False, ax=ax_migration)
-    sns.lineplot(x='YEAR', y='MIGRATION', data=proj_migration, color='orange', legend=False, ax=ax_migration)
-    sns.lineplot(x='YEAR', y='MIGRATION', data=post2020_migration, color='black', legend=False, ax=ax_migration)
-
-    plt.title('MIGRATION')
-    ax_migration.set_xticklabels([])
-    ax_migration.set_xlabel('')
-    ax_migration.set_ylabel('')
-
-
-    #####################
-    ## NET IMMIGRATION ##
-    #####################
-
-    ax_immig = fig.add_subplot(gs[2, 1:])
-
-    # historical immigration, 2010-2020
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
-    hist_immig = pd.read_csv(csv, encoding='latin-1')
-    columns = ['SUMLEV'] + ['INTERNATIONALMIG' + str(year) for year in range(2010, 2021)]
-    hist_immig = hist_immig[columns]
-    hist_immig = hist_immig.query('SUMLEV == 50')
-    hist_immig = hist_immig.drop(columns='SUMLEV').sum().reset_index()
-    hist_immig.columns = ['YEAR', 'IMMIGRATION']
-    hist_immig['YEAR'] = hist_immig['YEAR'].str[-4:].astype(int)
-    hist_immig.loc[hist_immig['YEAR'] == 2010, 'IMMIGRATION'] *= 4
-
-    # historical immigration, 2020-2024
-    columns = ['SUMLEV'] + ['INTERNATIONALMIG' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\co-est2024-alldata.csv')
-    post2020_immig = pd.read_csv(csv, encoding='latin-1')
-    post2020_immig = post2020_immig[columns]
-    post2020_immig = post2020_immig.query('SUMLEV == 50')
-    post2020_immig = post2020_immig.drop(columns='SUMLEV').sum().reset_index()
-    post2020_immig.columns = ['YEAR', 'IMMIGRATION']
-    post2020_immig['YEAR'] = post2020_immig['YEAR'].str[-4:].astype(int)
-    post2020_immig.loc[post2020_immig['YEAR'] == 2020, 'IMMIGRATION'] *= 4
-
-    # future immigration
-    query = f'SELECT * FROM immigration_by_race_sex_age_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_immig = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_immig = proj_immig.drop(columns=['GEOID', 'RACE', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
-    proj_immig.columns = ['YEAR', 'IMMIGRATION']
-    proj_immig['YEAR'] = proj_immig['YEAR'].astype(int)
-
-    sns.lineplot(x='YEAR', y='IMMIGRATION', data=hist_immig, color='gray', legend=False, ax=ax_immig)
-    sns.lineplot(x='YEAR', y='IMMIGRATION', data=proj_immig, color='orange', legend=False, ax=ax_immig)
-    sns.lineplot(x='YEAR', y='IMMIGRATION', data=post2020_immig, color='black', legend=False, ax=ax_immig)
-
-    plt.title('IMMIGRATION')
-    ax_immig.set_xlabel('')
-    ax_immig.set_ylabel('')
-
-    plt.tight_layout()
-    plt.show()
-
-    return
+    FigureMaker()
 
 
 if __name__ == '__main__':
-    FigureMaker()
-    # main()
+    main()
