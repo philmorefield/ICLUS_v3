@@ -63,7 +63,8 @@ def main():
     for age_group, sex in product(AGE_GROUPS, ('MALE', 'FEMALE')):
         value2020 = df.loc[(df.YEAR == 2020) & (df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT'].values[0]
         df.loc[(df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT_MULTIPLIER'] = df.loc[(df.AGE_GROUP == age_group) & (df.SEX == sex), 'MORT'] / value2020
-        ...
+
+    df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('85-100', '85+')
 
     con = sqlite3.connect(database=OUTPUT_DB)
     df.to_sql(name='census_np2023_asmr',

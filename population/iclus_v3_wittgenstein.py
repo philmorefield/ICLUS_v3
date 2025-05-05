@@ -12,7 +12,7 @@ from datetime import datetime
 import numpy as np
 import polars as pl
 
-from iclus_migration_v3 import migration_plum_v3 as MigrationModel
+from iclus_v3_migration import migration_plum_v3 as MigrationModel
 
 
 BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
@@ -92,7 +92,7 @@ class Projector():
         # fertility-related attributes
         self.births = None
 
-    def run(self, final_projection_year=2100):
+    def run(self, final_projection_year=2099):
         '''
         TODO:
         '''
@@ -120,8 +120,7 @@ class Projector():
                                 .alias('POPULATION'))
                                 .drop('DEATHS'))
 
-            # assert self.current_pop.shape == (675648, 5)
-            self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.deaths = None
@@ -142,7 +141,7 @@ class Projector():
                                 .drop('NET_IMMIGRATION'))
 
             # assert self.current_pop.shape == (675648, 5)
-            self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.immigrants = None
@@ -159,11 +158,13 @@ class Projector():
                                                       coalesce=True)
                                 .fill_null(0)
                                 .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
-                                .alias('POPULATION')))
+                                .alias('POPULATION')
+                                .round(0)
+                                .cast(pl.UInt64)))
             self.current_pop = self.current_pop.drop('NET_MIGRATION')
 
             # assert self.current_pop.shape == (675648, 5)
-            self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(clip=pl.col('POPULATION').clip(lower_bound=0))
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.net_migration = None
@@ -325,7 +326,7 @@ class Projector():
 
         # this is the net migrants for each age-sex combination
         uri = f'sqlite:{WITT_DB}'
-        query = f'SELECT AGE_GROUP, SEX, NETMIG_INTERP AS NET \
+        query = f'SELECT AGE_GROUP, SEX, NETMIG_INTERP_COHORT AS NET \
                   FROM age_specific_net_migration_v3 \
                   WHERE SCENARIO = "{self.scenario}" \
                   AND YEAR = "{self.current_projection_year}"'
@@ -336,9 +337,9 @@ class Projector():
         # immigration across all age-race-sex combinations; after 2060 and
         # before 2017 the rates are held constant (at 2060 and 2017 rates,
         # respectively.
-        if self.scenario == 'SSP2':
+        if self.scenario == 'SSP5':
             ratio = 'high'
-        elif self.scenario == 'SSP1':
+        elif self.scenario in ('SSP1', 'SSP2', 'SSP4'):
             ratio = 'mid'
         elif self.scenario == 'SSP3':
             ratio = 'low'
@@ -420,6 +421,7 @@ class Projector():
             print(f"\t{race}...")
 
             # compute all county to county migration flows
+            # 'compute migrants' iterates over all age groups
             gross_flows = migration_model.compute_migrants(race)
             gross_flows = gross_flows.with_columns(pl.lit(race).alias('RACE'))
 
@@ -435,7 +437,8 @@ class Projector():
                                          .alias('SEX_FRACTION'))
             ratios = ratios.drop(['POPULATION', 'GEOID_AGE_POP', 'RACE'])
 
-            lf = (ratios.join(other=gross_flows,
+            inflows = gross_flows.group_by(pl.col(['DESTINATION_FIPS', 'AGE_GROUP'])).agg(pl.col('MIGRATION').sum())
+            lf = (ratios.join(other=inflows,
                               how='left',
                               left_on=['GEOID', 'AGE_GROUP'],
                               right_on=['DESTINATION_FIPS', 'AGE_GROUP'],
@@ -443,14 +446,11 @@ class Projector():
                   .fill_null(value=0)
                   .fill_nan(value=0)
                   .with_columns((pl.col('SEX_FRACTION') * pl.col('MIGRATION'))
-                  .alias('GROSS_INFLOW')))
-            lf = lf.with_columns(pl.col('GROSS_INFLOW')
-                                 .sum()
-                                 .over(['GEOID', 'AGE_GROUP', 'SEX'])
-                                 .alias('SUM_INFLOWS'))
-            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'SEX_FRACTION', 'SUM_INFLOWS']).unique()
+                  .alias('INFLOWS')))
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'SEX_FRACTION', 'INFLOWS'])
 
-            lf = (lf.join(other=gross_flows,
+            outflows = gross_flows.group_by(pl.col(['ORIGIN_FIPS', 'AGE_GROUP'])).agg(pl.col('MIGRATION').sum())
+            lf = (lf.join(other=outflows,
                           how='left',
                           left_on=['GEOID', 'AGE_GROUP'],
                           right_on=['ORIGIN_FIPS', 'AGE_GROUP'],
@@ -458,15 +458,10 @@ class Projector():
                   .fill_null(value=0)
                   .fill_nan(value=0)
                   .with_columns((pl.col('SEX_FRACTION') * pl.col('MIGRATION'))
-                  .alias('GROSS_OUTFLOW')))
-
-            lf = lf.with_columns(pl.col('GROSS_OUTFLOW')
-                        .sum()
-                        .over(['GEOID', 'AGE_GROUP', 'SEX'])
-                        .alias('SUM_OUTFLOWS'))
-            lf = lf.with_columns((pl.col('SUM_INFLOWS') - pl.col('SUM_OUTFLOWS'))
+                  .alias('OUTFLOWS')))
+            lf = lf.with_columns((pl.col('INFLOWS') - pl.col('OUTFLOWS'))
                                  .alias('NET_MIGRATION'))
-            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'NET_MIGRATION']).unique()
+            lf = lf.select(['GEOID', 'AGE_GROUP', 'SEX', 'INFLOWS', 'OUTFLOWS', 'NET_MIGRATION'])
             lf = lf.with_columns(pl.lit(race).alias('RACE'))
 
             # assert lf.shape == (111960, 5)
@@ -476,7 +471,10 @@ class Projector():
             else:
                 self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical')
 
+        total_migrants_this_year = round(self.net_migration.select('INFLOWS').sum().item())
+        self.net_migration = self.net_migration.select(['GEOID', 'RACE', 'SEX', 'AGE_GROUP', 'NET_MIGRATION'])
         self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+
         assert self.net_migration.shape[0] == 675648
         assert self.net_migration.null_count().sum_horizontal().item() == 0
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
@@ -503,10 +501,6 @@ class Projector():
                                  if_table_exists='replace',
                                  engine='adbc')
 
-        total_migrants_this_year = round((self.net_migration.filter(pl.col('NET_MIGRATION') > 0)
-                                          .select('NET_MIGRATION')
-                                          .sum())
-                                          .item())
         pct_migration = round(((total_migrants_this_year / self.current_pop.select('POPULATION').sum().item())) * 100.0, 1)
         print(f"...finished! ({total_migrants_this_year:,} total migrants this year; {pct_migration}% of the current population)")
 
@@ -592,5 +586,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('SSP3')
+    main('SSP5')
     print(time.ctime())

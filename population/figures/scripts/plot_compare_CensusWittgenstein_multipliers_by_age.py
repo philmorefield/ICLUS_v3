@@ -12,7 +12,7 @@ if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'census.sqlite')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'wittgenstein_v3_202549211314.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_wittgenstein_202549211314.sqlite')
 WITTGENSTEIN_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'wittgenstein.sqlite')
 
 AGE_GROUPS = ('15_TO_19', '20_TO_24', '25_TO_29', '30_TO_34', '35_TO_39',
