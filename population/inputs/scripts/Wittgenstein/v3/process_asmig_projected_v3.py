@@ -16,6 +16,22 @@ else:
 
 DATABASES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
 
+HISTORICAL_IMMIGRATION_MAP = {2010: 174416,
+                              2011: 774165,
+                              2012: 838671,
+                              2013: 830168,
+                              2014: 926546,
+                              2015: 1041605,
+                              2016: 1046709,
+                              2017: 930409,
+                              2018: 701823,
+                              2019: 595348,
+                              2020: 19885,
+                              2021: 376004,
+                              2022: 1693535,
+                              2023: 2294209,
+                              2024: 2786119}
+
 
 def parse_years(s):
 
@@ -39,6 +55,10 @@ def interpolate_years(df):
     for scenario in scenarios:
         s = df.loc[df.SCENARIO == scenario, 'NETMIG_INTERP']
         df.loc[df.SCENARIO == scenario, 'NETMIG_INTERP'] = s.interpolate(method='linear', limit_direction='both')
+
+    for year in range(2010, 2025):
+        df.loc[df.YEAR == year, 'NETMIG'] = HISTORICAL_IMMIGRATION_MAP[year]
+        df.loc[df.YEAR == year, 'NETMIG_INTERP'] = HISTORICAL_IMMIGRATION_MAP[year]
 
     assert ~df.isnull().any().any()
 
@@ -76,49 +96,17 @@ def decompose_to_age_groups(df):
     ssp5 = ssp4.copy()
     ssp5['SCENARIO'] = 'SSP5'
 
-    df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP']
-    df = df.set_index(['YEAR', 'SCENARIO', 'PERIOD', 'NETMIG', 'NETMIG_INTERP'])
+    # df['NETMIG_INTERP_COHORT'] = df['NETMIG_INTERP']
+    # df = df.set_index(['YEAR', 'SCENARIO', 'PERIOD', 'NETMIG', 'NETMIG_INTERP'])
 
-    temp = temp.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
-    ssp4 = ssp4.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
-    ssp5 = ssp5.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
+    # temp = temp.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
+    # ssp4 = ssp4.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
+    # ssp5 = ssp5.set_index(['YEAR', 'SCENARIO', 'AGE_GROUP', 'SEX'])
     temp = pd.concat(objs=[temp, ssp4, ssp5])
-    temp.columns = ['NETMIG_INTERP_COHORT']
-
-    df = df.mul(other=temp, axis='index').reset_index()
-
-    return df
-
-
-
-def align_with_2020(df):
-
-    scenarios = df.SCENARIO.unique()
-    years = range(2010, 2100)
-
-    # from co-est2024-alldata.csv
-    census_avg_2324 = 2500000
-
-    # from co-est2020-alldata.csv'
-    census_2020 = 477029
-
-    df.sort_values(by=['SCENARIO', 'YEAR', 'SEX', 'AGE_GROUP'], inplace=True)
-    for scenario in scenarios:
-        witt_total_2020 = None
-        for year in years:
-
-            if witt_total_2020 is None:
-                # total 2020 immigration from Wittgenstein; this does NOT match the observed value from Census
-                witt_total_2020 = df.query('SCENARIO == @scenario & YEAR == 2020').NETMIG_INTERP.sum()
-
-            # total projected immigration from Wittgenstein
-            witt_total_proj = df.query('SCENARIO == @scenario & YEAR == @year').NETMIG_INTERP.sum()
-
-            # convert values to a percentage of the annual immigration from Wittgenstein
-            df.loc[(df.SCENARIO == scenario) & (df.YEAR == year), 'NETMIG_INTERP'] /= witt_total_proj
-
-            # use the delta method to base Wittgenstein changes on the actual immigration in 2020
-            df.loc[(df.SCENARIO == scenario) & (df.YEAR == year), 'NETMIG_INTERP'] *= (census_2020 * (witt_total_proj / witt_total_2020))
+    # temp.columns = ['NETMIG_INTERP_COHORT']
+    df = temp.merge(right=df, how='left', on=['YEAR', 'SCENARIO'])
+    df.eval('NETMIG_INTERP_COHORT = NETMIG_INTERP * IMM_FRACTION', inplace=True)
+    # df = df.mul(other=temp, axis='index').reset_index()
 
     return df
 
@@ -148,7 +136,6 @@ def main():
     df = interpolate_years(df)
     df = decompose_to_age_groups(df)
     df = combine_85plus(df)
-    df = align_with_2020(df)
 
     df['NETMIG'] = df['NETMIG'].astype(int)
     df['NETMIG_INTERP'] = df['NETMIG_INTERP'].astype(int)
