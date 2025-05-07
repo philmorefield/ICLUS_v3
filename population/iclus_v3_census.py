@@ -290,9 +290,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        # 20250504 - reducing CDC mortality rates by 15% to match Census
-        # projections for 2023
-        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * 0.85 * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
+        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
         # calculate deaths
         df = df.with_columns((pl.col('MORT_PROJ') * pl.col('POPULATION')).alias('DEATHS'))
@@ -530,7 +528,6 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        # 20250504 - reducing CDC fertility rates by 5.5% to match Census
         df = df.with_columns(((pl.col('FERTILITY') * 0.945 * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))

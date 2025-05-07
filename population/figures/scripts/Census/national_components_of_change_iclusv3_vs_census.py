@@ -1,10 +1,8 @@
 import os
 import sqlite3
 
-from matplotlib.transforms import BboxTransform
 from numpy import int64
 import pandas as pd
-import seaborn as sns
 
 from matplotlib import pyplot as plt
 
@@ -14,24 +12,30 @@ if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
+SCENARIO = 'mid'
 
 # # this run had erroneously large immigration values for 2023 and 2024
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551163547.sqlite')
 
-# # immigration values were corrected; no adustments to CDC fertility or mortality
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202553173742.sqlite')
+# CDC_FERT = 'No adj'
+# CDC_MORT = 'No adj'
 
-# # immigration values were corrected; no adustments to CDC fertility or mortality
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_20255416653.sqlite')
+# CDC_FERT = '-4.5%'
+# CDC_MORT = '-15%'
 
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202555143420.sqlite')
+# PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202555143420.sqlite')
+# CDC_FERT = '-5.5%'
+# CDC_MORT = '-15%'
 
-SCENARIO = 'mid'
+SUPTITLE = f"ICLUS v3 vs Census\nScenario: {SCENARIO.upper()} | CDC Fert: {CDC_FERT} | CDC Mort: {CDC_MORT}\n{os.path.basename(PROJECTIONS_DB)}"
+
 
 
 class FigureMaker():
     def __init__(self):
-        self.fig = plt.figure(constrained_layout=True)
+        self.fig = plt.figure(figsize=(6.5, 6.5), constrained_layout=True)
         self.gs = self.fig.add_gridspec(3, 2)
 
         # total population
@@ -63,9 +67,9 @@ class FigureMaker():
         self.get_census_projected_immigration()
         self.plot_immigration()
 
-        self.fig.suptitle(f"ICLUS v3 vs Census: '{SCENARIO}' scenario")
+        self.fig.suptitle(SUPTITLE)
         plt.tight_layout()
-        self.ax_births.legend(bbox_to_anchor=(1.9, 2.75))
+        self.ax_births.legend(bbox_to_anchor=(1.9, 2.25))
         plt.show()
 
     def get_historical_total_population(self):
