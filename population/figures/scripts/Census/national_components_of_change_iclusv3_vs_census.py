@@ -21,8 +21,10 @@ POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sql
 # # immigration values were corrected; no adustments to CDC fertility or mortality
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202553173742.sqlite')
 
-# immigration values were corrected; no adustments to CDC fertility or mortality
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_20255416653.sqlite')
+# # immigration values were corrected; no adustments to CDC fertility or mortality
+# PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_20255416653.sqlite')
+
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202555143420.sqlite')
 
 SCENARIO = 'mid'
 
