@@ -447,7 +447,7 @@ class Projector():
                 self.net_migration = pl.concat(items=[self.net_migration, lf], how='vertical')
 
         total_migrants_this_year = round(self.net_migration.select('INFLOWS').sum().item())
-        self.net_migration = self.net_migration.select(['GEOID', 'RACE', 'SEX', 'AGE_GROUP', 'NET_MIGRATION'])
+        self.net_migration = self.net_migration.select(['GEOID', 'RACE', 'SEX', 'AGE_GROUP', 'INFLOWS', 'OUTFLOWS', 'NET_MIGRATION'])
         self.net_migration = self.net_migration.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
 
         assert self.net_migration.shape[0] == 675648
@@ -457,24 +457,30 @@ class Projector():
         # store time series of migration in sqlite3
         uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
-            migration = self.net_migration.rename({'NET_MIGRATION': str(self.current_projection_year)}).clone()
+            migration = self.net_migration.rename({'NET_MIGRATION': f'NETMIG{self.current_projection_year}',
+                                                   'INFLOWS': f'INMIG{self.current_projection_year}',
+                                                   'OUTFLOWS': f'OUTMIG{self.current_projection_year}'}).clone()
         else:
             query = f'SELECT * FROM migration_by_race_sex_age_{self.scenario}'
             migration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
-            current_migration = self.net_migration.clone().rename({'NET_MIGRATION': str(self.current_projection_year)})
+            current_migration = self.net_migration.clone().rename({'NET_MIGRATION': f'NETMIG{self.current_projection_year}',
+                                                                   'INFLOWS': f'INMIG{self.current_projection_year}',
+                                                                   'OUTFLOWS': f'OUTMIG{self.current_projection_year}'})
             migration = migration.join(current_migration,
                                        on=['GEOID', 'RACE', 'AGE_GROUP', 'SEX'],
                                        how='left',
                                        coalesce=True)
-        migration = migration.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
-        assert self.net_migration.shape[0] == 675648
-        assert sum(migration.null_count()).item() == 0
-        assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
         migration.write_database(table_name=f'migration_by_race_sex_age_{self.scenario}',
                                  connection=uri,
                                  if_table_exists='replace',
                                  engine='adbc')
+
+        self.net_migration = self.net_migration.select(['GEOID', 'RACE', 'SEX', 'AGE_GROUP', 'NET_MIGRATION'])
+        migration = migration.sort(by=['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+        assert self.net_migration.shape[0] == 675648
+        assert sum(migration.null_count()).item() == 0
+        assert self.net_migration.filter(pl.col('NET_MIGRATION') == np.nan).shape[0] == 0
 
         pct_migration = round(((total_migrants_this_year / self.current_pop.select('POPULATION').sum().item())) * 100.0, 1)
         print(f"...finished! ({total_migrants_this_year:,} total migrants this year; {pct_migration}% of the current population)")
@@ -561,5 +567,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('mid')  # immigration scenario from Census 2023
+    main('hi')  # immigration scenario from Census 2023
     print(time.ctime())
