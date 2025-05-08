@@ -12,7 +12,7 @@ if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
-SCENARIO = 'mid'
+
 
 # # this run had erroneously large immigration values for 2023 and 2024
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551163547.sqlite')
@@ -20,17 +20,24 @@ SCENARIO = 'mid'
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202553173742.sqlite')
 # CDC_FERT = 'No adj'
 # CDC_MORT = 'No adj'
+# SCENARIO = 'mid'
 
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_20255416653.sqlite')
 # CDC_FERT = '-4.5%'
 # CDC_MORT = '-15%'
+# SCENARIO = 'mid'
 
 # PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202555143420.sqlite')
 # CDC_FERT = '-5.5%'
 # CDC_MORT = '-15%'
+# SCENARIO = 'mid'
+
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202556221624.sqlite')
+CDC_FERT = '-5.5%'
+CDC_MORT = '-15%'
+SCENARIO = 'hi'
 
 SUPTITLE = f"ICLUS v3 vs Census\nScenario: {SCENARIO.upper()} | CDC Fert: {CDC_FERT} | CDC Mort: {CDC_MORT}\n{os.path.basename(PROJECTIONS_DB)}"
-
 
 
 class FigureMaker():
@@ -271,11 +278,15 @@ class FigureMaker():
         self.iclusv3_migration = pd.read_sql_query(sql=query, con=con)
         con.close()
 
+        columns = ['GEOID', 'AGE_GROUP', 'RACE', 'SEX'] + ['INMIG' + str(year) for year in range(2021, 2100)]
+        self.iclusv3_migration = self.iclusv3_migration[columns]
+
         self.iclusv3_migration = self.iclusv3_migration.melt(id_vars=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'],
                                                              var_name='YEAR',
                                                              value_name='MIGRATION')
+        self.iclusv3_migration['YEAR'] = self.iclusv3_migration['YEAR'].str.replace('INMIG', '').astype(int)
         self.iclusv3_migration = self.iclusv3_migration[['YEAR', 'MIGRATION']].groupby(by='YEAR', as_index=False).sum()
-        self.iclusv3_migration['YEAR'] = self.iclusv3_migration['YEAR'].astype(int64)
+        # self.iclusv3_migration['YEAR'] = self.iclusv3_migration['YEAR'].astype(int64)
         self.iclusv3_migration['MIGRATION'] = self.iclusv3_migration['MIGRATION'].astype(int64)
         self.iclusv3_migration['MIGRATION'] /= 1000000
 

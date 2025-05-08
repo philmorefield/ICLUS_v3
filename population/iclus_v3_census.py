@@ -564,5 +564,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('hi')  # immigration scenario from Census 2023
+    main('low')  # immigration scenario from Census 2023
     print(time.ctime())
