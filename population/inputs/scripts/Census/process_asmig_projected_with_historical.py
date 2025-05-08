@@ -6,7 +6,6 @@ Created:
 import os
 import sqlite3
 
-import numpy as np
 import pandas as pd
 
 if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
@@ -29,7 +28,9 @@ HISTORICAL_IMMIGRATION_MAP = {2010: 174416,
                               2019: 595348,
                               2020: 19885,
                               2021: 376004,
-                              2022: 1693535}
+                              2022: 1693535,
+                              2023: 2294209,
+                              2024: 2786119}
 
 AGE_GROUPS = ['0-4',
               '5-9',
@@ -70,7 +71,7 @@ def add_historical_immigration(df):
     The 2023 Census projections have projected immigration for 2023 and 2024,
     so we will overwrite those values with the historical values.
     '''
-    for year in range(2010, 2023):
+    for year in range(2010, 2025):
         hist_net_mig = HISTORICAL_IMMIGRATION_MAP[year]
 
         temp = df.query('YEAR == 2023')
@@ -78,6 +79,8 @@ def add_historical_immigration(df):
         temp = temp.set_index(['YEAR', 'SEX', 'AGE_GROUP'])
         temp = temp.div(temp.sum().sum()) * hist_net_mig
 
+        if year in (2023, 2024): # overwrite existing 2023 and 2024 values
+            df = df.query(f'YEAR != {year}')
         df = pd.concat(objs=[df, temp.reset_index()], ignore_index=True)
 
     return df
@@ -137,7 +140,7 @@ def main():
         df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('85-100', '85+')
 
         con = sqlite3.connect(database=os.path.join(DATABASES, 'census.sqlite'))
-        df.to_sql(name=f'census_np2023_asmig_{scenario}',
+        df.to_sql(name=f'census_np2023_asmig_{scenario}_with_historical2324',
                 if_exists='replace',
                 con=con,
                 index=False)

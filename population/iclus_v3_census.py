@@ -528,7 +528,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('FERTILITY') * 0.945 * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
+        df = df.with_columns(((pl.col('FERTILITY') * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
         df = (df.select(['GEOID', 'RACE', 'MALE', 'FEMALE'])
@@ -564,5 +564,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('low')  # immigration scenario from Census 2023
+    main('mid')  # immigration scenario from Census 2023
     print(time.ctime())
