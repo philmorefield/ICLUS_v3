@@ -335,7 +335,7 @@ class Projector():
         # this is the net migrants for each age-sex combination
         uri = f'sqlite:{CENSUS_DB}'
         query = f'SELECT *  \
-                  FROM census_np2023_asmig_{self.scenario} \
+                  FROM census_np2023_asmig_{self.scenario}_with_historical2324 \
                   WHERE YEAR = "{self.current_projection_year}"'
         df_census = pl.read_database_uri(query=query, uri=uri).drop('YEAR')
         df_census = df_census.unpivot(index=['AGE_GROUP', 'SEX'], variable_name='RACE', value_name='NET_IMMIGRATION')
@@ -564,5 +564,5 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('mid')  # immigration scenario from Census 2023
+    main('low')  # immigration scenario from Census 2023
     print(time.ctime())

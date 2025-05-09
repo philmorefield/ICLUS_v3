@@ -59,6 +59,12 @@ CDC_MORT = 'No adj'
 CDC_IMM = 'Hist21_24'
 SCENARIO = 'low'
 
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_2025597926.sqlite')
+CDC_FERT = 'No adj'
+CDC_MORT = 'No adj'
+CDC_IMM = 'Hist21_24'
+SCENARIO = 'low'
+
 SUPTITLE = f"ICLUS v3 vs Census\nScenario: {SCENARIO.upper()} | CDC Fert: {CDC_FERT} | CDC Mort: {CDC_MORT} | CDC Imm: {CDC_IMM}\n{os.path.basename(PROJECTIONS_DB)}"
 
 
