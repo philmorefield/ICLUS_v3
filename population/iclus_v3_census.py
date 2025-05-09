@@ -3,16 +3,6 @@ Author:  Phil Morefield
 Purpose: Create county-level population projections using the 2023 vintage
          Census
 Created: April 26th, 2025
-
-
-20250504 - ICLUSv3 births using the Census main series are roughly 4.5% higher
-           than the Census national totals for 2023. I attribute this to
-           innacurate or missing fertility rates from the CDC. I'm applying a
-           4.5% reduction to the CDC fertility rates so that ICLUSv3 national
-           totals more closely match the Census.
-
-           Also reducing CDC mortality rates by 15% to match Census projections
-           for 2023.
 """
 import os
 import time
@@ -65,11 +55,14 @@ def set_launch_population():
     #assert df.shape[0] == 675648
     return df
 
-def main(scenario):
+def main(scenario, cdc_fert_adj, cdc_mort_adj, census_imm_hist2324):
     '''
     TODO: Add docstring
     '''
-    model = Projector(scenario=scenario)
+    model = Projector(scenario=scenario,
+                      cdc_fert_adj=cdc_fert_adj,
+                      cdc_mort_adj=cdc_mort_adj,
+                      census_imm_hist2324=census_imm_hist2324)
     model.run()
 
 
@@ -77,7 +70,7 @@ class Projector():
     '''
     TODO: Add docstring
     '''
-    def __init__(self, scenario):
+    def __init__(self, scenario, cdc_fert_adj, cdc_mort_adj, census_imm_hist2324):
 
         # time-related attributes
         self.launch_year = 2020
@@ -92,21 +85,32 @@ class Projector():
 
         # immigration-related attributes
         self.immigrants = None
+        self.census_imm_hist2324 = census_imm_hist2324
 
         # mortality-related attributes
         self.deaths = None
+        self.cdc_mort_adj = cdc_mort_adj
 
         # migration-related attributes
         self.net_migration = None
 
         # fertility-related attributes
         self.births = None
+        self.cdc_fert_adj = cdc_fert_adj
 
     def run(self, final_projection_year=2099):
         '''
         TODO:
         '''
         self.current_pop = set_launch_population()
+
+        print("\n")
+        print("***************** PARAMETERS ******************")
+        print("Scenario: ", self.scenario)
+        print("CDC fertility adjustment: ", self.cdc_fert_adj)
+        print("CDC mortality adjustment: ", self.cdc_mort_adj)
+        print("Census immigration historical 2023-2024: ", self.census_imm_hist2324)
+        print("***********************************************")
 
         while self.current_projection_year <= final_projection_year:
             print("##############")
@@ -206,6 +210,7 @@ class Projector():
             self.births = None
 
             self.current_pop = self.current_pop.sort(['GEOID', 'RACE', 'SEX', 'AGE_GROUP'])
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').round().alias('POPULATION').cast(pl.UInt64))
 
             if self.population_time_series is None:
                 self.population_time_series = self.current_pop.clone()
@@ -215,6 +220,14 @@ class Projector():
             self.current_projection_year += 1
 
             print(f"Total population (end): {self.current_pop.select('POPULATION').sum().item():,}\n")
+
+            print("\n")
+            print("***************** PARAMETERS ******************")
+            print("Scenario: ", self.scenario)
+            print("CDC fertility adjustment: ", self.cdc_fert_adj)
+            print("CDC mortality adjustment: ", self.cdc_mort_adj)
+            print("Census immigration historical 2023-2024: ", self.census_imm_hist2324)
+            print("***********************************************")
 
             # save results to sqlite3 database
             uri = f'sqlite:{OUTPUT_DATABASE}'
@@ -255,7 +268,6 @@ class Projector():
 
         # a rounding difference of << 1 is possible
         assert starting_pop - self.current_pop.select('POPULATION').sum().item() < 1
-        # self.current_pop = self.current_pop.round().astype(int)
 
         print("finished!")
 
@@ -290,7 +302,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
+        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * (1 + self.cdc_mort_adj) * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
         # calculate deaths
         df = df.with_columns((pl.col('MORT_PROJ') * pl.col('POPULATION')).alias('DEATHS'))
@@ -333,9 +345,13 @@ class Projector():
         county_weights = pl.read_database_uri(query=query, uri=uri)
 
         # this is the net migrants for each age-sex combination
+        if self.census_imm_hist2324 is True:
+            table_name = f'census_np2023_asmig_{self.scenario}_with_historical2324'
+        else:
+            table_name = f'census_np2023_asmig_{self.scenario}'
         uri = f'sqlite:{CENSUS_DB}'
         query = f'SELECT *  \
-                  FROM census_np2023_asmig_{self.scenario}_with_historical2324 \
+                  FROM {table_name} \
                   WHERE YEAR = "{self.current_projection_year}"'
         df_census = pl.read_database_uri(query=query, uri=uri).drop('YEAR')
         df_census = df_census.unpivot(index=['AGE_GROUP', 'SEX'], variable_name='RACE', value_name='NET_IMMIGRATION')
@@ -528,7 +544,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('FERTILITY') * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
+        df = df.with_columns(((pl.col('FERTILITY') * (1 + self.cdc_fert_adj) * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
         df = (df.select(['GEOID', 'RACE', 'MALE', 'FEMALE'])
@@ -564,5 +580,11 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main('low')  # immigration scenario from Census 2023
+    main(scenario='hi', # immigration scenario from Census 2023
+         cdc_fert_adj=0, # example: -0.045 for a 4.5% reduction
+         cdc_mort_adj=0, # example: -0.15 for a 15% reduction
+         census_imm_hist2324=False) # boolean; use historical values in place
+                                    # of projected Census immigration for years
+                                    # 2023-2024. Historical values are always
+                                    # used for 2021 and 2022.
     print(time.ctime())
