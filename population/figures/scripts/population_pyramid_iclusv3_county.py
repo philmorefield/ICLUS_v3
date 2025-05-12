@@ -1,4 +1,5 @@
 import os
+import sqlite3
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -6,18 +7,13 @@ import pandas as pd
 import seaborn as sns
 
 
-'''
-Hauer race groups:
-1 = WHITE NH
-2 = BLACK NH
-3 = HISPANIC
-4 = OTHER
-'''
+BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
+if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
 
-SSP = 'SSP3'
-HAUER_SSP = 'SSP3'
-YEAR = 2020
-COFIPS = '38105'
+CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
+POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551072849.sqlite')
 
 
 sort_dict = {'0-4': 1,
@@ -49,23 +45,19 @@ sort_dict = {'0-4': 1,
 #         f.savefig('movie%.4d.png' % idx)
 
 
-def get_Morefield_projection():
-    p = 'D:\\OneDrive\\Dissertation\\analysis\\part_5\\outputs'
-    f = 'wittgenstein_v2.sqlite'
+def get_iclusv3_projection(scenario, year, cofips):
 
-    engine = create_engine(name_or_url='sqlite:///' + os.path.join(p, f))
-    con = engine.connect()
+    con = sqlite3.connect(PROJECTIONS_DB)
 
-    query = f'SELECT AGE_GROUP, GENDER, "{YEAR}" AS "Population" \
-              FROM population_by_race_gender_age_{SSP} \
-              WHERE GEOID == "{COFIPS}"'
+    query = f'SELECT AGE_GROUP, SEX, "{year}" AS "Population" \
+              FROM population_by_race_sex_age_{scenario} \
+              WHERE GEOID == "{cofips}"'
     df = pd.read_sql(sql=query, con=con)
     con.close()
-    engine.dispose()
 
-    df = df.groupby(by=['AGE_GROUP', 'GENDER'], as_index=False).sum()
+    df = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False).sum()
     df.rename(columns={'AGE_GROUP': 'Age group',
-                       'GENDER': 'Sex'},
+                       'SEX': 'Sex'},
               inplace=True)
 
     df.loc[df.Sex == 'MALE', 'Population'] *= -1
@@ -75,64 +67,24 @@ def get_Morefield_projection():
     return df
 
 
-def get_Hauer_projection():
-    p = 'D:\\OneDrive\\Dissertation\\analysis\\part_3\\inputs\\hauer'
-    f = 'hauer.sqlite'
-    engine = create_engine(name_or_url='sqlite:///' + os.path.join(p, f))
-    con = engine.connect()
+def get_census_historical(cofips):
+    con = sqlite3.connect(POPULATION_DB)
 
-    query = f'SELECT SEX, AGE, {HAUER_SSP} FROM hauer_ssp \
-              WHERE YEAR == {YEAR} \
-              AND GEOID == "{COFIPS}"'
+    query = f'SELECT AGE_GROUP, SEX, POPULATION \
+              FROM county_population_ageracesex_2020 \
+              WHERE GEOID == "{cofips}"'
     df = pd.read_sql(sql=query, con=con)
     con.close()
-    engine.dispose()
 
-    df = df.groupby(by=['SEX', 'AGE'], as_index=False).sum()
-    df.rename(columns={HAUER_SSP: 'Population',
-                       'AGE': 'SORT_INDEX',
+    df = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False).sum()
+    df.rename(columns={'POPULATION': 'Population',
+                       'AGE_GROUP': 'SORT_INDEX',
                        'SEX': 'Sex'},
               inplace=True)
-    df['Sex'] = df['Sex'].map({1: 'MALE', 2: 'FEMALE'})
 
     df.loc[df.Sex == 'MALE', 'Population'] *= -1
     df['Age group'] = df['SORT_INDEX'].map({value:key for key, value in sort_dict.items()})
     df.sort_values(by=['SORT_INDEX', 'Sex'], ascending=False, inplace=True)
-
-    return df
-
-
-def main():
-
-    df1 = get_Morefield_projection()
-    plot_seaborn(df1)
-
-    df2 = get_Hauer_projection()
-    plot_seaborn(df2)
-
-
-def get_Census_estimate():
-    p = 'D:\\OneDrive\\Dissertation\\databases'
-    f = 'population.sqlite'
-    t = 'county_population_ageracegender_2010_to_2020'
-    engine = create_engine(name_or_url='sqlite:///' + os.path.join(p, f))
-    con = engine.connect()
-
-    query = f'SELECT SEX, AGE_GROUP, POPULATION FROM {t} \
-              WHERE YEAR == {YEAR} \
-              AND COFIPS == "{COFIPS}"'
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
-    engine.dispose()
-
-    df = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False).sum()
-    df.rename(columns={'POPULATION': 'Population',
-                       'AGE_GROUP': 'Age group',
-                       'SEX': 'Sex'},
-              inplace=True)
-
-    df.loc[df.Sex == 'MALE', 'Population'] *= -1
-    df.sort_values(by='Age group', ascending=False, inplace=True)
 
     male = df.loc[df.Sex == 'MALE', 'Population'].values
     female = df.loc[df.Sex == 'FEMALE', 'Population'].values
@@ -140,7 +92,16 @@ def get_Census_estimate():
     return male, female
 
 
-def plot_seaborn(df):
+def main():
+    scenario = 'low'
+    year = '2099'
+    cofips = '06037'  # Montgomery County, Alabama
+
+    df = get_iclusv3_projection(scenario=scenario, year=year, cofips=cofips)
+    plot_seaborn(df, cofips)
+
+
+def plot_seaborn(df, cofips):
 
     # draw the population pyramid
     g = sns.barplot(data=df,
@@ -181,28 +142,28 @@ def plot_seaborn(df):
     g.set_xticklabels(labels)
 
     # draw the Census 2020 estimate
-    Census_male, Census_female = get_Census_estimate()
+    census_male, census_female = get_census_historical(cofips=cofips)
 
-    Census_vert = []
-    Census_horiz = []
+    census_vert = []
+    census_horiz = []
 
-    for i in range(Census_male.shape[0] - 1, -1, -1):
-        Census_vert.append(i + 0.6)
-        Census_vert.append(i - 0.4)
-        Census_horiz.append(Census_male[i])
-        Census_horiz.append(Census_male[i])
+    for i in range(census_male.shape[0] - 1, -1, -1):
+        census_vert.append(i + 0.6)
+        census_vert.append(i - 0.4)
+        census_horiz.append(census_male[i])
+        census_horiz.append(census_male[i])
 
-    for i in range(0, Census_male.shape[0]):
-        Census_vert.append(i - 0.4)
-        Census_vert.append(i + 0.6)
-        Census_horiz.append(Census_female[i])
-        Census_horiz.append(Census_female[i])
+    for i in range(0, census_male.shape[0]):
+        census_vert.append(i - 0.4)
+        census_vert.append(i + 0.6)
+        census_horiz.append(census_female[i])
+        census_horiz.append(census_female[i])
 
-    plt.gca().plot(Census_horiz, Census_vert, 'black')
+    plt.gca().plot(census_horiz, census_vert, 'black')
 
     plt.gca().set_ylim(17.5, -0.5)
     plt.subplots_adjust(top=0.925)
-    plt.suptitle(t=f'County FIPS: {COFIPS}')
+    plt.suptitle(t=f'County FIPS: {cofips}')
     plt.show()
     plt.close()
 

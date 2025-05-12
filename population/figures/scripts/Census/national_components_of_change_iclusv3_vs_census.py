@@ -65,17 +65,11 @@ POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sql
 # CDC_IMM = 'Hist21_24'
 # SCENARIO = 'low'
 
-# PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202559103718.sqlite')
-# CDC_FERT = 'No adj'
-# CDC_MORT = 'No adj'
-# CDC_IMM = 'Hist21_22'
-# SCENARIO = 'hi'
-
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551072258.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'iclus_v3_census_202551072849.sqlite')
 CDC_FERT = '-5.5%'
 CDC_MORT = '-15%'
 CDC_IMM = 'Hist21_22'
-SCENARIO = 'hi'
+SCENARIO = 'low'
 
 SUPTITLE = f"ICLUS v3 vs Census\nScenario: {SCENARIO.upper()} | CDC Fert: {CDC_FERT} | CDC Mort: {CDC_MORT} | CDC Imm: {CDC_IMM}\n{os.path.basename(PROJECTIONS_DB)}"
 
