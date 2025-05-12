@@ -107,9 +107,9 @@ class Projector():
         print("\n")
         print("***************** PARAMETERS ******************")
         print("Scenario: ", self.scenario)
-        print("CDC fertility adjustment: ", self.cdc_fert_adj)
-        print("CDC mortality adjustment: ", self.cdc_mort_adj)
-        print("Census immigration historical 2023-2024: ", self.census_imm_hist2324)
+        print("CDC fertility adjustment:", f'{self.cdc_fert_adj * 100}%')
+        print("CDC mortality adjustment:", f'{self.cdc_mort_adj * 100}%')
+        print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
         print("***********************************************")
 
         while self.current_projection_year <= final_projection_year:
@@ -224,9 +224,10 @@ class Projector():
             print("\n")
             print("***************** PARAMETERS ******************")
             print("Scenario: ", self.scenario)
-            print("CDC fertility adjustment: ", self.cdc_fert_adj)
-            print("CDC mortality adjustment: ", self.cdc_mort_adj)
-            print("Census immigration historical 2023-2024: ", self.census_imm_hist2324)
+            print("CDC fertility adjustment:", f'{self.cdc_fert_adj * 100}%')
+            print("CDC mortality adjustment:", f'{self.cdc_mort_adj * 100}%')
+            print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
+            print("Output database:", OUTPUT_DATABASE)
             print("***********************************************")
 
             # save results to sqlite3 database
@@ -580,9 +581,9 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main(scenario='hi', # immigration scenario from Census 2023
-         cdc_fert_adj=0, # example: -0.045 for a 4.5% reduction
-         cdc_mort_adj=0, # example: -0.15 for a 15% reduction
+    main(scenario='low', # immigration scenario from Census 2023
+         cdc_fert_adj=-0.055, # example: -0.045 for a 4.5% reduction
+         cdc_mort_adj=-0.15, # example: -0.15 for a 15% reduction
          census_imm_hist2324=False) # boolean; use historical values in place
                                     # of projected Census immigration for years
                                     # 2023-2024. Historical values are always
