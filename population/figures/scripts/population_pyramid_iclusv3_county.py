@@ -94,8 +94,8 @@ def get_census_historical(cofips):
 
 def main():
     scenario = 'low'
-    year = '2099'
-    cofips = '06037'  # Montgomery County, Alabama
+    year = '2025'
+    cofips = '48301'
 
     df = get_iclusv3_projection(scenario=scenario, year=year, cofips=cofips)
     plot_seaborn(df, cofips)
@@ -108,7 +108,7 @@ def plot_seaborn(df, cofips):
                     x='Population',
                     y='Age group',
                     hue='Sex',
-                    orient='horizontal',
+                    orient='h',
                     dodge=False)
 
     for p in g.patches:
