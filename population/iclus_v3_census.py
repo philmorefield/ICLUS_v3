@@ -227,7 +227,7 @@ class Projector():
             print("CDC fertility adjustment:", f'{self.cdc_fert_adj * 100}%')
             print("CDC mortality adjustment:", f'{self.cdc_mort_adj * 100}%')
             print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
-            print("Output database:", OUTPUT_DATABASE)
+            print("Output database:", os.path.basename(OUTPUT_DATABASE))
             print("***********************************************")
 
             # save results to sqlite3 database
@@ -581,7 +581,7 @@ class Projector():
 
 if __name__ == '__main__':
     print(time.ctime())
-    main(scenario='low', # immigration scenario from Census 2023
+    main(scenario='hi', # immigration scenario from Census 2023
          cdc_fert_adj=-0.055, # example: -0.045 for a 4.5% reduction
          cdc_mort_adj=-0.15, # example: -0.15 for a 15% reduction
          census_imm_hist2324=False) # boolean; use historical values in place
