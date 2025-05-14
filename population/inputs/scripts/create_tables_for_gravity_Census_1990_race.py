@@ -7,10 +7,15 @@ import sqlite3
 
 import pandas as pd
 
-DATABASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
+BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
+if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+
+DATABASE_FOLDER = os.path.join(BASE_FOLDER, 'inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 POPULATION_DB = os.path.join(DATABASE_FOLDER, 'population.sqlite')
 ANALYSIS_DB = os.path.join(DATABASE_FOLDER, 'analysis.sqlite')
+CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 
 AGE_GROUPS = ('5_TO_9',
               '10_TO_14',
@@ -30,6 +35,23 @@ AGE_GROUPS = ('5_TO_9',
               '80_TO_84',
               '85_TO_115')
 
+
+def make_fips_changes(df):
+    con =sqlite3.connect(MIGRATION_DB)
+    query = 'SELECT OLD_FIPS AS COFIPS, NEW_FIPS \
+             FROM fips_or_name_changes'
+    df_fips = pd.read_sql_query(sql=query, con=con)
+    con.close()
+
+    df = df.merge(right=df_fips,
+                  how='left',
+                  on='COFIPS')
+
+    df.loc[~df.NEW_FIPS.isnull(), 'COFIPS'] = df['NEW_FIPS']
+    df = df.drop(columns='NEW_FIPS')
+    df = df.groupby(by='COFIPS', as_index=False).sum()
+
+    return df
 
 def get_migration(race, age_group):
     con = sqlite3.connect(MIGRATION_DB)
@@ -68,7 +90,20 @@ def get_census_population(race):
     return df
 
 
-def merge_dataframes(distance_df, population_df, migration_df, dummy_df):
+def get_census_immigration():
+    # historical immigration, 2013-2017
+    csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+    df = pd.read_csv(csv, encoding='latin-1')
+    columns = ['STATE', 'COUNTY'] + ['INTERNATIONALMIG' + str(year) for year in range(2013, 2018)]
+    df = df[columns]
+    df['COFIPS'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
+    df = df.drop(columns=['STATE', 'COUNTY'])
+    df = make_fips_changes(df)
+    df = df.set_index('COFIPS').mean(axis=1).round().astype(int).reset_index()
+
+    return df
+
+def merge_dataframes(distance_df, population_df, migration_df, dummy_df, immigration_df):
     df = distance_df.merge(right=migration_df, how='left', on=['ORIGIN_FIPS', 'DESTINATION_FIPS'], copy=False)
     df = df.fillna(value=0)
     df = df.merge(right=population_df, how='inner', left_on='ORIGIN_FIPS', right_on='COFIPS', copy=False)
@@ -159,10 +194,12 @@ def label_urban_destinations(df):
     return df
 
 
+
 def main():
     distance_df = get_euclidean_distance()
     dummy_df = label_intra_labor_market_moves(distance_df)
     dummy_df = label_urban_destinations(dummy_df)
+    immigration_df = get_census_immigration()
 
     for race in ('WHITE', 'BLACK', 'AIAN', 'API', 'OTHER'):
         print(f"\nStarting {race}...")
@@ -172,7 +209,8 @@ def main():
             df = merge_dataframes(distance_df=distance_df,
                                   population_df=population_df,
                                   migration_df=migration_df,
-                                  dummy_df=dummy_df)
+                                  dummy_df=dummy_df,
+                                  immigration_df=immigration_df)
 
             # variables calculated from the perspective of the origin
             df.sort_values(by=['ORIGIN_FIPS', 'Dij'], inplace=True)
@@ -195,7 +233,7 @@ def main():
 
             db = os.path.join(DATABASE_FOLDER, 'zinb_regression_inputs.sqlite')
             con = sqlite3.connect(db)
-            df.to_sql(name=f'zinb_inputs_Census_1990_{race}_{age_group}',
+            df.to_sql(name=f'zinb_inputs_Census_1990_{race}_{age_group}_v2',
                     con=con,
                     if_exists='replace',
                     index=False)
