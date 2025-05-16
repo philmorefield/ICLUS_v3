@@ -3,6 +3,8 @@ import sqlite3
 
 import pandas as pd
 
+# pd.set_option("display.max_columns", None) # show all cols
+
 BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
@@ -14,7 +16,7 @@ ANALYSIS_DB = os.path.join(DATABASE_FOLDER, 'analysis.sqlite')
 ACS_DB = os.path.join(DATABASE_FOLDER, 'acs.sqlite')
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census\\2019')
 
-XL_FOLDER = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\ACS\\2011_2015')
+ACS_FOLDER = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\ACS\\2011_2015')
 
 years = ('2006-2010', '2011-2015')
 
@@ -52,18 +54,80 @@ def make_fips_changes(df):
     df_fips = pd.read_sql_query(sql=query, con=con)
     con.close()
 
-    df = df.merge(right=df_fips,
-                  how='left',
-                  on='COFIPS')
+    if 'ORIGIN_FIPS' in df.columns and 'DESTINATION_FIPS' in df.columns:
+        df = df.merge(right=df_fips,
+                    how='left',
+                    left_on='ORIGIN_FIPS',
+                    right_on='COFIPS')
+        df.loc[~df.NEW_FIPS.isnull(), 'ORIGIN_FIPS'] = df['NEW_FIPS']
+        df = df.drop(columns=['NEW_FIPS', 'COFIPS'])
 
-    df.loc[~df.NEW_FIPS.isnull(), 'COFIPS'] = df['NEW_FIPS']
-    df = df.drop(columns='NEW_FIPS')
-    df = df.groupby(by=['COFIPS', 'RACE', 'AGE_GROUP'], as_index=False).sum()
+        df = df.merge(right=df_fips,
+                    how='left',
+                    left_on='DESTINATION_FIPS',
+                    right_on='COFIPS')
+        df.loc[~df.NEW_FIPS.isnull(), 'DESTINATION_FIPS'] = df['NEW_FIPS']
+        df = df.drop(columns=['NEW_FIPS', 'COFIPS'])
+
+        if 'RACE' in df.columns:
+            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'RACE'], as_index=False).sum()
+        elif 'AGE_GROUP' in df.columns:
+            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'], as_index=False).sum()
+        else:
+            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'], as_index=False).sum()
+
+    elif 'COFIPS' in df.columns:
+        df = df.merge(right=df_fips,
+                    how='left',
+                    on='COFIPS')
+
+        df.loc[~df.NEW_FIPS.isnull(), 'COFIPS'] = df['NEW_FIPS']
+        df = df.drop(columns='NEW_FIPS')
+
+        if 'RACE' in df.columns:
+            df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).sum()
+        elif 'AGE_GROUP' in df.columns:
+            df = df.groupby(by=['COFIPS', 'AGE_GROUP'], as_index=False).sum()
+        else:
+            df = df.groupby(by='COFIPS', as_index=False).sum()
 
     return df
 
 
-def get_2010_2014_county_population_by_race():
+def get_euclidean_distance():
+    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, Dij \
+             FROM county_to_county_distance_2020'
+    con = sqlite3.connect(ANALYSIS_DB)
+    df = pd.read_sql_query(sql=query, con=con)
+    con.close()
+
+    assert not df.isnull().any().any()
+
+    return df
+
+def get_acs_2010_2014_county_population_by_race():
+    csv_name = 'ACSDT5YSPT2015.B01003-Data.csv'
+    df = pd.read_csv(filepath_or_buffer=os.path.join(ACS_FOLDER, 'population', csv_name),
+                     skiprows=1,
+                     encoding='latin-1')
+    df.columns = ['COFIPS', 'CYNAME', 'POPULATION', 'MOE', 'RACE_CODE', 'RACE', 'EMPTY']
+    df = df.drop(columns=['CYNAME', 'MOE', 'RACE_CODE', 'EMPTY'])
+    df['COFIPS'] = df['COFIPS'].str[-5:]
+    df['RACE'] = df['RACE'].replace({'White alone': 'WHITE',
+                                     'Black or African American alone': 'BLACK',
+                                     'American Indian and Alaska Native alone (300, A01-Z99)': 'AIAN',
+                                     'Asian alone (400-499)': 'ASIAN',
+                                     'Native Hawaiian and Other Pacific Islander alone (500-599)': 'NHPI',
+                                     'Two or more races': 'TWO_OR_MORE'})
+
+    df = make_fips_changes(df)
+
+    df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
+
+    return df
+
+
+def get_census_2010_2014_county_population_by_race_():
     csv_name = 'cc-est2019-alldata.csv'
     csv = os.path.join(CENSUS_CSV_PATH, csv_name)
     df = pd.read_csv(csv, encoding='latin-1')
@@ -80,16 +144,15 @@ def get_2010_2014_county_population_by_race():
     df['NHPI'] = df['NA_MALE'] + df['NA_FEMALE']
     df['TWO_OR_MORE'] = df['TOM_MALE'] + df['TOM_FEMALE']
 
-    df = df[['COFIPS', 'AGE_GROUP', 'WHITE', 'BLACK', 'AIAN', 'ASIAN', 'NHPI', 'TWO_OR_MORE']]
-    df = df.melt(id_vars=['COFIPS', 'AGE_GROUP'], var_name='RACE', value_name='POPULATION')
+    df = df[['COFIPS', 'WHITE', 'BLACK', 'AIAN', 'ASIAN', 'NHPI', 'TWO_OR_MORE']]
+    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='POPULATION')
     df = make_fips_changes(df)
-    df = df.groupby(by=['COFIPS', 'AGE_GROUP', 'RACE'], as_index=False).mean()
+    df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).mean()
     df['POPULATION'] = (df['POPULATION'] / 5).astype(int)
 
-    df_race = df[['COFIPS', 'RACE', 'POPULATION']].groupby(by=['COFIPS', 'RACE'], as_index=False).sum()
-    df_age = df[['COFIPS', 'AGE_GROUP', 'POPULATION']].groupby(by=['COFIPS', 'AGE_GROUP'], as_index=False).sum()
+    df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
 
-    return df_race, df_age
+    return df
 
 
 def get_gross_migration_ratios_by_race():
@@ -109,12 +172,12 @@ def get_gross_migration_ratios_by_race():
                 'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
                 'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
 
-    xls = pd.ExcelFile(os.path.join(XL_FOLDER, xl_filename))
+    xls = pd.ExcelFile(os.path.join(ACS_FOLDER, 'migration', xl_filename))
     df = pd.concat([xls.parse(sheet_name=name, header=None, names=columns, skiprows=4, skipfooter=8) for name in xls.sheet_names if name != 'Puerto Rico'])
 
     df = df[~df.O_STFIPS.str.contains('XXX')]
     foreign = ('EUR', 'ASI', 'SAM', 'ISL', 'NAM', 'CAM', 'CAR', 'AFR', 'OCE')
-    df = df.loc[~df.O_STFIPS.isin(foreign), ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE', 'TOTAL_FLOW')]
+    df = df.loc[~df.O_STFIPS.isin(foreign), ['D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE', 'TOTAL_FLOW']]
 
     df['D_STFIPS'] = df.D_STFIPS.astype(int).astype(str).str.zfill(2)
     df['D_COFIPS'] = df.D_COFIPS.astype(int).astype(str).str.zfill(3)
@@ -129,10 +192,30 @@ def get_gross_migration_ratios_by_race():
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'RACE', 'DESTINATION_FIPS'])
     assert not df.isnull().any().any()
+    df = make_fips_changes(df)
 
-    origin_race, origin_age = get_2010_2014_county_population_by_race()
+    valid_fips = get_euclidean_distance()
+    df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
+    df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
+    # use 'OTHER' migration information for 'AIAN', 'NHPI', and 'TWO_OR_MORE'
+    for population_race in ['AIAN', 'NHPI', 'TWO_OR_MORE']:
+        temp = df.loc[df.RACE == 'OTHER'].copy()
+        temp['RACE'] = population_race
+        df = pd.concat([df, temp], ignore_index=True)
+    df = df.loc[df.RACE != 'OTHER']
 
+    origin_race = get_acs_2010_2014_county_population_by_race()
+
+    df = df.merge(right=origin_race,
+                  left_on=['ORIGIN_FIPS', 'RACE'],
+                  right_on=['COFIPS', 'RACE'],
+                  how='left')
+    df = df.drop(columns=['COFIPS'])
+    df.rename(columns={'POPULATION': 'ORIGIN_POPULATION'}, inplace=True)
+    df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION / df.SUM_OTHER) * df.TOTAL_FLOW
+
+    df = df.drop(columns=['ORIGIN_POPULATION', 'SUM_OTHER'])
     df = df.groupby(['DESTINATION_FIPS', 'RACE'], as_index=False).sum()
     df['RACE_SUM'] = df.groupby('RACE')['TOTAL_FLOW'].transform(sum)
     df['WEIGHT_x_10^6'] = (df['TOTAL_FLOW'] / df['RACE_SUM']) * 1000000
@@ -166,7 +249,7 @@ def get_gross_migration_ratios_by_race():
     p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
     f = 'acs.sqlite'
     con = sqlite3.connect(os.path.join(p, f))
-    df.to_sql(name='acs_immigration_weights_race_2006_2015',
+    df.to_sql(name='acs_gross_migration_weights_2011_2015',
               con=con,
               if_exists='replace',
               index=False)
