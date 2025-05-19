@@ -100,6 +100,7 @@ def get_census_immigration():
     df = df.drop(columns=['STATE', 'COUNTY'])
     df = make_fips_changes(df)
     df = df.set_index('COFIPS').mean(axis=1).round().astype(int).reset_index()
+    df.columns = ['COFIPS', 'IMMIGRATION']
 
     return df
 
