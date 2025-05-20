@@ -3,7 +3,7 @@ import sqlite3
 
 import pandas as pd
 
-# pd.set_option("display.max_columns", None) # show all cols
+pd.set_option("display.max_columns", None) # show all cols
 
 BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
@@ -160,56 +160,47 @@ def get_census_2020_county_population_by_race_():
                      skiprows=1,
                      encoding='latin-1').iloc[:, :11]
     df.columns = ['COFIPS', 'CYNAME', 'TOTAL_POPULATION', 'ONE_RACE', 'WHITE', 'BLACK', 'AIAN', 'ASIAN', 'NHPI', 'OTHER', 'TWO_OR_MORE']
-    df = df.drop(columns=['CYNNAME', 'TOTAL_POPULATION', 'OTHER'])
+    df = df.drop(columns=['CYNAME', 'TOTAL_POPULATION', 'ONE_RACE'])
     df['COFIPS'] = df['COFIPS'].str[-5:]
 
-    df['COFIPS'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
-    df = df.query('3 <= YEAR <= 7')
-    df = df.query('AGEGRP >= 1')
-    df = df.rename(columns={'AGEGRP': 'AGE_GROUP'})
-    df['AGE_GROUP'] = df['AGE_GROUP'].replace(to_replace=CENSUS_AGE_GROUP_MAP)
-
-    df['WHITE'] = df['WA_MALE'] + df['WA_FEMALE']
-    df['BLACK'] = df['BA_MALE'] + df['BA_FEMALE']
-    df['AIAN'] = df['IA_MALE'] + df['IA_FEMALE']
-    df['ASIAN'] = df['AA_MALE'] + df['AA_FEMALE']
-    df['NHPI'] = df['NA_MALE'] + df['NA_FEMALE']
-    df['TWO_OR_MORE'] = df['TOM_MALE'] + df['TOM_FEMALE']
-
-    df = df[['COFIPS', 'WHITE', 'BLACK', 'AIAN', 'ASIAN', 'NHPI', 'TWO_OR_MORE']]
-    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='POPULATION')
     df = make_fips_changes(df)
-    df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).mean()
-    df['POPULATION'] = (df['POPULATION'] / 5).astype(int)
+    df = df.groupby(by='COFIPS', as_index=False).sum()
 
-    df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
+    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='CENSUS_POPULATION')
+    df['CO_POP_NOT_OTHER'] = df.query('RACE != "OTHER"').groupby(by='COFIPS')['CENSUS_POPULATION'].transform('sum')
+    df['TOTAL_POP'] = df.groupby(by='COFIPS', as_index=False)['CENSUS_POPULATION'].transform('sum')
+    df['PCT_POP_NOT_OTHER'] =  df['CO_POP_NOT_OTHER'] / df['TOTAL_POP']
+    df = df[['COFIPS', 'RACE', 'CENSUS_POPULATION', 'PCT_POP_NOT_OTHER']].query('RACE != "OTHER"')
+    # df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
 
     return df
 
 
-def get_gross_migration_ratios_by_race():
+def get_acs_2011_2015_migration():
     xl_filename = 'county-to-county-by-race-2011-2015-current-residence-sort.xlsx'
 
-    columns = ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE', 'D_STATE', 'D_COUNTY', 'D_POP',
-                'D_POP_MOE', 'D_NONMOVERS', 'D_NONMOVERS_MOE', 'D_MOVERS',
-                'D_MOVERS_MOE', 'D_MOVERS_SAME_CY', 'D_MOVERS_SAME_CY_MOE',
-                'D_MOVERS_FROM_DIFF_CY_SAME_ST',
-                'D_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'D_MOVERS_FROM_DIFF_ST',
-                'D_MOVERS_DIFF_ST_MOE', 'D_MOVERS_FROM_ABROAD',
-                'D_MOVERS_FROM_ABROAD_MOE', 'O_STATE', 'O_COUNTY', 'O_POP',
-                'O_POP_MOE', 'O_NONMOVERS', 'O_NOMMOVERS_MOE', 'O_MOVERS',
-                'O_MOVERS_MOE', 'O_MOVERS_SAME_CY', 'O_MOVERS_SAME_CY_MOE',
-                'O_MOVERS_FROM_DIFF_CY_SAME_ST',
-                'O_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'O_MOVERS_FROM_DIFF_ST',
-                'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
-                'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
+    columns = ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE',
+               'D_STATE', 'D_COUNTY', 'D_POP', 'D_POP_MOE', 'D_NONMOVERS',
+               'D_NONMOVERS_MOE', 'D_MOVERS', 'D_MOVERS_MOE',
+               'D_MOVERS_SAME_CY', 'D_MOVERS_SAME_CY_MOE',
+               'D_MOVERS_FROM_DIFF_CY_SAME_ST',
+               'D_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'D_MOVERS_FROM_DIFF_ST',
+               'D_MOVERS_DIFF_ST_MOE', 'D_MOVERS_FROM_ABROAD',
+               'D_MOVERS_FROM_ABROAD_MOE', 'O_STATE', 'O_COUNTY',
+               'ORIGIN_POPULATION_ACS', 'O_POP_MOE', 'O_NONMOVERS',
+               'O_NOMMOVERS_MOE', 'O_MOVERS', 'O_MOVERS_MOE',
+               'O_MOVERS_SAME_CY', 'O_MOVERS_SAME_CY_MOE',
+               'O_MOVERS_FROM_DIFF_CY_SAME_ST',
+               'O_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'O_MOVERS_FROM_DIFF_ST',
+               'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
+               'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
 
     xls = pd.ExcelFile(os.path.join(ACS_FOLDER, 'migration', xl_filename))
     df = pd.concat([xls.parse(sheet_name=name, header=None, names=columns, skiprows=4, skipfooter=8) for name in xls.sheet_names if name != 'Puerto Rico'])
 
     df = df[~df.O_STFIPS.str.contains('XXX')]
     foreign = ('EUR', 'ASI', 'SAM', 'ISL', 'NAM', 'CAM', 'CAR', 'AFR', 'OCE')
-    df = df.loc[~df.O_STFIPS.isin(foreign), ['D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE', 'TOTAL_FLOW']]
+    df = df.loc[~df.O_STFIPS.isin(foreign), ['D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'RACE', 'ORIGIN_POPULATION_ACS', 'TOTAL_FLOW']]
 
     df['D_STFIPS'] = df.D_STFIPS.astype(int).astype(str).str.zfill(2)
     df['D_COFIPS'] = df.D_COFIPS.astype(int).astype(str).str.zfill(3)
@@ -220,15 +211,9 @@ def get_gross_migration_ratios_by_race():
     df['ORIGIN_FIPS'] = df.O_STFIPS + df.O_COFIPS
 
     df['RACE'] = df.RACE.replace(to_replace=ACS_RACE_MAP)
-    df = df[['DESTINATION_FIPS', 'ORIGIN_FIPS', 'RACE', 'TOTAL_FLOW']]
+    df = df[['DESTINATION_FIPS', 'ORIGIN_FIPS', 'RACE', 'ORIGIN_POPULATION_ACS', 'TOTAL_FLOW']]
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'RACE', 'DESTINATION_FIPS'])
-    assert not df.isnull().any().any()
-    df = make_fips_changes(df)
-
-    valid_fips = get_euclidean_distance()
-    df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
-    df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
     # use 'OTHER' migration information for 'AIAN', 'NHPI', and 'TWO_OR_MORE'
     for population_race in ['AIAN', 'NHPI', 'TWO_OR_MORE']:
@@ -237,17 +222,31 @@ def get_gross_migration_ratios_by_race():
         df = pd.concat([df, temp], ignore_index=True)
     df = df.loc[df.RACE != 'OTHER']
 
-    origin_race = get_census_2020_county_population_by_race_()
+    return df
 
-    df = df.merge(right=origin_race,
-                  left_on=['ORIGIN_FIPS', 'RACE'],
-                  right_on=['COFIPS', 'RACE'],
-                  how='left')
+def get_gross_migration_ratios_by_race():
+    origin_race = get_census_2020_county_population_by_race_()
+    migration = get_acs_2011_2015_migration()
+
+    df = migration.merge(right=origin_race,
+                         left_on=['ORIGIN_FIPS', 'RACE'],
+                         right_on=['COFIPS', 'RACE'],
+                         how='left')
     df = df.drop(columns=['COFIPS'])
-    df.rename(columns={'POPULATION': 'ORIGIN_POPULATION'}, inplace=True)
-    df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION / df.SUM_OTHER) * df.TOTAL_FLOW
+    # df.loc[df.ORIGIN_POPULATION_ACS.isnull(), 'ORIGIN_POPULATION_ACS'] = df.CENSUS_POPULATION
+
+    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['CENSUS_POPULATION'].transform('sum')
+    # df.rename(columns={'POPULATION': 'ORIGIN_POPULATION'}, inplace=True)
+    df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.CENSUS_POPULATION / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
+    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION']
 
     df = df.drop(columns=['ORIGIN_POPULATION', 'SUM_OTHER'])
+
+    df = make_fips_changes(df)
+    valid_fips = get_euclidean_distance()
+    df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
+    df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
+
 
     p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
     f = 'acs.sqlite'
@@ -259,7 +258,7 @@ def get_gross_migration_ratios_by_race():
     con.close()
 
 def main():
-     df_race = get_gross_migration_ratios_by_race()
+    get_gross_migration_ratios_by_race()
 
 if __name__ == '__main__':
     main()
