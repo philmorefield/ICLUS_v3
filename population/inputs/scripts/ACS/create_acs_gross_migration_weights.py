@@ -162,16 +162,17 @@ def get_acs_2011_2015_migration():
 
     df['RACE'] = df.RACE.replace(to_replace=ACS_RACE_MAP)
     df = df[['DESTINATION_FIPS', 'ORIGIN_FIPS', 'RACE', 'ORIGIN_POPULATION_ACS', 'TOTAL_FLOW']]
-
     df = df.sort_values(by=['ORIGIN_FIPS', 'RACE', 'DESTINATION_FIPS'])
-
     df = df.loc[~df.ORIGIN_POPULATION_ACS.isnull()]
+
     # use 'OTHER' migration information for 'AIAN', 'NHPI', and 'TWO_OR_MORE'
     for population_race in ['AIAN', 'NHPI', 'TWO_OR_MORE']:
         temp = df.loc[df.RACE == 'OTHER'].copy()
         temp['RACE'] = population_race
         df = pd.concat([df, temp], ignore_index=True)
     df = df.loc[df.RACE != 'OTHER']
+
+    df['TOTAL_FLOW'] = df['TOTAL_FLOW'].astype(float)
 
     return df
 
@@ -187,7 +188,7 @@ def get_gross_migration_ratios_by_race():
 
     df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
-    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_CENSUS']
+    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_ACS']
 
     df = df.drop(columns=['ORIGIN_POPULATION', 'SUM_OTHER'])
 
@@ -196,10 +197,7 @@ def get_gross_migration_ratios_by_race():
     df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
     df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
-
-    p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    f = 'acs.sqlite'
-    con = sqlite3.connect(os.path.join(p, f))
+    con = sqlite3.connect(ACS_DB)
     df.to_sql(name='acs_gross_migration_weights_2011_2015',
               con=con,
               if_exists='replace',
