@@ -188,9 +188,9 @@ def get_gross_migration_ratios_by_race():
 
     df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
-    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_ACS']
 
-    df = df.drop(columns=['ORIGIN_POPULATION', 'SUM_OTHER'])
+    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_ACS']
+    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'RACE', 'TOTAL_FLOW', 'RACE_MIGRATION_FRACTION']]
 
     df = make_fips_changes(df)
     valid_fips = get_euclidean_distance()
@@ -198,7 +198,7 @@ def get_gross_migration_ratios_by_race():
     df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
     con = sqlite3.connect(ACS_DB)
-    df.to_sql(name='acs_gross_migration_weights_2011_2015',
+    df.to_sql(name='acs_gross_migration_weights_2011_2015_race',
               con=con,
               if_exists='replace',
               index=False)
