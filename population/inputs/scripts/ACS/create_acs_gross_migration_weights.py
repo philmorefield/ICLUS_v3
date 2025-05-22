@@ -103,56 +103,6 @@ def get_euclidean_distance():
 
     return df
 
-def get_acs_2010_2014_county_population_by_race():
-    csv_name = 'ACSDT5YSPT2015.B01003-Data.csv'
-    df = pd.read_csv(filepath_or_buffer=os.path.join(ACS_FOLDER, 'population', csv_name),
-                     skiprows=1,
-                     encoding='latin-1')
-    df.columns = ['COFIPS', 'CYNAME', 'POPULATION', 'MOE', 'RACE_CODE', 'RACE', 'EMPTY']
-    df = df.drop(columns=['CYNAME', 'MOE', 'RACE_CODE', 'EMPTY'])
-    df['COFIPS'] = df['COFIPS'].str[-5:]
-    df['RACE'] = df['RACE'].replace({'White alone': 'WHITE',
-                                     'Black or African American alone': 'BLACK',
-                                     'American Indian and Alaska Native alone (300, A01-Z99)': 'AIAN',
-                                     'Asian alone (400-499)': 'ASIAN',
-                                     'Native Hawaiian and Other Pacific Islander alone (500-599)': 'NHPI',
-                                     'Two or more races': 'TWO_OR_MORE'})
-
-    df = make_fips_changes(df)
-
-    df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
-
-    return df
-
-
-def get_census_2010_2014_county_population_by_race_():
-    csv_name = 'cc-est2019-alldata.csv'
-    csv = os.path.join(CENSUS_CSV_PATH, csv_name)
-    df = pd.read_csv(csv, encoding='latin-1')
-    df['COFIPS'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
-    df = df.query('3 <= YEAR <= 7')
-    df = df.query('AGEGRP >= 1')
-    df = df.rename(columns={'AGEGRP': 'AGE_GROUP'})
-    df['AGE_GROUP'] = df['AGE_GROUP'].replace(to_replace=CENSUS_AGE_GROUP_MAP)
-
-    df['WHITE'] = df['WA_MALE'] + df['WA_FEMALE']
-    df['BLACK'] = df['BA_MALE'] + df['BA_FEMALE']
-    df['AIAN'] = df['IA_MALE'] + df['IA_FEMALE']
-    df['ASIAN'] = df['AA_MALE'] + df['AA_FEMALE']
-    df['NHPI'] = df['NA_MALE'] + df['NA_FEMALE']
-    df['TWO_OR_MORE'] = df['TOM_MALE'] + df['TOM_FEMALE']
-
-    df = df[['COFIPS', 'WHITE', 'BLACK', 'AIAN', 'ASIAN', 'NHPI', 'TWO_OR_MORE']]
-    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='POPULATION')
-    df = make_fips_changes(df)
-    df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).mean()
-    df['POPULATION'] = (df['POPULATION'] / 5).astype(int)
-
-    df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
-
-    return df
-
-
 def get_census_2020_county_population_by_race_():
     csv_name = 'DECENNIALPL2020.P1-Data.csv'
     csv = os.path.join(CENSUS_CSV_PATH, csv_name)
@@ -166,11 +116,11 @@ def get_census_2020_county_population_by_race_():
     df = make_fips_changes(df)
     df = df.groupby(by='COFIPS', as_index=False).sum()
 
-    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='CENSUS_POPULATION')
-    df['CO_POP_NOT_OTHER'] = df.query('RACE != "OTHER"').groupby(by='COFIPS')['CENSUS_POPULATION'].transform('sum')
-    df['TOTAL_POP'] = df.groupby(by='COFIPS', as_index=False)['CENSUS_POPULATION'].transform('sum')
+    df = df.melt(id_vars='COFIPS', var_name='RACE', value_name='ORIGIN_POPULATION_CENSUS')
+    df['CO_POP_NOT_OTHER'] = df.query('RACE != "OTHER"').groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum')
+    df['TOTAL_POP'] = df.groupby(by='COFIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df['PCT_POP_NOT_OTHER'] =  df['CO_POP_NOT_OTHER'] / df['TOTAL_POP']
-    df = df[['COFIPS', 'RACE', 'CENSUS_POPULATION', 'PCT_POP_NOT_OTHER']].query('RACE != "OTHER"')
+    df = df[['COFIPS', 'RACE', 'ORIGIN_POPULATION_CENSUS', 'PCT_POP_NOT_OTHER']].query('RACE != "OTHER"')
     # df['SUM_OTHER'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by=['COFIPS'])['POPULATION'].transform('sum')
 
     return df
@@ -215,6 +165,7 @@ def get_acs_2011_2015_migration():
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'RACE', 'DESTINATION_FIPS'])
 
+    df = df.loc[~df.ORIGIN_POPULATION_ACS.isnull()]
     # use 'OTHER' migration information for 'AIAN', 'NHPI', and 'TWO_OR_MORE'
     for population_race in ['AIAN', 'NHPI', 'TWO_OR_MORE']:
         temp = df.loc[df.RACE == 'OTHER'].copy()
@@ -233,12 +184,10 @@ def get_gross_migration_ratios_by_race():
                          right_on=['COFIPS', 'RACE'],
                          how='left')
     df = df.drop(columns=['COFIPS'])
-    # df.loc[df.ORIGIN_POPULATION_ACS.isnull(), 'ORIGIN_POPULATION_ACS'] = df.CENSUS_POPULATION
 
-    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['CENSUS_POPULATION'].transform('sum')
-    # df.rename(columns={'POPULATION': 'ORIGIN_POPULATION'}, inplace=True)
-    df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.CENSUS_POPULATION / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
-    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION']
+    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
+    df.loc[df.RACE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
+    df['RACE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_CENSUS']
 
     df = df.drop(columns=['ORIGIN_POPULATION', 'SUM_OTHER'])
 
