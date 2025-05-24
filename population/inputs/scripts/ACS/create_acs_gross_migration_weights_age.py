@@ -115,6 +115,8 @@ def get_census_2020_county_population_by_age_():
     df = make_fips_changes(df)
 
     df = df.melt(id_vars='COFIPS', var_name='AGE_GROUP', value_name='ORIGIN_POPULATION_CENSUS')
+    df['AGE_GROUP'] = df['AGE_GROUP'].str.split(pat='_', n=1).str[1]
+
     df['CO_POP_NOT_OTHER'] = df.query('AGE_GROUP != "OTHER"').groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df['TOTAL_POP'] = df.groupby(by='COFIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df['PCT_POP_NOT_OTHER'] =  df['CO_POP_NOT_OTHER'] / df['TOTAL_POP']
@@ -162,14 +164,7 @@ def get_acs_2011_2015_migration():
     df = df.sort_values(by=['ORIGIN_FIPS', 'AGE_GROUP', 'DESTINATION_FIPS'])
     df = df.loc[~df.ORIGIN_POPULATION_ACS.isnull()]
 
-    # use 'OTHER' migration information for 'AIAN', 'NHPI', and 'TWO_OR_MORE'
-    for population_age in ['AIAN', 'NHPI', 'TWO_OR_MORE']:
-        temp = df.loc[df.AGE_GROUP == 'OTHER'].copy()
-        temp['AGE_GROUP'] = population_age
-        df = pd.concat([df, temp], ignore_index=True)
-    df = df.loc[df.AGE != 'OTHER']
-
-    df['TOTAL_FLOW'] = df['TOTAL_FLOW'].copy().astype(float)
+    # df['TOTAL_FLOW'] = df['TOTAL_FLOW'].copy().astype(float)
 
     return df
 
@@ -178,16 +173,16 @@ def get_gross_migration_ratios_by_age():
     migration = get_acs_2011_2015_migration()
 
     df = migration.merge(right=origin_age,
-                         left_on=['ORIGIN_FIPS', 'AGE'],
-                         right_on=['COFIPS', 'AGE'],
+                         left_on=['ORIGIN_FIPS', 'AGE_GROUP'],
+                         right_on=['COFIPS', 'AGE_GROUP'],
                          how='left')
     df = df.drop(columns=['COFIPS'])
 
-    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.AGE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
+    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.AGE_GROUP.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df.loc[df.AGE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
 
     df['AGE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_ACS']
-    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE', 'TOTAL_FLOW', 'AGE_MIGRATION_FRACTION']]
+    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP', 'TOTAL_FLOW', 'AGE_MIGRATION_FRACTION']]
 
     df = make_fips_changes(df)
     valid_fips = get_euclidean_distance()
