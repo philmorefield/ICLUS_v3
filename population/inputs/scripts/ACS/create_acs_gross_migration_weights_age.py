@@ -34,7 +34,7 @@ ACS_AGE_GROUP_MAP = {1: '1_TO_4',
                      12: '60_TO_64',
                      13: '65_TO_69',
                      14: '70_TO_74',
-                     15: '75_TO_OVER'}
+                     15: '75_AND_OVER'}
 
 CENSUS_AGE_GROUPS = ['0_TO_4', '5_TO_9', '10_TO_14', '15_TO_17', '18_TO_19',
                      '20', '21', '22_TO_24', '25_TO_29',
@@ -42,6 +42,16 @@ CENSUS_AGE_GROUPS = ['0_TO_4', '5_TO_9', '10_TO_14', '15_TO_17', '18_TO_19',
                      '50_TO_54', '55_TO_59', '60_TO_61', '62_TO_64',
                      '65_TO_66', '67_TO_69', '70_TO_74', '75_TO_79',
                      '80_TO_84', '85_AND_OVER']
+
+CENSUS_AGE_GROUP_MAP = {'15_TO_17': '15_TO_19',
+                        '18_TO_19': '15_TO_19',
+                        '20': '20_TO_24',
+                        '21': '20_TO_24',
+                        '22_TO_24': '20_TO_24',
+                        '60_TO_61': '60_TO_64',
+                        '62_TO_64': '60_TO_64',
+                        '65_TO_66': '65_TO_69',
+                        '67_TO_69': '65_TO_69'}
 
 def make_fips_changes(df):
     con =sqlite3.connect(MIGRATION_DB)
@@ -115,12 +125,8 @@ def get_census_2020_county_population_by_age_():
     df = make_fips_changes(df)
 
     df = df.melt(id_vars='COFIPS', var_name='AGE_GROUP', value_name='ORIGIN_POPULATION_CENSUS')
+    df['SEX'] = df['AGE_GROUP'].str.split(pat='_', n=1).str[0]
     df['AGE_GROUP'] = df['AGE_GROUP'].str.split(pat='_', n=1).str[1]
-
-    df['CO_POP_NOT_OTHER'] = df.query('AGE_GROUP != "OTHER"').groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum')
-    df['TOTAL_POP'] = df.groupby(by='COFIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
-    df['PCT_POP_NOT_OTHER'] =  df['CO_POP_NOT_OTHER'] / df['TOTAL_POP']
-    df = df[['COFIPS', 'AGE_GROUP', 'ORIGIN_POPULATION_CENSUS', 'PCT_POP_NOT_OTHER']].query('AGE_GROUP != "OTHER"')
 
     return df
 
@@ -164,9 +170,39 @@ def get_acs_2011_2015_migration():
     df = df.sort_values(by=['ORIGIN_FIPS', 'AGE_GROUP', 'DESTINATION_FIPS'])
     df = df.loc[~df.ORIGIN_POPULATION_ACS.isnull()]
 
-    # df['TOTAL_FLOW'] = df['TOTAL_FLOW'].copy().astype(float)
+    return df
+
+def map_migration_to_census_age_groups(migration, origin_age):
+    pop_to_migration_map = {'0_TO_4': '1_TO_4',
+                            '5_TO_9': '5_TO_17',
+                            '10_TO_14': '5_TO_17',
+                            '15_TO_17': '5_TO_17',
+                            '18_TO_19': '18_TO_19',
+                            '20': '20_TO_24',
+                            '21': '20_TO_24',
+                            '22_TO_24': '20_TO_24',
+                            '25_TO_29': '25_TO_29',
+                            '30_TO_34': '30_TO_34',
+                            '35_TO_39': '35_TO_39',
+                            '40_TO_44': '40_TO_44',
+                            '45_TO_49': '45_TO_49',
+                            '50_TO_54': '50_TO_54',
+                            '55_TO_59': '55_TO_59',
+                            '60_TO_61': '60_TO_64',
+                            '62_TO_64': '60_TO_64',
+                            '65_TO_66': '65_TO_69',
+                            '67_TO_69': '65_TO_69',
+                            '70_TO_74': '70_TO_74',
+                            '75_TO_79': '75_AND_OVER',
+                            '80_TO_84': '75_AND_OVER',
+                            '85_AND_OVER': '75_AND_OVER'}
+
+    origin_age['MIGRATION_AGE_GROUP'] = origin_age.AGE_GROUP.map(pop_to_migration_map)
+    origin_age['MIGRATION_AGE_GROUP_TOTAL'] = origin_age.groupby(by=['COFIPS', 'MIGRATION_AGE_GROUP'])['ORIGIN_POPULATION_CENSUS'].transform('sum')
+    origin_age['MIGRATION_AGE_GROUP_FRACTION'] = origin_age['ORIGIN_POPULATION_CENSUS'] / origin_age['MIGRATION_AGE_GROUP_TOTAL']
 
     return df
+
 
 def get_gross_migration_ratios_by_age():
     origin_age = get_census_2020_county_population_by_age_()
@@ -177,6 +213,8 @@ def get_gross_migration_ratios_by_age():
                          right_on=['COFIPS', 'AGE_GROUP'],
                          how='left')
     df = df.drop(columns=['COFIPS'])
+
+    df = map_migration_to_census_age_groups(migration, origin_age)
 
     df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.AGE_GROUP.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
     df.loc[df.AGE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
