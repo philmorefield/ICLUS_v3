@@ -182,7 +182,7 @@ class FigureMaker():
 
     def get_historical_births(self):
         # historical births, 2010-2020
-        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
         self.hist_births_one = pd.read_csv(csv, encoding='latin-1')
         columns = ['STATE', 'COUNTY'] + ['BIRTHS' + str(year) for year in range(2010, 2021)]
         self.hist_births_one = self.hist_births_one[columns]
@@ -241,7 +241,7 @@ class FigureMaker():
 
     def get_historical_deaths(self):
         # historical deaths, 2010-2020
-        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
         self.hist_deaths_one = pd.read_csv(csv, encoding='latin-1')
         columns = ['STATE', 'COUNTY'] + ['DEATHS' + str(year) for year in range(2010, 2021)]
         self.hist_deaths_one = self.hist_deaths_one[columns]
@@ -302,7 +302,7 @@ class FigureMaker():
 
     def get_historical_migration(self):
         # historical migration, 2010-2020
-        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
         self.hist_migration_one = pd.read_csv(csv, encoding='latin-1')
         columns = ['STATE', 'COUNTY'] + ['DOMESTICMIG' + str(year) for year in range(2010, 2021)]
         self.hist_migration_one = self.hist_migration_one[columns]
@@ -366,7 +366,7 @@ class FigureMaker():
 
     def get_historical_immigration(self):
         # historical immigration, 2010-2020
-        csv = os.path.join(CENSUS_CSV_PATH, '2020\\co-est2020-alldata.csv')
+        csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
         self.hist_immigration_one = pd.read_csv(csv, encoding='latin-1')
         columns = ['STATE', 'COUNTY'] + ['INTERNATIONALMIG' + str(year) for year in range(2010, 2021)]
         self.hist_immigration_one = self.hist_immigration_one[columns]
