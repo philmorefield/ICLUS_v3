@@ -166,9 +166,8 @@ def get_acs_2011_2015_migration():
     df['ORIGIN_FIPS'] = df.O_STFIPS + df.O_COFIPS
 
     df['AGE_GROUP'] = df.AGE_GROUP.replace(to_replace=ACS_AGE_GROUP_MAP)
-    df = df[['DESTINATION_FIPS', 'ORIGIN_FIPS', 'AGE_GROUP', 'ORIGIN_POPULATION_ACS', 'TOTAL_FLOW']]
+    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP', 'TOTAL_FLOW']]
     df = df.sort_values(by=['ORIGIN_FIPS', 'AGE_GROUP', 'DESTINATION_FIPS'])
-    df = df.loc[~df.ORIGIN_POPULATION_ACS.isnull()]
 
     return df
 
@@ -200,6 +199,13 @@ def map_migration_to_census_age_groups(migration, origin_age):
     origin_age['MIGRATION_AGE_GROUP'] = origin_age.AGE_GROUP.map(pop_to_migration_map)
     origin_age['MIGRATION_AGE_GROUP_TOTAL'] = origin_age.groupby(by=['COFIPS', 'MIGRATION_AGE_GROUP'])['ORIGIN_POPULATION_CENSUS'].transform('sum')
     origin_age['MIGRATION_AGE_GROUP_FRACTION'] = origin_age['ORIGIN_POPULATION_CENSUS'] / origin_age['MIGRATION_AGE_GROUP_TOTAL']
+
+    df = migration.merge(right=origin_age[['COFIPS', 'MIGRATION_AGE_GROUP', 'MIGRATION_AGE_GROUP_FRACTION']],
+                         left_on=['ORIGIN_FIPS', 'AGE_GROUP'],
+                         right_on=['COFIPS', 'MIGRATION_AGE_GROUP'],
+                         how='left')
+
+    df['TOTAL_FLOW_ADJ'] = df['TOTAL_FLOW'] * df['MIGRATION_AGE_GROUP_FRACTION']
 
     return df
 
