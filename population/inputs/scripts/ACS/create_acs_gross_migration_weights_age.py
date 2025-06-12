@@ -8,6 +8,8 @@ import pandas as pd
 pd.set_option("display.max_columns", None) # show all cols
 
 BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
+if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
 
