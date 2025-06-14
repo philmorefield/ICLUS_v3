@@ -174,6 +174,15 @@ def get_acs_2011_2015_migration():
     return df
 
 def map_migration_to_census_age_groups(migration, origin_age):
+    '''
+    1. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
+    2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
+    3. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
+    4. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "15_TO_17" and "18_TO_19" into "15_TO_19"
+    5. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "20", "21", and "22_TO_24" into "20_TO_24"
+    6. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "60_TO_61" and "62_TO_64" into "60_TO_64"
+    7. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "65_TO_66" and "67_TO_69" into "65_TO_69"
+    '''
     pop_to_migration_map = {'0_TO_4': '1_TO_4',
                             '5_TO_9': '5_TO_17',
                             '10_TO_14': '5_TO_17',
