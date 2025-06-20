@@ -79,8 +79,10 @@ def make_fips_changes(df):
 
         if 'RACE' in df.columns:
             df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'RACE'], as_index=False).sum()
-        elif 'AGE_GROUP' in df.columns:
-            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'], as_index=False).sum()
+        elif 'ORIGIN_AGE_GROUP' in df.columns:
+            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'ORIGIN_AGE_GROUP'], as_index=False).sum()
+        elif 'MIGRATION_AGE_GROUP' in df.columns:
+            df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION_AGE_GROUP'], as_index=False).sum()
         else:
             df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'], as_index=False).sum()
 
@@ -94,8 +96,8 @@ def make_fips_changes(df):
 
         if 'RACE' in df.columns:
             df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).sum()
-        elif 'AGE_GROUP' in df.columns:
-            df = df.groupby(by=['COFIPS', 'AGE_GROUP'], as_index=False).sum()
+        elif 'ORIGIN_AGE_GROUP' in df.columns:
+            df = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP'], as_index=False).sum()
         else:
             df = df.groupby(by='COFIPS', as_index=False).sum()
 
@@ -126,9 +128,9 @@ def get_census_2020_county_population_by_age_():
 
     df = make_fips_changes(df)
 
-    df = df.melt(id_vars='COFIPS', var_name='AGE_GROUP', value_name='ORIGIN_POPULATION_CENSUS')
-    df['SEX'] = df['AGE_GROUP'].str.split(pat='_', n=1).str[0]
-    df['AGE_GROUP'] = df['AGE_GROUP'].str.split(pat='_', n=1).str[1]
+    df = df.melt(id_vars='COFIPS', var_name='ORIGIN_AGE_GROUP', value_name='ORIGIN_POPULATION')
+    df['SEX'] = df['ORIGIN_AGE_GROUP'].str.split(pat='_', n=1).str[0]
+    df['ORIGIN_AGE_GROUP'] = df['ORIGIN_AGE_GROUP'].str.split(pat='_', n=1).str[1]
 
     return df
 
@@ -136,7 +138,7 @@ def get_census_2020_county_population_by_age_():
 def get_acs_2011_2015_migration():
     xl_filename = 'county-to-county-by-age-2011-2015-current-residence-sort.xlsx'
 
-    columns = ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'AGE_GROUP',
+    columns = ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'MIGRATION_AGE_GROUP',
                'D_STATE', 'D_COUNTY', 'D_POP', 'D_POP_MOE', 'D_NONMOVERS',
                'D_NONMOVERS_MOE', 'D_MOVERS', 'D_MOVERS_MOE',
                'D_MOVERS_SAME_CY', 'D_MOVERS_SAME_CY_MOE',
@@ -150,14 +152,14 @@ def get_acs_2011_2015_migration():
                'O_MOVERS_FROM_DIFF_CY_SAME_ST',
                'O_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'O_MOVERS_FROM_DIFF_ST',
                'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
-               'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
+               'O_MOVERS_PUERTO_RICO_MOE', 'FLOW', 'TOTAL_FLOW_MOE')
 
     xls = pd.ExcelFile(os.path.join(ACS_FOLDER, 'migration', xl_filename))
     df = pd.concat([xls.parse(sheet_name=name, header=None, names=columns, skiprows=4, skipfooter=8) for name in xls.sheet_names if name != 'Puerto Rico'])
 
     df = df[~df.O_STFIPS.str.contains('XXX')]
     foreign = ('EUR', 'ASI', 'SAM', 'ISL', 'NAM', 'CAM', 'CAR', 'AFR', 'OCE')
-    df = df.loc[~df.O_STFIPS.isin(foreign), ['D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'AGE_GROUP', 'ORIGIN_POPULATION_ACS', 'TOTAL_FLOW']]
+    df = df.loc[~df.O_STFIPS.isin(foreign), ['D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'MIGRATION_AGE_GROUP', 'ORIGIN_POPULATION_ACS', 'FLOW']]
 
     df['D_STFIPS'] = df.D_STFIPS.astype(int).astype(str).str.zfill(2)
     df['D_COFIPS'] = df.D_COFIPS.astype(int).astype(str).str.zfill(3)
@@ -167,21 +169,65 @@ def get_acs_2011_2015_migration():
     df['O_COFIPS'] = df.O_COFIPS.astype(int).astype(str).str.zfill(3)
     df['ORIGIN_FIPS'] = df.O_STFIPS + df.O_COFIPS
 
-    df['AGE_GROUP'] = df.AGE_GROUP.replace(to_replace=ACS_AGE_GROUP_MAP)
-    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP', 'TOTAL_FLOW']]
-    df = df.sort_values(by=['ORIGIN_FIPS', 'AGE_GROUP', 'DESTINATION_FIPS'])
+    df['MIGRATION_AGE_GROUP'] = df['MIGRATION_AGE_GROUP'].replace(to_replace=ACS_AGE_GROUP_MAP)
+    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION_AGE_GROUP', 'FLOW']]
+    df = make_fips_changes(df)
+
+    df = df.sort_values(by=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'DESTINATION_FIPS'])
 
     return df
 
-def map_migration_to_census_age_groups(migration, origin_age):
+def disaggregate_5_to_17_age_group(df_orig):
     '''
-    1. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
-    2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
-    3. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
-    4. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "15_TO_17" and "18_TO_19" into "15_TO_19"
-    5. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "20", "21", and "22_TO_24" into "20_TO_24"
-    6. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "60_TO_61" and "62_TO_64" into "60_TO_64"
-    7. Combine ORIGIN_POPULATION_CENSUS AGE_GROUPS "65_TO_66" and "67_TO_69" into "65_TO_69"
+    Disaggregate the 5_TO_17 age group into 5_TO_9, 10_TO_14, and 15_TO_17.
+    '''
+    df = df_orig.copy()
+    df = df.query('MIGRATION_AGE_GROUP == "5_TO_17"')
+    df['FRACTION_5_17'] = (df.groupby(by='COFIPS')['ORIGIN_POPULATION'].transform('sum'))
+    df['FRACTION_5_17'] = df['ORIGIN_POPULATION'].div(df['FRACTION_5_17']).mul(df['FLOW'])
+    df['MIGRATION_AGE_GROUP'] = df['ORIGIN_AGE_GROUP']
+    df['FLOW'] = df['FRACTION_5_17']
+    df = df.drop(columns='FRACTION_5_17')
+
+    df_orig = df_orig.loc[~df_orig.MIGRATION_AGE_GROUP.isin(['5_TO_17'])]
+    df = pd.concat([df_orig, df], ignore_index=True)
+
+    return df
+
+def disaggregate_75_AND_OVER_age_group(df_orig):
+    '''
+    Disaggregate the 5_TO_17 age group into 5_TO_9, 10_TO_14, and 15_TO_17.
+    '''
+    df = df_orig.copy()
+    df = df.query('MIGRATION_AGE_GROUP == "75_AND_OVER"')
+    df['FRACTION_75_AND_OVER'] = (df.groupby(by='COFIPS')['ORIGIN_POPULATION'].transform('sum'))
+    df['FRACTION_75_AND_OVER'] = df['ORIGIN_POPULATION'].div(df['FRACTION_75_AND_OVER']).mul(df['FLOW'])
+    df['MIGRATION_AGE_GROUP'] = df['ORIGIN_AGE_GROUP']
+    df['FLOW'] = df['FRACTION_75_AND_OVER']
+    df = df.drop(columns='FRACTION_75_AND_OVER')
+
+    df_orig = df_orig.loc[~df_orig.MIGRATION_AGE_GROUP.isin(['75_AND_OVER'])]
+    df = pd.concat([df_orig, df], ignore_index=True)
+
+    return df
+
+def calculate_flow_percentages(migration, origin):
+    '''
+    Purpose: create a dataframe that hold the proportion (%) of the origin
+    population in each gross migration flow.
+
+    1. MAP the MIGRATION_AGE_GROUP to the ORIGIN_AGE_GROUP
+    2. Combine ORIGIN_AGE_GROUP "20", "21", and "22_TO_24" into "20_TO_24"
+    3. Combine ORIGIN_AGE_GROUP "60_TO_61" and "62_TO_64" into "60_TO_64"
+    4. Combine ORIGIN_AGE_GROUP "65_TO_66" and "67_TO_69" into "65_TO_69"
+    5. GROUPBY the ORIGIN_AGE_GROUP and update the ORIGIN_POPULATION
+    6. MERGE the migration dataframe with the origin dataframe
+    7. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
+    8. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
+
+    9. Combine ORIGIN_AGE_GROUP "15_TO_17" and "18_TO_19" into "15_TO_19"
+    10. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
+
     '''
     pop_to_migration_map = {'0_TO_4': '1_TO_4',
                             '5_TO_9': '5_TO_17',
@@ -207,42 +253,56 @@ def map_migration_to_census_age_groups(migration, origin_age):
                             '80_TO_84': '75_AND_OVER',
                             '85_AND_OVER': '75_AND_OVER'}
 
-    origin_age['MIGRATION_AGE_GROUP'] = origin_age.AGE_GROUP.map(pop_to_migration_map)
-    origin_age['MIGRATION_AGE_GROUP_TOTAL'] = origin_age.groupby(by=['COFIPS', 'MIGRATION_AGE_GROUP'])['ORIGIN_POPULATION_CENSUS'].transform('sum')
-    origin_age['MIGRATION_AGE_GROUP_FRACTION'] = origin_age['ORIGIN_POPULATION_CENSUS'] / origin_age['MIGRATION_AGE_GROUP_TOTAL']
+    # 1. MAP the MIGRATION_AGE_GROUP to the ORIGIN_AGE_GROUP
+    origin['MIGRATION_AGE_GROUP'] = origin.ORIGIN_AGE_GROUP.map(pop_to_migration_map)
 
-    df = migration.merge(right=origin_age[['COFIPS', 'MIGRATION_AGE_GROUP', 'MIGRATION_AGE_GROUP_FRACTION']],
-                         left_on=['ORIGIN_FIPS', 'AGE_GROUP'],
+    # 2. Combine ORIGIN_AGE_GROUP "20", "21", and "22_TO_24" into "20_TO_24"
+    origin.loc[origin.ORIGIN_AGE_GROUP.isin(['20', '21', '22_TO_24']), 'ORIGIN_AGE_GROUP'] = '20_TO_24'
+
+    # 3. Combine ORIGIN_AGE_GROUP "60_TO_61" and "62_TO_64" into "60_TO_64"
+    origin.loc[origin.ORIGIN_AGE_GROUP.isin(['60_TO_61', '62_TO_64']), 'ORIGIN_AGE_GROUP'] = '60_TO_64'
+
+    # 4. Combine ORIGIN_AGE_GROUP "65_TO_66" and "67_TO_69" into "65_TO_69"
+    origin.loc[origin.ORIGIN_AGE_GROUP.isin(['65_TO_66', '67_TO_69']), 'ORIGIN_AGE_GROUP'] = '65_TO_69'
+
+    # 5. GROUPBY the ORIGIN_AGE_GROUP and update the ORIGIN_POPULATION
+    origin = origin.drop(columns='SEX')
+    origin = origin.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP', 'MIGRATION_AGE_GROUP'], as_index=False).sum()
+
+    # 6. MERGE
+    df = migration.merge(right=origin,
+                         left_on=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP'],
                          right_on=['COFIPS', 'MIGRATION_AGE_GROUP'],
                          how='left')
 
-    df['TOTAL_FLOW_ADJ'] = df['TOTAL_FLOW'] * df['MIGRATION_AGE_GROUP_FRACTION']
+    # 7. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
+    df = disaggregate_5_to_17_age_group(df)
+
+    # 8. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
+    df = disaggregate_75_AND_OVER_age_group(df)
+
+    # 9. Combine ORIGIN_AGE_GROUP "15_TO_17" and "18_TO_19" into "15_TO_19"
+    df.loc[df.ORIGIN_AGE_GROUP.isin(['15_TO_17', '18_TO_19']), 'ORIGIN_AGE_GROUP'] = '15_TO_19'
+
+
+    origin['MIGRATION_AGE_GROUP_TOTAL'] = origin.groupby(by=['COFIPS', 'MIGRATION_AGE_GROUP'])['ORIGIN_POPULATION'].transform('sum')
+    origin['MIGRATION_AGE_GROUP_FRACTION'] = origin['ORIGIN_POPULATION'] / origin['MIGRATION_AGE_GROUP_TOTAL']
+
+    df['TOTAL_FLOW_ADJ'] = df['FLOW'] * df['MIGRATION_AGE_GROUP_FRACTION']
+
+    # # 6. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
+    # origin.loc[origin.MIGRATION_AGE_GROUP == '1_TO_4', 'MIGRATION_AGE_GROUP'] = '0_TO_4'
 
     return df
 
 
 def get_gross_migration_ratios_by_age():
-    origin_age = get_census_2020_county_population_by_age_()
+    origin = get_census_2020_county_population_by_age_()
     migration = get_acs_2011_2015_migration()
 
-    df = migration.merge(right=origin_age,
-                         left_on=['ORIGIN_FIPS', 'AGE_GROUP'],
-                         right_on=['COFIPS', 'AGE_GROUP'],
-                         how='left')
-    df = df.drop(columns=['COFIPS'])
+    df = calculate_flow_percentages(migration, origin)
 
-    df = map_migration_to_census_age_groups(migration, origin_age)
 
-    df['SUM_CENSUS_A_N_T_POPULATION_ORIGIN'] = df.loc[df.AGE_GROUP.isin(['AIAN', 'NHPI', 'TWO_OR_MORE'])].groupby(by='ORIGIN_FIPS', as_index=False)['ORIGIN_POPULATION_CENSUS'].transform('sum')
-    df.loc[df.AGE.isin(['AIAN', 'NHPI', 'TWO_OR_MORE']), 'TOTAL_FLOW'] = (df.ORIGIN_POPULATION_CENSUS / df.SUM_CENSUS_A_N_T_POPULATION_ORIGIN) * (df.TOTAL_FLOW * df.PCT_POP_NOT_OTHER)
-
-    df['AGE_MIGRATION_FRACTION'] = df['TOTAL_FLOW'] / df['ORIGIN_POPULATION_ACS']
-    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP', 'TOTAL_FLOW', 'AGE_MIGRATION_FRACTION']]
-
-    df = make_fips_changes(df)
-    valid_fips = get_euclidean_distance()
-    df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
-    df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
     con = sqlite3.connect(ACS_DB)
     df.to_sql(name='acs_gross_migration_weights_2011_2015_age',
