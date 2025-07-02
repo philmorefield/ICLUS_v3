@@ -43,18 +43,19 @@ def main():
         hist_pop = hist_pop.groupby(by='YEAR', as_index=False).sum()
 
         # future population
-        query = f'SELECT * \
-                  FROM population_by_race_sex_age_{SCENARIO} \
-                  WHERE AGE_GROUP == "{age_group.replace("_TO_", "-")}"'
-        con = sqlite3.connect(PROJECTIONS_DB)
-        proj_pop = pd.read_sql_query(sql=query, con=con)
-        con.close()
+        # query = f'SELECT * \
+        #           FROM population_by_race_sex_age_{SCENARIO} \
+        #           WHERE AGE_GROUP == "{age_group.replace("_TO_", "-")}"'
+        # con = sqlite3.connect(PROJECTIONS_DB)
+        # proj_pop = pd.read_sql_query(sql=query, con=con)
+        # con.close()
 
-        proj_pop = proj_pop.drop(columns=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'])
-        proj_pop = proj_pop.sum().reset_index()
-        proj_pop.columns = ['YEAR', 'POPULATION']
+        # proj_pop = proj_pop.drop(columns=['GEOID', 'AGE_GROUP', 'RACE', 'SEX'])
+        # proj_pop = proj_pop.sum().reset_index()
+        # proj_pop.columns = ['YEAR', 'POPULATION']
 
-        df = pd.concat([hist_pop, proj_pop], axis=0, ignore_index=True)
+        # df = pd.concat([hist_pop, proj_pop], axis=0, ignore_index=True)
+        df = hist_pop
         df['YEAR'] = df['YEAR'].astype(int)
         df.plot(x='YEAR', legend=False, ax=ax_pop)
 
