@@ -3,6 +3,7 @@ land_use/EPA_NLUD/accuracy
 land_use/EPA_NLUD/outputs
 land_use/EPA_NLUD/preprocessing
 population/outputs
+slides/
 *.sqlite
 
 # Byte-compiled / optimized / DLL files
