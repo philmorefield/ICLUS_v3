@@ -1,0 +1,279 @@
+"Notes"	"Single Race 6"	"Single Race 6 Code"	"Sex"	"Sex Code"	"Five-Year Age Groups"	"Five-Year Age Groups Code"	Deaths	Population	Crude Rate
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"< 1 year"	"1"	561	161434	347.5
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"1-4 years"	"1-4"	151	660211	22.9
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"5-9 years"	"5-9"	101	828941	12.2
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"10-14 years"	"10-14"	140	828381	16.9
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"15-19 years"	"15-19"	403	808998	49.8
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"20-24 years"	"20-24"	626	803864	77.9
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"25-29 years"	"25-29"	1136	821773	138.2
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"30-34 years"	"30-34"	1751	767678	228.1
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"35-39 years"	"35-39"	1938	719606	269.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"40-44 years"	"40-44"	1997	662912	301.2
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"45-49 years"	"45-49"	2389	624565	382.5
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"50-54 years"	"50-54"	3178	603180	526.9
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"55-59 years"	"55-59"	4264	603691	706.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"60-64 years "	"60-64"	5128	542470	945.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"65-69 years"	"65-69"	5397	421206	1281.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"70-74 years"	"70-74"	5670	305080	1858.5
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"75-79 years"	"75-79"	5339	194327	2747.4
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"80-84 years"	"80-84"	5113	122404	4177.2
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"< 1 year"	"1"	698	167923	415.7
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"1-4 years"	"1-4"	198	686680	28.8
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"5-9 years"	"5-9"	107	857984	12.5
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"10-14 years"	"10-14"	169	860620	19.6
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"15-19 years"	"15-19"	777	840419	92.5
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"20-24 years"	"20-24"	1459	835511	174.6
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"25-29 years"	"25-29"	2275	871664	261.0
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"30-34 years"	"30-34"	2912	844058	345.0
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"35-39 years"	"35-39"	3168	780035	406.1
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"40-44 years"	"40-44"	3255	706304	460.8
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"45-49 years"	"45-49"	3800	650686	584.0
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"50-54 years"	"50-54"	4592	616819	744.5
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"55-59 years"	"55-59"	6153	588437	1045.7
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"60-64 years "	"60-64"	6819	504236	1352.3
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"65-69 years"	"65-69"	6631	376707	1760.3
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"70-74 years"	"70-74"	6448	268541	2401.1
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"75-79 years"	"75-79"	5464	161792	3377.2
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"80-84 years"	"80-84"	4561	92350	4938.8
+	"Asian"	"A"	"Female"	"F"	"< 1 year"	"1"	1461	497552	293.6
+	"Asian"	"A"	"Female"	"F"	"1-4 years"	"1-4"	289	2169928	13.3
+	"Asian"	"A"	"Female"	"F"	"5-9 years"	"5-9"	207	2835751	7.3
+	"Asian"	"A"	"Female"	"F"	"10-14 years"	"10-14"	234	2795693	8.4
+	"Asian"	"A"	"Female"	"F"	"15-19 years"	"15-19"	483	2919119	16.5
+	"Asian"	"A"	"Female"	"F"	"20-24 years"	"20-24"	799	3253122	24.6
+	"Asian"	"A"	"Female"	"F"	"25-29 years"	"25-29"	978	3967344	24.7
+	"Asian"	"A"	"Female"	"F"	"30-34 years"	"30-34"	1362	4441167	30.7
+	"Asian"	"A"	"Female"	"F"	"35-39 years"	"35-39"	1802	4399644	41.0
+	"Asian"	"A"	"Female"	"F"	"40-44 years"	"40-44"	2490	4065171	61.3
+	"Asian"	"A"	"Female"	"F"	"45-49 years"	"45-49"	3791	3890188	97.5
+	"Asian"	"A"	"Female"	"F"	"50-54 years"	"50-54"	5248	3436498	152.7
+	"Asian"	"A"	"Female"	"F"	"55-59 years"	"55-59"	7118	3121267	228.0
+	"Asian"	"A"	"Female"	"F"	"60-64 years "	"60-64"	10333	2852994	362.2
+	"Asian"	"A"	"Female"	"F"	"65-69 years"	"65-69"	14195	2486500	570.9
+	"Asian"	"A"	"Female"	"F"	"70-74 years"	"70-74"	18457	1948222	947.4
+	"Asian"	"A"	"Female"	"F"	"75-79 years"	"75-79"	21662	1272031	1702.9
+	"Asian"	"A"	"Female"	"F"	"80-84 years"	"80-84"	27358	852157	3210.4
+	"Asian"	"A"	"Male"	"M"	"< 1 year"	"1"	1831	526414	347.8
+	"Asian"	"A"	"Male"	"M"	"1-4 years"	"1-4"	352	2302945	15.3
+	"Asian"	"A"	"Male"	"M"	"5-9 years"	"5-9"	242	2994425	8.1
+	"Asian"	"A"	"Male"	"M"	"10-14 years"	"10-14"	310	2903697	10.7
+	"Asian"	"A"	"Male"	"M"	"15-19 years"	"15-19"	977	2950999	33.1
+	"Asian"	"A"	"Male"	"M"	"20-24 years"	"20-24"	1900	3307451	57.4
+	"Asian"	"A"	"Male"	"M"	"25-29 years"	"25-29"	2319	3932276	59.0
+	"Asian"	"A"	"Male"	"M"	"30-34 years"	"30-34"	2833	4203944	67.4
+	"Asian"	"A"	"Male"	"M"	"35-39 years"	"35-39"	3535	4020851	87.9
+	"Asian"	"A"	"Male"	"M"	"40-44 years"	"40-44"	4212	3593737	117.2
+	"Asian"	"A"	"Male"	"M"	"45-49 years"	"45-49"	6172	3445288	179.1
+	"Asian"	"A"	"Male"	"M"	"50-54 years"	"50-54"	8651	3027327	285.8
+	"Asian"	"A"	"Male"	"M"	"55-59 years"	"55-59"	11917	2697633	441.8
+	"Asian"	"A"	"Male"	"M"	"60-64 years "	"60-64"	16531	2371734	697.0
+	"Asian"	"A"	"Male"	"M"	"65-69 years"	"65-69"	20488	1975726	1037.0
+	"Asian"	"A"	"Male"	"M"	"70-74 years"	"70-74"	23619	1522050	1551.8
+	"Asian"	"A"	"Male"	"M"	"75-79 years"	"75-79"	25823	1001239	2579.1
+	"Asian"	"A"	"Male"	"M"	"80-84 years"	"80-84"	28817	647613	4449.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"< 1 year"	"1"	13835	1444673	957.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"1-4 years"	"1-4"	2279	5942781	38.3
+	"Black or African American"	"2054-5"	"Female"	"F"	"5-9 years"	"5-9"	1375	7603733	18.1
+	"Black or African American"	"2054-5"	"Female"	"F"	"10-14 years"	"10-14"	1506	7825127	19.2
+	"Black or African American"	"2054-5"	"Female"	"F"	"15-19 years"	"15-19"	3547	7814960	45.4
+	"Black or African American"	"2054-5"	"Female"	"F"	"20-24 years"	"20-24"	6830	8220731	83.1
+	"Black or African American"	"2054-5"	"Female"	"F"	"25-29 years"	"25-29"	10135	8976089	112.9
+	"Black or African American"	"2054-5"	"Female"	"F"	"30-34 years"	"30-34"	13501	8600980	157.0
+	"Black or African American"	"2054-5"	"Female"	"F"	"35-39 years"	"35-39"	16906	7885331	214.4
+	"Black or African American"	"2054-5"	"Female"	"F"	"40-44 years"	"40-44"	22167	7403338	299.4
+	"Black or African American"	"2054-5"	"Female"	"F"	"45-49 years"	"45-49"	29358	7148320	410.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"50-54 years"	"50-54"	42764	7167424	596.6
+	"Black or African American"	"2054-5"	"Female"	"F"	"55-59 years"	"55-59"	65361	7289291	896.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"60-64 years "	"60-64"	89324	6747912	1323.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"65-69 years"	"65-69"	100485	5479713	1833.8
+	"Black or African American"	"2054-5"	"Female"	"F"	"70-74 years"	"70-74"	104246	4071225	2560.6
+	"Black or African American"	"2054-5"	"Female"	"F"	"75-79 years"	"75-79"	100986	2656492	3801.5
+	"Black or African American"	"2054-5"	"Female"	"F"	"80-84 years"	"80-84"	103905	1760826	5900.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"< 1 year"	"1"	17268	1495485	1154.7
+	"Black or African American"	"2054-5"	"Male"	"M"	"1-4 years"	"1-4"	2904	6100577	47.6
+	"Black or African American"	"2054-5"	"Male"	"M"	"5-9 years"	"5-9"	1812	7811109	23.2
+	"Black or African American"	"2054-5"	"Male"	"M"	"10-14 years"	"10-14"	2447	8058028	30.4
+	"Black or African American"	"2054-5"	"Male"	"M"	"15-19 years"	"15-19"	12327	8035207	153.4
+	"Black or African American"	"2054-5"	"Male"	"M"	"20-24 years"	"20-24"	21621	8426917	256.6
+	"Black or African American"	"2054-5"	"Male"	"M"	"25-29 years"	"25-29"	27168	9141327	297.2
+	"Black or African American"	"2054-5"	"Male"	"M"	"30-34 years"	"30-34"	29605	8365525	353.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"35-39 years"	"35-39"	31152	7336074	424.6
+	"Black or African American"	"2054-5"	"Male"	"M"	"40-44 years"	"40-44"	35575	6687020	532.0
+	"Black or African American"	"2054-5"	"Male"	"M"	"45-49 years"	"45-49"	44450	6341620	700.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"50-54 years"	"50-54"	63320	6359197	995.7
+	"Black or African American"	"2054-5"	"Male"	"M"	"55-59 years"	"55-59"	95055	6337040	1500.0
+	"Black or African American"	"2054-5"	"Male"	"M"	"60-64 years "	"60-64"	126524	5661687	2234.7
+	"Black or African American"	"2054-5"	"Male"	"M"	"65-69 years"	"65-69"	134638	4275165	3149.3
+	"Black or African American"	"2054-5"	"Male"	"M"	"70-74 years"	"70-74"	123501	2971611	4156.0
+	"Black or African American"	"2054-5"	"Male"	"M"	"75-79 years"	"75-79"	102248	1772912	5767.2
+	"Black or African American"	"2054-5"	"Male"	"M"	"80-84 years"	"80-84"	86371	1037025	8328.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"< 1 year"	"1"	182	31245	582.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"1-4 years"	"1-4"	38	129964	29.2
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"5-9 years"	"5-9"	19	159990	Unreliable
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"10-14 years"	"10-14"	27	156333	17.3
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"15-19 years"	"15-19"	53	148473	35.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"20-24 years"	"20-24"	96	146822	65.4
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"25-29 years"	"25-29"	123	162850	75.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"30-34 years"	"30-34"	207	170174	121.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"35-39 years"	"35-39"	280	163811	170.9
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"40-44 years"	"40-44"	360	142860	252.0
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"45-49 years"	"45-49"	514	125110	410.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"50-54 years"	"50-54"	661	117986	560.2
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"55-59 years"	"55-59"	834	111425	748.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"60-64 years "	"60-64"	1045	94172	1109.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"65-69 years"	"65-69"	1177	73407	1603.4
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"70-74 years"	"70-74"	1145	53442	2142.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"75-79 years"	"75-79"	981	33306	2945.4
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"80-84 years"	"80-84"	962	21389	4497.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"< 1 year"	"1"	259	33007	784.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"1-4 years"	"1-4"	52	136442	38.1
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"5-9 years"	"5-9"	28	166265	16.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"10-14 years"	"10-14"	38	160527	23.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"15-19 years"	"15-19"	126	154280	81.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"20-24 years"	"20-24"	289	155767	185.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"25-29 years"	"25-29"	391	173229	225.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"30-34 years"	"30-34"	432	188720	228.9
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"35-39 years"	"35-39"	531	181049	293.3
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"40-44 years"	"40-44"	585	154699	378.2
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"45-49 years"	"45-49"	797	130904	608.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"50-54 years"	"50-54"	988	118593	833.1
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"55-59 years"	"55-59"	1190	108122	1100.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"60-64 years "	"60-64"	1375	90760	1515.0
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"65-69 years"	"65-69"	1429	67174	2127.3
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"70-74 years"	"70-74"	1374	49230	2791.0
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"75-79 years"	"75-79"	1038	29325	3539.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"80-84 years"	"80-84"	835	16676	5007.2
+	"White"	"2106-3"	"Female"	"F"	"< 1 year"	"1"	27455	6375698	430.6
+	"White"	"2106-3"	"Female"	"F"	"1-4 years"	"1-4"	5126	26576149	19.3
+	"White"	"2106-3"	"Female"	"F"	"5-9 years"	"5-9"	3310	34945838	9.5
+	"White"	"2106-3"	"Female"	"F"	"10-14 years"	"10-14"	4693	36787598	12.8
+	"White"	"2106-3"	"Female"	"F"	"15-19 years"	"15-19"	11486	37881017	30.3
+	"White"	"2106-3"	"Female"	"F"	"20-24 years"	"20-24"	19844	38884594	51.0
+	"White"	"2106-3"	"Female"	"F"	"25-29 years"	"25-29"	29831	40445491	73.8
+	"White"	"2106-3"	"Female"	"F"	"30-34 years"	"30-34"	42752	40660879	105.1
+	"White"	"2106-3"	"Female"	"F"	"35-39 years"	"35-39"	55952	40026116	139.8
+	"White"	"2106-3"	"Female"	"F"	"40-44 years"	"40-44"	69780	37845254	184.4
+	"White"	"2106-3"	"Female"	"F"	"45-49 years"	"45-49"	99060	37837531	261.8
+	"White"	"2106-3"	"Female"	"F"	"50-54 years"	"50-54"	155264	40028008	387.9
+	"White"	"2106-3"	"Female"	"F"	"55-59 years"	"55-59"	253793	43230493	587.1
+	"White"	"2106-3"	"Female"	"F"	"60-64 years "	"60-64"	368834	42948272	858.8
+	"White"	"2106-3"	"Female"	"F"	"65-69 years"	"65-69"	465558	38211099	1218.4
+	"White"	"2106-3"	"Female"	"F"	"70-74 years"	"70-74"	614352	32114859	1913.0
+	"White"	"2106-3"	"Female"	"F"	"75-79 years"	"75-79"	730658	22944879	3184.4
+	"White"	"2106-3"	"Female"	"F"	"80-84 years"	"80-84"	844724	15413510	5480.4
+	"White"	"2106-3"	"Male"	"M"	"< 1 year"	"1"	34252	6681403	512.6
+	"White"	"2106-3"	"Male"	"M"	"1-4 years"	"1-4"	6788	27880291	24.3
+	"White"	"2106-3"	"Male"	"M"	"5-9 years"	"5-9"	4193	36669781	11.4
+	"White"	"2106-3"	"Male"	"M"	"10-14 years"	"10-14"	6812	38658196	17.6
+	"White"	"2106-3"	"Male"	"M"	"15-19 years"	"15-19"	27297	39847514	68.5
+	"White"	"2106-3"	"Male"	"M"	"20-24 years"	"20-24"	54105	40941882	132.2
+	"White"	"2106-3"	"Male"	"M"	"25-29 years"	"25-29"	76213	42619516	178.8
+	"White"	"2106-3"	"Male"	"M"	"30-34 years"	"30-34"	96152	42553305	226.0
+	"White"	"2106-3"	"Male"	"M"	"35-39 years"	"35-39"	112882	41640626	271.1
+	"White"	"2106-3"	"Male"	"M"	"40-44 years"	"40-44"	129614	39050020	331.9
+	"White"	"2106-3"	"Male"	"M"	"45-49 years"	"45-49"	170410	38514142	442.5
+	"White"	"2106-3"	"Male"	"M"	"50-54 years"	"50-54"	262177	40409849	648.8
+	"White"	"2106-3"	"Male"	"M"	"55-59 years"	"55-59"	416927	42404550	983.2
+	"White"	"2106-3"	"Male"	"M"	"60-64 years "	"60-64"	584200	40960534	1426.3
+	"White"	"2106-3"	"Male"	"M"	"65-69 years"	"65-69"	691472	35095630	1970.3
+	"White"	"2106-3"	"Male"	"M"	"70-74 years"	"70-74"	810777	28524780	2842.4
+	"White"	"2106-3"	"Male"	"M"	"75-79 years"	"75-79"	864134	19152376	4511.9
+	"White"	"2106-3"	"Male"	"M"	"80-84 years"	"80-84"	864394	11628490	7433.4
+	"More than one race"	"M"	"Female"	"F"	"< 1 year"	"1"	2068	587142	352.2
+	"More than one race"	"M"	"Female"	"F"	"1-4 years"	"1-4"	356	2375151	15.0
+	"More than one race"	"M"	"Female"	"F"	"5-9 years"	"5-9"	215	2962129	7.3
+	"More than one race"	"M"	"Female"	"F"	"10-14 years"	"10-14"	247	2814564	8.8
+	"More than one race"	"M"	"Female"	"F"	"15-19 years"	"15-19"	520	2420480	21.5
+	"More than one race"	"M"	"Female"	"F"	"20-24 years"	"20-24"	805	2147546	37.5
+	"More than one race"	"M"	"Female"	"F"	"25-29 years"	"25-29"	918	1883775	48.7
+	"More than one race"	"M"	"Female"	"F"	"30-34 years"	"30-34"	989	1548754	63.9
+	"More than one race"	"M"	"Female"	"F"	"35-39 years"	"35-39"	1146	1323319	86.6
+	"More than one race"	"M"	"Female"	"F"	"40-44 years"	"40-44"	1201	1131731	106.1
+	"More than one race"	"M"	"Female"	"F"	"45-49 years"	"45-49"	1389	952386	145.8
+	"More than one race"	"M"	"Female"	"F"	"50-54 years"	"50-54"	1735	832170	208.5
+	"More than one race"	"M"	"Female"	"F"	"55-59 years"	"55-59"	2416	771910	313.0
+	"More than one race"	"M"	"Female"	"F"	"60-64 years "	"60-64"	3020	676717	446.3
+	"More than one race"	"M"	"Female"	"F"	"65-69 years"	"65-69"	3268	522327	625.7
+	"More than one race"	"M"	"Female"	"F"	"70-74 years"	"70-74"	3658	383666	953.4
+	"More than one race"	"M"	"Female"	"F"	"75-79 years"	"75-79"	3589	252345	1422.3
+	"More than one race"	"M"	"Female"	"F"	"80-84 years"	"80-84"	3553	158850	2236.7
+	"More than one race"	"M"	"Male"	"M"	"< 1 year"	"1"	2573	611900	420.5
+	"More than one race"	"M"	"Male"	"M"	"1-4 years"	"1-4"	474	2478946	19.1
+	"More than one race"	"M"	"Male"	"M"	"5-9 years"	"5-9"	237	3094045	7.7
+	"More than one race"	"M"	"Male"	"M"	"10-14 years"	"10-14"	315	2921077	10.8
+	"More than one race"	"M"	"Male"	"M"	"15-19 years"	"15-19"	1072	2491712	43.0
+	"More than one race"	"M"	"Male"	"M"	"20-24 years"	"20-24"	1838	2206843	83.3
+	"More than one race"	"M"	"Male"	"M"	"25-29 years"	"25-29"	2129	1892322	112.5
+	"More than one race"	"M"	"Male"	"M"	"30-34 years"	"30-34"	2039	1471306	138.6
+	"More than one race"	"M"	"Male"	"M"	"35-39 years"	"35-39"	1919	1220217	157.3
+	"More than one race"	"M"	"Male"	"M"	"40-44 years"	"40-44"	1953	1032718	189.1
+	"More than one race"	"M"	"Male"	"M"	"45-49 years"	"45-49"	2200	860360	255.7
+	"More than one race"	"M"	"Male"	"M"	"50-54 years"	"50-54"	2785	754664	369.0
+	"More than one race"	"M"	"Male"	"M"	"55-59 years"	"55-59"	3547	691944	512.6
+	"More than one race"	"M"	"Male"	"M"	"60-64 years "	"60-64"	4326	606060	713.8
+	"More than one race"	"M"	"Male"	"M"	"65-69 years"	"65-69"	4457	456649	976.0
+	"More than one race"	"M"	"Male"	"M"	"70-74 years"	"70-74"	4249	325699	1304.6
+	"More than one race"	"M"	"Male"	"M"	"75-79 years"	"75-79"	3966	201309	1970.1
+	"More than one race"	"M"	"Male"	"M"	"80-84 years"	"80-84"	3391	118790	2854.6
+"---"
+"Dataset: Underlying Cause of Death, 2018-2023, Single Race"
+"Query Parameters:"
+"Five-Year Age Groups: < 1 year; 1-4 years; 5-9 years; 10-14 years; 15-19 years; 20-24 years; 25-29 years; 30-34 years; 35-39"
+"years; 40-44 years; 45-49 years; 50-54 years; 55-59 years; 60-64 years ; 65-69 years; 70-74 years; 75-79 years; 80-84 years"
+"Year/Month: 2018; 2019; 2020; 2021; 2022"
+"Group By: Single Race 6; Sex; Five-Year Age Groups"
+"Show Totals: False"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"Calculate Rates Per: 100,000"
+"Rate Options: Default intercensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/ucd-expanded.html for more information."
+"---"
+"Query Date: Mar 27, 2025 7:26:08 PM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Mortality 2018-2023 on CDC WONDER Online Database, released in 2024. Data are from the Multiple Cause of Death Files,"
+"2018-2023, as compiled from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative"
+"Program. Accessed at http://wonder.cdc.gov/ucd-icd10-expanded.html on Mar 27, 2025 7:26:08 PM"
+"---"
+Messages:
+"1. Rows with zero Deaths are hidden. Use Quick Options above to show zero rows."
+"---"
+Caveats:
+"1. Death rates are flagged as Unreliable when the rate is calculated with a numerator of 20 or less. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Unreliable."
+"2. Deaths of persons with Age ""Not Stated"" are included in ""All"" counts and rates, but are not distributed among age groups,"
+"so are not included in age-specific counts, age-specific rates or in any age-adjusted rates. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Not Stated."
+"3. The population figures for years 2023 are single-race estimates of the July 1 resident population, from the Vintage 2023"
+"postcensal series released by the Census Bureau on June 27, 2024. The 2023 series is based on the Modified Blended Base produced"
+"by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The Modified Blended Base consists of the blend"
+"of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic Analysis Estimates, and 2020 Census data"
+"from the internal Census Edited File (CEF). The population figures for years 2022 are single-race estimates of the July 1"
+"resident population, from the Vintage 2022 postcensal series released by the Census Bureau on June 22, 2023. The 2022 series is"
+"based on the Modified Blended Base produced by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The"
+"Modified Blended Base consists of the blend of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic"
+"Analysis Estimates, and 2020 Census data from the internal Census Edited File (CEF). The population figures for years 2021 are"
+"single-race estimates of the July 1 resident population, based on the Blended Base produced by the US Census Bureau in lieu of"
+"the April 1, 2020 decennial population count, from the Vintage 2021 postcensal series released by the Census Bureau on June 30,"
+"2022. The population figures for year 2020 are single-race estimates of the July 1 resident population, from the Vintage 2020"
+"postcensal series based on April 2010 Census, released by the Census Bureau on July 27, 2021. The population figures for year"
+"2019 are single-race estimates of the July 1 resident population, from the Vintage 2019 postcensal series based on April 2010"
+"Census, released by the Census Bureau on June 25, 2020. The population figures for year 2018 are single-race estimates of the"
+"July 1 resident population, from the Vintage 2018 postcensal series based on April 2010 Census, released by the Census Bureau on"
+"June 20, 2019. More information: http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Population Data."
+"4. The population figures used in the calculation of death rates for the age group 'under 1 year' are the estimates of the"
+"resident population that is under one year of age. More information: http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Age"
+"Group."
+"5. Connecticut population estimates for 2022 and later years are reported for 9 planning regions as county equivalent areas,"
+"instead of the former 8 legacy counties in the Vintage 2022 postcensal series released by the Census Bureau on June 22, 2023,"
+"and in the Vintage 2023 postcensal series released by the Census Bureau on June 27, 2024. Populations estimates for the former"
+"counties are not available for 2022 and later years. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Connecticut-2022."
+"6. After the creation of the final 2023 dataset, North Carolina updated the cause of death information for over 900 death"
+"certificates to include a cause of death code indicating drug overdose (ICD-10 underlying cause-of-death codes: X40-X44,"
+"X60-X64, X85, and Y10-Y14). Jurisdictions can continue to update death certificates after the closing of the mortality file. As"
+"a result, users should consider that the actual death count for drug overdose deaths for North Carolina in 2023 is over 4,400"
+"deaths, with a crude rate of approximately 41.0 per 100,000 population, and an age-adjusted rate of approximately 42.1 per"
+"100,000 population. These deaths will not be updated on the final mortality datasets."

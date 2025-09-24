@@ -1,0 +1,856 @@
+"Notes"	"HHS Region of Residence"	"HHS Region of Residence Code"	"Mother's Single Race 6"	"Mother's Single Race 6 Code"	"Age of Mother 9"	"Age of Mother 9 Code"	Births	Female Population	Fertility Rate
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	171	15127	11.30
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	612	15712	38.95
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	774	15996	48.39
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	733	15395	47.61
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	438	14874	29.45
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	119	13697	8.69
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"15-19 years"	"15-19"	248	145029	1.71
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"20-24 years"	"20-24"	2135	173174	12.33
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"25-29 years"	"25-29"	9724	183054	53.12
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"30-34 years"	"30-34"	20354	199043	102.26
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"35-39 years"	"35-39"	12093	190805	63.38
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"40-44 years"	"40-44"	2431	166692	14.58
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"45-49 years"	"45-49"	202	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Asian"	"A"	"50 years and over"	"50+"	29	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	40	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	3205	230801	13.89
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	14382	245202	58.65
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	23757	248773	95.50
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	25470	243667	104.53
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	15902	222554	71.45
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	4654	210067	22.15
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	330	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	40	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	30	3019	9.94
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	108	3020	35.76
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	161	3034	53.07
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	135	2954	45.70
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	61	2806	21.74
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	21	2587	8.12
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"Under 15 years"	"15"	132	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"15-19 years"	"15-19"	12576	1896384	6.63
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"20-24 years"	"20-24"	63044	1983203	31.79
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"25-29 years"	"25-29"	132418	1924365	68.81
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"30-34 years"	"30-34"	207647	1964160	105.72
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"35-39 years"	"35-39"	117201	1905442	61.51
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"40-44 years"	"40-44"	22811	1796614	12.70
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"45-49 years"	"45-49"	1455	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"White"	"2106-3"	"50 years and over"	"50+"	179	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"15-19 years"	"15-19"	778	101085	7.70
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"20-24 years"	"20-24"	3376	91816	36.77
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"25-29 years"	"25-29"	4897	74153	66.04
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"30-34 years"	"30-34"	5278	61944	85.21
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"35-39 years"	"35-39"	3125	52219	59.84
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"40-44 years"	"40-44"	685	44699	15.32
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"45-49 years"	"45-49"	32	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	291	45980	6.33
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	1007	46697	21.56
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	1424	49628	28.69
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	1314	47010	27.95
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	756	45260	16.70
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	210	42891	4.90
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	13	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"15-19 years"	"15-19"	805	374355	2.15
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"20-24 years"	"20-24"	10603	434358	24.41
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"25-29 years"	"25-29"	37730	549177	68.70
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"30-34 years"	"30-34"	67636	601505	112.44
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"35-39 years"	"35-39"	43022	588245	73.14
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"40-44 years"	"40-44"	9706	551279	17.61
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"45-49 years"	"45-49"	806	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Asian"	"A"	"50 years and over"	"50+"	116	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	170	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	13078	776851	16.83
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	52493	858664	61.13
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	78188	969461	80.65
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	78145	929505	84.07
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	50325	844174	59.61
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	14758	809472	18.23
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	1258	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	233	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	113	6109	18.50
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	399	6419	62.16
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	538	7728	69.62
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	533	8056	66.16
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	313	7464	41.93
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	82	6626	12.38
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #2  NJ, NY"	"HHS2"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"Under 15 years"	"15"	275	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"15-19 years"	"15-19"	26025	2905642	8.96
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"20-24 years"	"20-24"	144729	3037200	47.65
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"25-29 years"	"25-29"	257273	3256196	79.01
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"30-34 years"	"30-34"	370013	3247995	113.92
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"35-39 years"	"35-39"	226278	3120340	72.52
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"40-44 years"	"40-44"	52751	2942707	17.93
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"45-49 years"	"45-49"	4153	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"White"	"2106-3"	"50 years and over"	"50+"	514	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"Under 15 years"	"15"	18	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"15-19 years"	"15-19"	1728	170074	10.16
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"20-24 years"	"20-24"	6083	158024	38.49
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"25-29 years"	"25-29"	7925	148671	53.31
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"30-34 years"	"30-34"	8353	126352	66.11
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"35-39 years"	"35-39"	5134	108909	47.14
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"40-44 years"	"40-44"	1337	97962	13.65
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"45-49 years"	"45-49"	94	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"More than one race"	"M"	"50 years and over"	"50+"	16	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #2  NJ, NY"	"HHS2"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	376	26147	14.38
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	1288	26183	49.19
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	1638	28072	58.35
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	1427	26806	53.23
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	876	26360	33.23
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	204	24659	8.27
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	14	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"15-19 years"	"15-19"	650	255749	2.54
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"20-24 years"	"20-24"	5728	267429	21.42
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"25-29 years"	"25-29"	22465	311205	72.19
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"30-34 years"	"30-34"	42011	356810	117.74
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"35-39 years"	"35-39"	25112	369200	68.02
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"40-44 years"	"40-44"	5415	350113	15.47
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"45-49 years"	"45-49"	431	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Asian"	"A"	"50 years and over"	"50+"	67	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	270	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	20565	986409	20.85
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	76705	1025523	74.80
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	105968	1130662	93.72
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	94926	1112147	85.35
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	53825	1021773	52.68
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	13650	949962	14.37
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	1053	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	226	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	295	4832	61.05
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	969	5356	180.92
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	1139	5681	200.49
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	978	5637	173.50
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	565	6039	93.56
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	167	5492	30.41
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"Under 15 years"	"15"	407	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"15-19 years"	"15-19"	38293	3287787	11.65
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"20-24 years"	"20-24"	179122	3344258	53.56
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"25-29 years"	"25-29"	316441	3500257	90.41
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"30-34 years"	"30-34"	381379	3639488	104.79
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"35-39 years"	"35-39"	199245	3564075	55.90
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"40-44 years"	"40-44"	38502	3329687	11.56
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"45-49 years"	"45-49"	2532	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"White"	"2106-3"	"50 years and over"	"50+"	332	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"Under 15 years"	"15"	56	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"15-19 years"	"15-19"	3268	227987	14.33
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"20-24 years"	"20-24"	11203	191718	58.43
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"25-29 years"	"25-29"	12181	162926	74.76
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"30-34 years"	"30-34"	9934	133412	74.46
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"35-39 years"	"35-39"	5301	113570	46.68
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"40-44 years"	"40-44"	1111	96403	11.52
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"45-49 years"	"45-49"	88	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"More than one race"	"M"	"50 years and over"	"50+"	12	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	17	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	1523	81701	18.64
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	4888	81303	60.12
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	4870	82332	59.15
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	3441	76569	44.94
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	1737	75838	22.90
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	398	74722	5.33
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	19	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"Under 15 years"	"15"	14	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"15-19 years"	"15-19"	1112	296891	3.75
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"20-24 years"	"20-24"	8554	319124	26.80
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"25-29 years"	"25-29"	29370	366460	80.15
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"30-34 years"	"30-34"	47764	412371	115.83
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"35-39 years"	"35-39"	26928	438870	61.36
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"40-44 years"	"40-44"	5378	416132	12.92
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"45-49 years"	"45-49"	462	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Asian"	"A"	"50 years and over"	"50+"	42	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	1132	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	69226	2696687	25.67
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	252012	2819892	89.37
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	295499	2981242	99.12
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	225766	2856364	79.04
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	116875	2667884	43.81
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	28889	2560076	11.28
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	1843	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	161	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	556	13412	41.46
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	2001	13276	150.72
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	2223	13592	163.55
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	1756	14961	117.37
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	1054	16177	65.15
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	263	14288	18.41
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	19	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"Under 15 years"	"15"	1169	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"15-19 years"	"15-19"	116235	6872046	16.91
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"20-24 years"	"20-24"	501414	7093995	70.68
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"25-29 years"	"25-29"	748626	7488348	99.97
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"30-34 years"	"30-34"	725529	7590322	95.59
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"35-39 years"	"35-39"	352965	7448729	47.39
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"40-44 years"	"40-44"	70735	7282648	9.71
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"45-49 years"	"45-49"	4388	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"White"	"2106-3"	"50 years and over"	"50+"	415	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"Under 15 years"	"15"	122	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"15-19 years"	"15-19"	7239	383426	18.88
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"20-24 years"	"20-24"	23477	331530	70.81
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"25-29 years"	"25-29"	22063	279382	78.97
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"30-34 years"	"30-34"	15262	223181	68.38
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"35-39 years"	"35-39"	7104	190536	37.28
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"40-44 years"	"40-44"	1563	168642	9.27
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"45-49 years"	"45-49"	84	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"More than one race"	"M"	"50 years and over"	"50+"	14	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	19	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	1094	69787	15.68
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	3388	68329	49.58
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	3806	67596	56.31
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	3060	61613	49.66
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	1521	58520	25.99
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	286	55762	5.13
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	13	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"Under 15 years"	"15"	23	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"15-19 years"	"15-19"	1443	347732	4.15
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"20-24 years"	"20-24"	10914	415614	26.26
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"25-29 years"	"25-29"	35963	450500	79.83
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"30-34 years"	"30-34"	54902	477052	115.09
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"35-39 years"	"35-39"	29751	463597	64.17
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"40-44 years"	"40-44"	5773	407593	14.16
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"45-49 years"	"45-49"	413	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Asian"	"A"	"50 years and over"	"50+"	53	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	529	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	33424	1124907	29.71
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	114580	1171485	97.81
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	136069	1305245	104.25
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	103171	1190645	86.65
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	50787	1055999	48.09
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	12024	988761	12.16
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	927	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	160	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	152	6272	24.23
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	670	6159	108.78
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	739	6350	116.38
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	594	6477	91.71
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	282	6222	45.32
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	85	5497	15.46
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"Under 15 years"	"15"	663	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"15-19 years"	"15-19"	77135	6463027	11.93
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"20-24 years"	"20-24"	373085	6644994	56.15
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"25-29 years"	"25-29"	665102	6599762	100.78
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"30-34 years"	"30-34"	711265	6577848	108.13
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"35-39 years"	"35-39"	331547	6660923	49.77
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"40-44 years"	"40-44"	60885	6364739	9.57
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"45-49 years"	"45-49"	3663	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"White"	"2106-3"	"50 years and over"	"50+"	337	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"Under 15 years"	"15"	100	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"15-19 years"	"15-19"	6689	358836	18.64
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"20-24 years"	"20-24"	20798	307297	67.68
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"25-29 years"	"25-29"	20540	249731	82.25
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"30-34 years"	"30-34"	14446	188877	76.48
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"35-39 years"	"35-39"	6414	150949	42.49
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"40-44 years"	"40-44"	1271	127618	9.96
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"45-49 years"	"45-49"	73	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	44	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	3811	193313	19.71
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	13133	192014	68.40
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	14407	190997	75.43
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	9894	176468	56.07
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	4402	167227	26.32
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	870	152927	5.69
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	38	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"15-19 years"	"15-19"	779	276314	2.82
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"20-24 years"	"20-24"	6810	291897	23.33
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"25-29 years"	"25-29"	28046	365232	76.79
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"30-34 years"	"30-34"	50353	424316	118.67
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"35-39 years"	"35-39"	28939	436175	66.35
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"40-44 years"	"40-44"	5520	401306	13.76
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"45-49 years"	"45-49"	377	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Asian"	"A"	"50 years and over"	"50+"	49	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	545	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	32097	1124384	28.55
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	111242	1162816	95.67
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	124724	1257847	99.16
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	95970	1227787	78.17
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	49128	1155393	42.52
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	10956	1060332	10.33
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	746	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	112	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	631	14084	44.80
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	2435	13345	182.47
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	2454	14411	170.29
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	1977	15808	125.06
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	1035	15690	65.97
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	252	12857	19.60
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	11	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"Under 15 years"	"15"	1425	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"15-19 years"	"15-19"	127777	5421732	23.57
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"20-24 years"	"20-24"	461853	5366442	86.06
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"25-29 years"	"25-29"	614496	5515301	111.42
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"30-34 years"	"30-34"	534032	5540492	96.39
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"35-39 years"	"35-39"	257506	5512188	46.72
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"40-44 years"	"40-44"	52466	5145809	10.20
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"45-49 years"	"45-49"	2986	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"White"	"2106-3"	"50 years and over"	"50+"	193	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"Under 15 years"	"15"	56	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"15-19 years"	"15-19"	5243	267946	19.57
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"20-24 years"	"20-24"	17167	232099	73.96
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"25-29 years"	"25-29"	16923	206026	82.14
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"30-34 years"	"30-34"	11728	175298	66.90
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"35-39 years"	"35-39"	5260	152664	34.45
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"40-44 years"	"40-44"	1038	132262	7.85
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"45-49 years"	"45-49"	73	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	527	22952	22.96
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	1586	23644	67.08
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	1690	22226	76.04
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	1194	19948	59.86
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	636	18031	35.27
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	125	17119	7.30
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"15-19 years"	"15-19"	335	66215	5.06
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"20-24 years"	"20-24"	2192	90954	24.10
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"25-29 years"	"25-29"	6644	84892	78.26
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"30-34 years"	"30-34"	9520	84542	112.61
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"35-39 years"	"35-39"	5087	82233	61.86
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"40-44 years"	"40-44"	1005	72437	13.87
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"45-49 years"	"45-49"	82	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Asian"	"A"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	105	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	6615	207944	31.81
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	22567	216654	104.16
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	26919	233669	115.20
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	19914	214561	92.81
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	9500	193256	49.16
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	2202	175732	12.53
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	149	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	11	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	228	4866	46.86
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	1083	4769	227.09
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	1020	4344	234.81
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	687	4689	146.51
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	372	4712	78.95
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	105	3925	26.75
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"Under 15 years"	"15"	226	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"15-19 years"	"15-19"	28873	1898121	15.21
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"20-24 years"	"20-24"	133202	1979919	67.28
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"25-29 years"	"25-29"	222782	1874023	118.88
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"30-34 years"	"30-34"	202472	1875592	107.95
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"35-39 years"	"35-39"	86609	1940488	44.63
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"40-44 years"	"40-44"	15329	1803247	8.50
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"45-49 years"	"45-49"	754	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"White"	"2106-3"	"50 years and over"	"50+"	55	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"Under 15 years"	"15"	39	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"15-19 years"	"15-19"	2364	101411	23.31
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"20-24 years"	"20-24"	7554	87971	85.87
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"25-29 years"	"25-29"	7335	68419	107.21
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"30-34 years"	"30-34"	4621	49996	92.43
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"35-39 years"	"35-39"	1936	41637	46.50
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"40-44 years"	"40-44"	338	34335	9.84
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"45-49 years"	"45-49"	20	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	40	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	2885	74505	38.72
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	7122	68617	103.79
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	7105	69532	102.18
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	5042	64026	78.75
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	2243	58250	38.51
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	423	50596	8.36
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	11	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"15-19 years"	"15-19"	254	54944	4.62
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"20-24 years"	"20-24"	1819	71809	25.33
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"25-29 years"	"25-29"	5857	82247	71.21
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"30-34 years"	"30-34"	8654	86067	100.55
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"35-39 years"	"35-39"	5184	79756	65.00
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"40-44 years"	"40-44"	1071	70882	15.11
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"45-49 years"	"45-49"	74	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Asian"	"A"	"50 years and over"	"50+"	11	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	11	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	1208	64119	18.84
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	5742	68845	83.40
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	8401	78898	106.48
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	7663	74287	103.15
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	3902	64580	60.42
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	988	53990	18.30
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	90	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	12	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	215	10329	20.82
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	1186	10750	110.33
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	1450	11280	128.55
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	1016	11222	90.54
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	437	9470	46.15
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	114	7762	14.69
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	11	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"Under 15 years"	"15"	161	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"15-19 years"	"15-19"	20477	1743382	11.75
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"20-24 years"	"20-24"	112525	1827812	61.56
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"25-29 years"	"25-29"	197438	1902613	103.77
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"30-34 years"	"30-34"	191763	1879442	102.03
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"35-39 years"	"35-39"	94214	1861617	50.61
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"40-44 years"	"40-44"	18241	1718370	10.62
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"45-49 years"	"45-49"	1113	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"White"	"2106-3"	"50 years and over"	"50+"	80	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"Under 15 years"	"15"	10	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"15-19 years"	"15-19"	1409	95064	14.82
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"20-24 years"	"20-24"	5805	90954	63.82
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"25-29 years"	"25-29"	7413	78329	94.64
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"30-34 years"	"30-34"	5740	61407	93.47
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"35-39 years"	"35-39"	2626	51086	51.40
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"40-44 years"	"40-44"	534	42617	12.53
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"45-49 years"	"45-49"	26	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	32	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	2574	212028	12.14
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	8350	214636	38.90
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	9980	224960	44.36
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	8300	212048	39.14
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	4265	194860	21.89
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	898	177211	5.07
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	51	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"Under 15 years"	"15"	21	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"15-19 years"	"15-19"	2155	956240	2.25
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"20-24 years"	"20-24"	17745	1016487	17.46
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"25-29 years"	"25-29"	71697	1334300	53.73
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"30-34 years"	"30-34"	153616	1530112	100.40
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"35-39 years"	"35-39"	110871	1502971	73.77
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"40-44 years"	"40-44"	25871	1414073	18.30
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"45-49 years"	"45-49"	2616	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Asian"	"A"	"50 years and over"	"50+"	514	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	80	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	8126	526336	15.44
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	34820	566112	61.51
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	49973	673283	74.22
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	47242	657962	71.80
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	27284	573517	47.57
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	6885	522194	13.18
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	672	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	135	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	927	66231	14.00
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	4757	65370	72.77
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	6120	75633	80.92
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	5399	78612	68.68
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	3004	74163	40.51
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	747	66382	11.25
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	47	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"Under 15 years"	"15"	677	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"15-19 years"	"15-19"	80820	5725956	14.11
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"20-24 years"	"20-24"	352946	5892681	59.90
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"25-29 years"	"25-29"	567752	6419331	88.44
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"30-34 years"	"30-34"	608792	6301666	96.61
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"35-39 years"	"35-39"	358522	6000295	59.75
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"40-44 years"	"40-44"	84459	5606027	15.07
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"45-49 years"	"45-49"	6569	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"White"	"2106-3"	"50 years and over"	"50+"	906	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"Under 15 years"	"15"	69	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"15-19 years"	"15-19"	6280	550134	11.42
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"20-24 years"	"20-24"	25343	502749	50.41
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"25-29 years"	"25-29"	36198	474663	76.26
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"30-34 years"	"30-34"	36000	410051	87.79
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"35-39 years"	"35-39"	20863	359160	58.09
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"40-44 years"	"40-44"	4527	302947	14.94
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"45-49 years"	"45-49"	325	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"More than one race"	"M"	"50 years and over"	"50+"	34	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"Under 15 years"	"15"	21	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"15-19 years"	"15-19"	1884	67458	27.93
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"20-24 years"	"20-24"	5973	66729	89.51
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"25-29 years"	"25-29"	6821	70434	96.84
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"30-34 years"	"30-34"	5324	67795	78.53
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"35-39 years"	"35-39"	2571	60386	42.58
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"40-44 years"	"40-44"	582	53328	10.91
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"45-49 years"	"45-49"	20	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"American Indian or Alaska Native"	"1002-5"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"15-19 years"	"15-19"	455	145650	3.12
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"20-24 years"	"20-24"	3518	172276	20.42
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"25-29 years"	"25-29"	13634	240277	56.74
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"30-34 years"	"30-34"	26588	269349	98.71
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"35-39 years"	"35-39"	16595	247792	66.97
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"40-44 years"	"40-44"	3324	214664	15.48
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"45-49 years"	"45-49"	276	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Asian"	"A"	"50 years and over"	"50+"	30	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"15-19 years"	"15-19"	1185	76522	15.49
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"20-24 years"	"20-24"	6075	85538	71.02
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"25-29 years"	"25-29"	9399	97009	96.89
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"30-34 years"	"30-34"	9514	94055	101.15
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"35-39 years"	"35-39"	5815	86201	67.46
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"40-44 years"	"40-44"	1544	72752	21.22
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"45-49 years"	"45-49"	170	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Black or African American"	"2054-5"	"50 years and over"	"50+"	19	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Under 15 years"	"15"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"15-19 years"	"15-19"	560	19319	28.99
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"20-24 years"	"20-24"	3020	18358	164.51
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"25-29 years"	"25-29"	3519	20797	169.21
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"30-34 years"	"30-34"	2458	21758	112.97
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"35-39 years"	"35-39"	1298	21068	61.61
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"40-44 years"	"40-44"	248	17444	14.22
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"45-49 years"	"45-49"	11	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"Under 15 years"	"15"	153	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"15-19 years"	"15-19"	19342	1666940	11.60
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"20-24 years"	"20-24"	107356	1714090	62.63
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"25-29 years"	"25-29"	178181	1965295	90.66
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"30-34 years"	"30-34"	184759	2043874	90.40
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"35-39 years"	"35-39"	100352	2012019	49.88
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"40-44 years"	"40-44"	20642	1855406	11.13
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"45-49 years"	"45-49"	1286	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"White"	"2106-3"	"50 years and over"	"50+"	127	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"Under 15 years"	"15"	17	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"15-19 years"	"15-19"	1991	164517	12.10
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"20-24 years"	"20-24"	8588	153388	55.99
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"25-29 years"	"25-29"	11507	141475	81.34
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"30-34 years"	"30-34"	10350	118236	87.54
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"35-39 years"	"35-39"	5227	102589	50.95
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"40-44 years"	"40-44"	1082	84246	12.84
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"45-49 years"	"45-49"	61	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"More than one race"	"M"	"50 years and over"	"50+"	Suppressed	Not Available	Suppressed
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Unknown or Not Stated"	"UNK"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Available"	"NA"	"50 years and over"	"50+"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"Under 15 years"	"15"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"15-19 years"	"15-19"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"20-24 years"	"20-24"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"25-29 years"	"25-29"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"30-34 years"	"30-34"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"35-39 years"	"35-39"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"40-44 years"	"40-44"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"45-49 years"	"45-49"	0	Not Available	Not Available
+	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	"Not Reported"	"NR"	"50 years and over"	"50+"	0	Not Available	Not Available
+"---"
+"Dataset: Natality, 2016-2022 expanded"
+"Query Parameters:"
+"Year: 2018; 2019; 2020; 2021; 2022"
+"Group By: HHS Region of Residence; Mother's Single Race 6; Age of Mother 9"
+"Show Totals: Disabled"
+"Show Zero Values: True"
+"Show Suppressed: True"
+"Calculate Rates Per: 1,000"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/Natality-expanded.html for more information."
+"---"
+"Query Date: Feb 26, 2024 2:00:14 PM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Natality on CDC WONDER Online Database. Data are from the Natality Records 2016-2022, as compiled from data provided by"
+"the 57 vital statistics jurisdictions through the Vital Statistics Cooperative Program. Accessed at"
+"http://wonder.cdc.gov/natality-expanded-current.html on Feb 26, 2024 2:00:14 PM"
+"---"
+Messages:
+"1. Totals are not available for these results due to suppression constraints. More Information:"
+"http://wonder.cdc.gov/wonder/help/faq.html#Privacy."
+"---"
+Caveats:
+"1. 'Not Available' appears when the denominator population for a rate measure is not available."
+"2. 'Suppressed' appears when the data do not meet the criteria for confidentiality constraints. More information:"
+"http://wonder.cdc.gov/wonder/help/Natality-expanded.html#Assurance of Confidentiality."
+"3. Each birth record represents one liveborn infant."
+"4. Fertility rates are calculated as the number of births divided by the number of females age 15 - 44 years old in the given"
+"year(s). When the numerator is sub-set by mother's age, mother's race, mother's hispanicity, location, or year of birth, then"
+"the same sub-set for age, race, hispanicity, location and year applies to the denominator population. However, if you sub-set"
+"mother's age selecting some years not in the 15 - 44 range, those years of mother's age ouside this range will not be included"
+"in the denominator population. If you sub-set mother's age selecting only years outside the 15 - 44 range, then ""Not"
+"Available"" is reported for the denominator population."
+"5. Birth rates and fertility rates are calculated using the following populations: The populations for year 2021 are from the"
+"postcensal single race series of July 1st estimates of the resident population, released by Census Bureau on June 30, 2022. The"
+"2021 population estimates are based on the Blended Base produced by the US Census Bureau in lieu of the April 1, 2020 decennial"
+"population count. The populations for year 2020 are from the postcensal single race series of July 1st estimates of the resident"
+"population, released by Census Bureau on July 27, 2021. The populations for year 2019 are from the postcensal single race series"
+"of July 1st estimates of the resident population, released by Census Bureau on June 25, 2020; The populations for year 2018 are"
+"from the postcensal single race series of July 1st estimates of the resident population, released by Census Bureau on June 21,"
+"2019; The populations for year 2017 are from the postcensal single race series of July 1st estimates of the resident population,"
+"released by Census Bureau on June 21, 2018; The populations for year 2016 are from the postcensal single race series of July 1st"
+"estimates of the resident population, released by Census Bureau on June 22, 2017. More information:"
+"http://wonder.cdc.gov/wonder/help/Natality-expanded.html#Denominator-Population-Sources."

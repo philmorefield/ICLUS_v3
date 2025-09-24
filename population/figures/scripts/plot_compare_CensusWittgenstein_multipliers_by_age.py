@@ -147,9 +147,20 @@ def main():
 
         sns.lineplot(x='YEAR', y='NETMIG_INTERP_COHORT', hue='SCENARIO', data=proj_immig, ax=ax_immig)
 
-        plt.title('NETMIG_INTERP_COHORT')
-        ax_immig.set_xlabel('')
-        ax_immig.set_ylabel('')
+                # Census
+        query = f'SELECT YEAR, TFR_MULTIPLIER \
+            FROM census_np2023_asfr \
+            WHERE AGE_GROUP == "{age_group.replace('_TO_', '-')}"'
+        con = sqlite3.connect(CENSUS_DB)
+        proj_births = pd.read_sql(sql=query, con=con)
+        con.close()
+
+        sns.lineplot(x='YEAR', y='TFR_MULTIPLIER', color='black', data=proj_births, legend=False, ax=ax_births)
+
+        plt.title('Net Immigration')
+        ax_births.set_xticklabels([])
+        ax_births.set_xlabel('')
+        ax_births.set_ylabel('')
 
         plt.gca().get_legend().set_bbox_to_anchor((0.5, 1.5))
         plt.tight_layout()

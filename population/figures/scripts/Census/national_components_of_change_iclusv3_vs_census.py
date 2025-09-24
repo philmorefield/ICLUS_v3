@@ -10,7 +10,7 @@ BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
 if os.path.isdir('D:\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
 
-CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
+CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census\\intercensal')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
 
 

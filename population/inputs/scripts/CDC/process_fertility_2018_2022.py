@@ -194,7 +194,7 @@ def main():
     df = apply_county_level_fertility(df)
     df = apply_state_level_fertility(df)
     df = apply_hhs_level_fertility(df)
-    df = make_fips_changes(df)
+    # df = make_fips_changes(df)
 
     assert not df.isnull().any().any()
 

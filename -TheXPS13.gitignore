@@ -167,7 +167,7 @@ cython_debug/
 *.qmd
 *.qgz
 *.pdf
-# *.txt
+*.txt
 *.shx
 *.xml
 /geospatial/Census
