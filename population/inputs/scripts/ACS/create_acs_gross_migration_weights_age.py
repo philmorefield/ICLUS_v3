@@ -3,7 +3,6 @@ import sqlite3
 
 from itertools import product
 
-from numpy import float64
 import pandas as pd
 
 pd.set_option("display.max_columns", None) # show all cols
@@ -115,7 +114,6 @@ def get_euclidean_distance():
 
     assert not df.isnull().any().any()
 
-    return df
 
 def get_census_2020_county_population_by_age_():
     csv_name = 'DECENNIALDHC2020.P12-Data.csv'
@@ -136,22 +134,70 @@ def get_census_2020_county_population_by_age_():
     df = df.rename(columns={'ORIGIN_AGE_GROUP': 'ORIGIN_AGE_GROUP_CENSUS', \
                             'ORIGIN_POPULATION': 'ORIGIN_POPULATION_CENSUS'})
 
+    # 1. MAP the MIGRATION_AGE_GROUP to the ORIGIN_AGE_GROUP_CENSUS
+    df['MIGRATION_AGE_GROUP'] = df.ORIGIN_AGE_GROUP_CENSUS.map(POP_TO_MIGRATION_MAP)
+
+    # 2. Combine ORIGIN_AGE_GROUP_CENSUS "20", "21", and "22_TO_24" into "20_TO_24"
+    df.loc[df.ORIGIN_AGE_GROUP_CENSUS.isin(['20', '21', '22_TO_24']), 'ORIGIN_AGE_GROUP_CENSUS'] = '20_TO_24'
+
+    # 3. Combine ORIGIN_AGE_GROUP_CENSUS "60_TO_61" and "62_TO_64" into "60_TO_64"
+    df.loc[df.ORIGIN_AGE_GROUP_CENSUS.isin(['60_TO_61', '62_TO_64']), 'ORIGIN_AGE_GROUP_CENSUS'] = '60_TO_64'
+
+    # 4. Combine ORIGIN_AGE_GROUP_CENSUS "65_TO_66" and "67_TO_69" into "65_TO_69"
+    df.loc[df.ORIGIN_AGE_GROUP_CENSUS.isin(['65_TO_66', '67_TO_69']), 'ORIGIN_AGE_GROUP_CENSUS'] = '65_TO_69'
+
+    # 5. GROUPBY the ORIGIN_AGE_GROUP_CENSUS and update the ORIGIN_POPULATION
+    df = df.drop(columns='SEX')
+    df = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS', 'MIGRATION_AGE_GROUP'], as_index=False).sum()
+
     return df
 
 
-def get_acs_2011_2015_population_by_age():
+def get_acs_2011_2015_population_by_age(census_population):
     csv_name = 'ACSDP5Y2015.DP05-Data.csv'
     csv = os.path.join(ACS_CSV_PATH, csv_name)
+    usecols = ['GEOID'] + [f'DP05_00{str(i).zfill(2)}E' for i in range(4, 17)]
     df = pd.read_csv(filepath_or_buffer=csv,
+                     usecols=usecols,
                      skiprows=[1],
                      encoding='latin-1')
 
-    cols = ['GEOID'] + [f'DP05_00{str(i).zfill(2)}E' for i in range(4, 17)]
-    df = df[cols]
+    cols = ['COFIPS', '0_TO_5', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
+            '25_TO_34', '35_TO_44', '45_TO_54', '55_TO_59', '60_TO_64',
+            '65_TO_74', '75_TO_84', '85_AND_OVER']
+    df.columns = cols
+    df['COFIPS'] = df['COFIPS'].str[-5:]
+    df = df.melt(id_vars='COFIPS', var_name='ORIGIN_AGE_GROUP_ACS', value_name='ORIGIN_POPULATION_ACS')
 
-    df = df.melt(id_vars='COFIPS', var_name='ORIGIN_AGE_GROUP', value_name='ORIGIN_POPULATION')
-    df['SEX'] = df['ORIGIN_AGE_GROUP'].str.split(pat='_', n=1).str[0]
-    df['ORIGIN_AGE_GROUP'] = df['ORIGIN_AGE_GROUP'].str.split(pat='_', n=1).str[1]
+    # Disaggregate some ACS_2011_2015 age groups to match the migration age
+    # groups: 25-34, 35-44, 45-54, 65-74, 75-84
+    ACS_POP_TO_CENSUS_POP_AGE_GROUP_MAP = {'25_TO_29': '25_TO_34',
+                                           '30_TO_34': '25_TO_34',
+                                           '35_TO_39': '35_TO_44',
+                                           '40_TO_44': '35_TO_44',
+                                           '45_TO_49': '45_TO_54',
+                                           '50_TO_54': '45_TO_54',
+                                           '65_TO_69': '65_TO_74',
+                                           '70_TO_74': '65_TO_74',
+                                           '75_TO_79': '75_TO_84',
+                                           '80_TO_84': '75_TO_84'}
+
+    census_population = census_population.drop(columns='MIGRATION_AGE_GROUP')
+    census_population.loc[census_population.ORIGIN_AGE_GROUP_CENSUS.isin(['15_TO_17', '18_TO_19']), 'ORIGIN_AGE_GROUP_CENSUS'] = '15_TO_19'
+    census_population = census_population.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS'], as_index=False).sum()
+    census_population['ORIGIN_AGE_GROUP_ACS'] = census_population.ORIGIN_AGE_GROUP_CENSUS.map(ACS_POP_TO_CENSUS_POP_AGE_GROUP_MAP)
+    df = df.merge(right=census_population,
+                  how='left',
+                  on=['COFIPS', 'ORIGIN_AGE_GROUP_ACS'])
+    df['SUM_ORIGIN_POPULATION_CENSUS'] = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_ACS'])['ORIGIN_POPULATION_CENSUS'].transform('sum')
+    df['FRACTION_OF_POPULATION_CENSUS'] = df['ORIGIN_POPULATION_CENSUS'].div(df['SUM_ORIGIN_POPULATION_CENSUS'])
+    df['ADJ_ORIGIN_POPULATION_ACS'] = df['FRACTION_OF_POPULATION_CENSUS'].mul(df['ORIGIN_POPULATION_ACS'])
+    assert round(df.loc[~df.ADJ_ORIGIN_POPULATION_ACS.isnull(), 'ADJ_ORIGIN_POPULATION_ACS'].sum()) == df.loc[~df.ADJ_ORIGIN_POPULATION_ACS.isnull(), 'ORIGIN_POPULATION_ACS'].sum() * 0.5, "Error in disaggregation: Total population mismatch"
+
+    df['ORIGIN_POPULATION_ACS'] = df['ORIGIN_POPULATION_ACS'].astype(float)
+    df.loc[~df.ADJ_ORIGIN_POPULATION_ACS.isnull(), 'ORIGIN_POPULATION_ACS'] = df['ADJ_ORIGIN_POPULATION_ACS']
+    df.loc[~df.ORIGIN_AGE_GROUP_CENSUS.isnull(), 'ORIGIN_AGE_GROUP_ACS'] = df['ORIGIN_AGE_GROUP_CENSUS']
+    df = df.drop(columns=['ORIGIN_AGE_GROUP_CENSUS', 'ADJ_ORIGIN_POPULATION_ACS', 'ORIGIN_POPULATION_CENSUS', 'SUM_ORIGIN_POPULATION_CENSUS', 'FRACTION_OF_POPULATION_CENSUS'])
 
     return df
 
@@ -192,7 +238,9 @@ def get_acs_2011_2015_migration():
 
     df['MIGRATION_AGE_GROUP'] = df['MIGRATION_AGE_GROUP'].replace(to_replace=ACS_AGE_GROUP_MAP)
     df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION_AGE_GROUP', 'FLOW']]
-    df = make_fips_changes(df)
+
+
+
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'DESTINATION_FIPS'])
 
@@ -239,7 +287,7 @@ def disaggregate_5_to_17_age_group(df_orig):
 
     return df
 
-def disaggregate_75_AND_OVER_age_group(df_orig):
+def disaggregate_75_and_over_age_group(df_orig):
     '''
     Disaggregate the 5_TO_17 age group into 5_TO_9, 10_TO_14, and 15_TO_17.
     '''
@@ -285,86 +333,44 @@ def calculate_flow_percentages(migration, census_population):
     estimates to do that, but the Census has ideal age groups for this purpose,
     e.g., 15-17.
 
-    1. MAP the MIGRATION_AGE_GROUP to the ORIGIN_AGE_GROUP_CENSUS
-    2. Combine ORIGIN_AGE_GROUP_CENSUS "20", "21", and "22_TO_24" into "20_TO_24"
-    3. Combine ORIGIN_AGE_GROUP_CENSUS "60_TO_61" and "62_TO_64" into "60_TO_64"
-    4. Combine ORIGIN_AGE_GROUP_CENSUS "65_TO_66" and "67_TO_69" into "65_TO_69"
-    5. GROUPBY the ORIGIN_AGE_GROUP_CENSUS and update the ORIGIN_POPULATION
-    6. MERGE the migration dataframe with the origin dataframe
-    7. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
-    8. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
-    9. Combine ORIGIN_AGE_GROUP_CENSUS "15_TO_17" and "18_TO_19" into "15_TO_19"
-    10. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
-    11. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
-
+    Steps:
+    1. MERGE the migration dataframe with the origin dataframe
+    2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
+    3. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
+    4. Combine ORIGIN_AGE_GROUP_CENSUS "15_TO_17" and "18_TO_19" into "15_TO_19"
+    5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
+    6. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
+    7. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
     '''
-    pop_to_migration_map = {'0_TO_4': '1_TO_4',
-                            '5_TO_9': '5_TO_17',
-                            '10_TO_14': '5_TO_17',
-                            '15_TO_17': '5_TO_17',
-                            '18_TO_19': '18_TO_19',
-                            '20': '20_TO_24',
-                            '21': '20_TO_24',
-                            '22_TO_24': '20_TO_24',
-                            '25_TO_29': '25_TO_29',
-                            '30_TO_34': '30_TO_34',
-                            '35_TO_39': '35_TO_39',
-                            '40_TO_44': '40_TO_44',
-                            '45_TO_49': '45_TO_49',
-                            '50_TO_54': '50_TO_54',
-                            '55_TO_59': '55_TO_59',
-                            '60_TO_61': '60_TO_64',
-                            '62_TO_64': '60_TO_64',
-                            '65_TO_66': '65_TO_69',
-                            '67_TO_69': '65_TO_69',
-                            '70_TO_74': '70_TO_74',
-                            '75_TO_79': '75_AND_OVER',
-                            '80_TO_84': '75_AND_OVER',
-                            '85_AND_OVER': '75_AND_OVER'}
 
-    # 1. MAP the MIGRATION_AGE_GROUP to the ORIGIN_AGE_GROUP_CENSUS
-    census_population['MIGRATION_AGE_GROUP'] = census_population.ORIGIN_AGE_GROUP_CENSUS.map(pop_to_migration_map)
-
-    # 2. Combine ORIGIN_AGE_GROUP_CENSUS "20", "21", and "22_TO_24" into "20_TO_24"
-    census_population.loc[census_population.ORIGIN_AGE_GROUP_CENSUS.isin(['20', '21', '22_TO_24']), 'ORIGIN_AGE_GROUP_CENSUS'] = '20_TO_24'
-
-    # 3. Combine ORIGIN_AGE_GROUP_CENSUS "60_TO_61" and "62_TO_64" into "60_TO_64"
-    census_population.loc[census_population.ORIGIN_AGE_GROUP_CENSUS.isin(['60_TO_61', '62_TO_64']), 'ORIGIN_AGE_GROUP_CENSUS'] = '60_TO_64'
-
-    # 4. Combine ORIGIN_AGE_GROUP_CENSUS "65_TO_66" and "67_TO_69" into "65_TO_69"
-    census_population.loc[census_population.ORIGIN_AGE_GROUP_CENSUS.isin(['65_TO_66', '67_TO_69']), 'ORIGIN_AGE_GROUP_CENSUS'] = '65_TO_69'
-
-    # 5. GROUPBY the ORIGIN_AGE_GROUP_CENSUS and update the ORIGIN_POPULATION
-    census_population = census_population.drop(columns='SEX')
-    census_population = census_population.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS', 'MIGRATION_AGE_GROUP'], as_index=False).sum()
-
-    # 6. MERGE
+    # 1. MERGE
     df = migration.merge(right=census_population,
                          left_on=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP'],
                          right_on=['COFIPS', 'MIGRATION_AGE_GROUP'],
                          how='left')
 
-    # 7. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
+    # 2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_9", "10_TO_14", and "15_TO_17"
     df = disaggregate_5_to_17_age_group(df)
 
-    # 8. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
-    df = disaggregate_75_AND_OVER_age_group(df)
+    # 3. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
+    df = disaggregate_75_and_over_age_group(df)
 
-    # 9. Combine ORIGIN_AGE_GROUP_CENSUS "15_TO_17" and "18_TO_19" into "15_TO_19"
+    # 4. Combine ORIGIN_AGE_GROUP_CENSUS "15_TO_17" and "18_TO_19" into "15_TO_19"
     df.loc[df.ORIGIN_AGE_GROUP_CENSUS.isin(['15_TO_17', '18_TO_19']), 'ORIGIN_AGE_GROUP_CENSUS'] = '15_TO_19'
     df.loc[df.MIGRATION_AGE_GROUP.isin(['15_TO_17', '18_TO_19']), 'MIGRATION_AGE_GROUP'] = '15_TO_19'
 
-    # 10. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
+    # 5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
     df.loc[df.MIGRATION_AGE_GROUP == '1_TO_4', 'MIGRATION_AGE_GROUP'] = '0_TO_4'
 
-    # 11. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
+    # 6. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
     df = df.drop(columns=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS', 'ORIGIN_POPULATION_CENSUS'])
     df = df.rename(columns={'MIGRATION_AGE_GROUP': 'AGE_GROUP'})
     df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'], as_index=False).sum()
     assert df.FLOW.sum() == migration.FLOW.sum(), "Error in aggregation: Total flow mismatch"
 
-    # 12. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
-    acs_population = get_acs_2011_2015_population_by_age()
+    acs_population = get_acs_2011_2015_population_by_age(census_population)
+
+        # 8. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
 
 
     return df
