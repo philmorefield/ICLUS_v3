@@ -3,9 +3,11 @@ import sqlite3
 
 from itertools import product
 
+import numpy as np
 import pandas as pd
 
 pd.set_option("display.max_columns", None) # show all cols
+pd.set_option('mode.use_inf_as_na', True)
 
 BASE_FOLDER = 'D:\\projects\\ICLUS_v3\\population'
 if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
@@ -56,6 +58,42 @@ CENSUS_AGE_GROUP_MAP = {'15_TO_17': '15_TO_19',
                         '65_TO_66': '65_TO_69',
                         '67_TO_69': '65_TO_69'}
 
+POP_TO_MIGRATION_MAP = {'0_TO_4': '1_TO_4',
+                        '5_TO_9': '5_TO_17',
+                        '10_TO_14': '5_TO_17',
+                        '15_TO_17': '5_TO_17',
+                        '18_TO_19': '18_TO_19',
+                        '20': '20_TO_24',
+                        '21': '20_TO_24',
+                        '22_TO_24': '20_TO_24',
+                        '25_TO_29': '25_TO_29',
+                        '30_TO_34': '30_TO_34',
+                        '35_TO_39': '35_TO_39',
+                        '40_TO_44': '40_TO_44',
+                        '45_TO_49': '45_TO_49',
+                        '50_TO_54': '50_TO_54',
+                        '55_TO_59': '55_TO_59',
+                        '60_TO_61': '60_TO_64',
+                        '62_TO_64': '60_TO_64',
+                        '65_TO_66': '65_TO_69',
+                        '67_TO_69': '65_TO_69',
+                        '70_TO_74': '70_TO_74',
+                        '75_TO_79': '75_AND_OVER',
+                        '80_TO_84': '75_AND_OVER',
+                        '85_AND_OVER': '75_AND_OVER'}
+
+ACS_POP_TO_CENSUS_POP_AGE_GROUP_MAP = {'25_TO_29': '25_TO_34',
+                                        '30_TO_34': '25_TO_34',
+                                        '35_TO_39': '35_TO_44',
+                                        '40_TO_44': '35_TO_44',
+                                        '45_TO_49': '45_TO_54',
+                                        '50_TO_54': '45_TO_54',
+                                        '65_TO_69': '65_TO_74',
+                                        '70_TO_74': '65_TO_74',
+                                        '75_TO_79': '75_TO_84',
+                                        '80_TO_84': '75_TO_84'}
+
+
 def make_fips_changes(df):
     con =sqlite3.connect(MIGRATION_DB)
     query = 'SELECT OLD_FIPS AS COFIPS, NEW_FIPS \
@@ -99,20 +137,14 @@ def make_fips_changes(df):
             df = df.groupby(by=['COFIPS', 'RACE'], as_index=False).sum()
         elif 'ORIGIN_AGE_GROUP_CENSUS' in df.columns:
             df = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS'], as_index=False).sum()
+        elif 'ORIGIN_AGE_GROUP_ACS' in df.columns:
+            df = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_ACS'], as_index=False).sum()
         else:
             df = df.groupby(by='COFIPS', as_index=False).sum()
 
+    assert not df.isna().any().any(), "NaN values present after FIPS changes"
+
     return df
-
-
-def get_euclidean_distance():
-    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, Dij \
-             FROM county_to_county_distance_2020'
-    con = sqlite3.connect(ANALYSIS_DB)
-    df = pd.read_sql_query(sql=query, con=con)
-    con.close()
-
-    assert not df.isnull().any().any()
 
 
 def get_census_2020_county_population_by_age_():
@@ -150,6 +182,8 @@ def get_census_2020_county_population_by_age_():
     df = df.drop(columns='SEX')
     df = df.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS', 'MIGRATION_AGE_GROUP'], as_index=False).sum()
 
+    assert not df.isna().any().any(), "NaN values present after cleaning"
+
     return df
 
 
@@ -162,26 +196,17 @@ def get_acs_2011_2015_population_by_age(census_population):
                      skiprows=[1],
                      encoding='latin-1')
 
-    cols = ['COFIPS', '0_TO_5', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
+    cols = ['COFIPS', '0_TO_4', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
             '25_TO_34', '35_TO_44', '45_TO_54', '55_TO_59', '60_TO_64',
             '65_TO_74', '75_TO_84', '85_AND_OVER']
     df.columns = cols
     df['COFIPS'] = df['COFIPS'].str[-5:]
     df = df.melt(id_vars='COFIPS', var_name='ORIGIN_AGE_GROUP_ACS', value_name='ORIGIN_POPULATION_ACS')
 
+    df = make_fips_changes(df)
+
     # Disaggregate some ACS_2011_2015 age groups to match the migration age
     # groups: 25-34, 35-44, 45-54, 65-74, 75-84
-    ACS_POP_TO_CENSUS_POP_AGE_GROUP_MAP = {'25_TO_29': '25_TO_34',
-                                           '30_TO_34': '25_TO_34',
-                                           '35_TO_39': '35_TO_44',
-                                           '40_TO_44': '35_TO_44',
-                                           '45_TO_49': '45_TO_54',
-                                           '50_TO_54': '45_TO_54',
-                                           '65_TO_69': '65_TO_74',
-                                           '70_TO_74': '65_TO_74',
-                                           '75_TO_79': '75_TO_84',
-                                           '80_TO_84': '75_TO_84'}
-
     census_population = census_population.drop(columns='MIGRATION_AGE_GROUP')
     census_population.loc[census_population.ORIGIN_AGE_GROUP_CENSUS.isin(['15_TO_17', '18_TO_19']), 'ORIGIN_AGE_GROUP_CENSUS'] = '15_TO_19'
     census_population = census_population.groupby(by=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS'], as_index=False).sum()
@@ -198,6 +223,8 @@ def get_acs_2011_2015_population_by_age(census_population):
     df.loc[~df.ADJ_ORIGIN_POPULATION_ACS.isnull(), 'ORIGIN_POPULATION_ACS'] = df['ADJ_ORIGIN_POPULATION_ACS']
     df.loc[~df.ORIGIN_AGE_GROUP_CENSUS.isnull(), 'ORIGIN_AGE_GROUP_ACS'] = df['ORIGIN_AGE_GROUP_CENSUS']
     df = df.drop(columns=['ORIGIN_AGE_GROUP_CENSUS', 'ADJ_ORIGIN_POPULATION_ACS', 'ORIGIN_POPULATION_CENSUS', 'SUM_ORIGIN_POPULATION_CENSUS', 'FRACTION_OF_POPULATION_CENSUS'])
+
+    assert not df.isna().any().any(), "NaN values present after cleaning"
 
     return df
 
@@ -239,12 +266,13 @@ def get_acs_2011_2015_migration():
     df['MIGRATION_AGE_GROUP'] = df['MIGRATION_AGE_GROUP'].replace(to_replace=ACS_AGE_GROUP_MAP)
     df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION_AGE_GROUP', 'FLOW']]
 
-
-
-
+    df = make_fips_changes(df)
     df = df.sort_values(by=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'DESTINATION_FIPS'])
 
+    assert not df.isna().any().any(), "NaN values present after cleaning"
+
     return df
+
 
 def disaggregate_5_to_17_age_group(df_orig):
     '''
@@ -258,7 +286,7 @@ def disaggregate_5_to_17_age_group(df_orig):
     df = df.query('MIGRATION_AGE_GROUP == "5_TO_17"')
 
     # Calculate total population in the 5_TO_17 age group by origin county
-    df['TOTAL_POPULATION_5_17'] = (df.groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum'))
+    df['TOTAL_POPULATION_5_17'] = df.groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum')
 
     # Calculate the fraction of the population in each age group within the 5_TO_17 category
     df['FRACTION_5_17'] = df['ORIGIN_POPULATION_CENSUS'].div(df['TOTAL_POPULATION_5_17'])
@@ -284,6 +312,8 @@ def disaggregate_5_to_17_age_group(df_orig):
 
     df_orig = df_orig.loc[~df_orig.MIGRATION_AGE_GROUP.isin(['5_TO_17'])]
     df = pd.concat([df_orig, df], ignore_index=True)
+
+    assert not df.isna().any().any(), "NaN values present after disaggregation"
 
     return df
 
@@ -323,6 +353,8 @@ def disaggregate_75_and_over_age_group(df_orig):
     df_orig = df_orig.loc[~df_orig.MIGRATION_AGE_GROUP.isin(['75_AND_OVER'])]
     df = pd.concat([df_orig, df], ignore_index=True)
 
+    assert not df.isna().any().any(), "NaN values present after disaggregation"
+
     return df
 
 def calculate_flow_percentages(migration, census_population):
@@ -339,8 +371,7 @@ def calculate_flow_percentages(migration, census_population):
     3. Disaggregate the MIGRATION_AGE_GROUP "75_AND_OVER" into "75_TO_79", "80_TO_84", and "85_AND_OVER"
     4. Combine ORIGIN_AGE_GROUP_CENSUS "15_TO_17" and "18_TO_19" into "15_TO_19"
     5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
-    6. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
-    7. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
+    6. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
     '''
 
     # 1. MERGE
@@ -362,16 +393,22 @@ def calculate_flow_percentages(migration, census_population):
     # 5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
     df.loc[df.MIGRATION_AGE_GROUP == '1_TO_4', 'MIGRATION_AGE_GROUP'] = '0_TO_4'
 
-    # 6. Determine fraction of FLOW by ORIGIN_AGE_GROUP_CENSUS and decompose aggregate MIGRATION_AGE_GROUPs
+    # Do some clean up
     df = df.drop(columns=['COFIPS', 'ORIGIN_AGE_GROUP_CENSUS', 'ORIGIN_POPULATION_CENSUS'])
     df = df.rename(columns={'MIGRATION_AGE_GROUP': 'AGE_GROUP'})
     df = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'], as_index=False).sum()
     assert df.FLOW.sum() == migration.FLOW.sum(), "Error in aggregation: Total flow mismatch"
 
+    # 6. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
     acs_population = get_acs_2011_2015_population_by_age(census_population)
+    df = df.merge(right=acs_population,
+                  how='left',
+                  left_on=['ORIGIN_FIPS', 'AGE_GROUP'],
+                  right_on=['COFIPS', 'ORIGIN_AGE_GROUP_ACS'])
+    df['GROSS_MIGRATION_RATE'] = df['FLOW'].div(df['ORIGIN_POPULATION_ACS'])
+    df = df.dropna(subset='GROSS_MIGRATION_RATE')
 
-        # 8. MERGE the ACS 2011-2015 population estimates to calculate cohort migration rates
-
+    assert not df.isna().any().any(), "NaN values present after calculating migration rates"
 
     return df
 
@@ -383,7 +420,7 @@ def get_gross_migration_ratios_by_age():
     df = calculate_flow_percentages(migration, census_population)
 
     con = sqlite3.connect(ACS_DB)
-    df.to_sql(name='acs_gross_migration_weights_2011_2015_age',
+    df.to_sql(name='acs_gross_migration_ratios_2011_2015_age',
               con=con,
               if_exists='replace',
               index=False)

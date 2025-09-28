@@ -68,17 +68,6 @@ def make_fips_changes(df):
     return df
 
 
-def get_euclidean_distance():
-    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, Dij \
-             FROM county_to_county_distance_2020'
-    con = sqlite3.connect(ANALYSIS_DB)
-    df = pd.read_sql_query(sql=query, con=con)
-    con.close()
-
-    assert not df.isnull().any().any()
-
-    return df
-
 def get_census_2020_county_population_by_race_():
     csv_name = 'DECENNIALPL2020.P1-Data.csv'
     csv = os.path.join(CENSUS_CSV_PATH, csv_name)
@@ -152,6 +141,7 @@ def get_acs_2011_2015_migration():
 
     return df
 
+
 def get_gross_migration_ratios_by_race():
     origin_race = get_census_2020_county_population_by_race_()
     migration = get_acs_2011_2015_migration()
@@ -169,16 +159,14 @@ def get_gross_migration_ratios_by_race():
     df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'RACE', 'TOTAL_FLOW', 'RACE_MIGRATION_FRACTION']]
 
     df = make_fips_changes(df)
-    valid_fips = get_euclidean_distance()
-    df = df.loc[df.ORIGIN_FIPS.isin(valid_fips.ORIGIN_FIPS)]
-    df = df.loc[df.DESTINATION_FIPS.isin(valid_fips.ORIGIN_FIPS)]
 
     con = sqlite3.connect(ACS_DB)
-    df.to_sql(name='acs_gross_migration_weights_2011_2015_race',
+    df.to_sql(name='acs_gross_migration_ratios_2011_2015_race',
               con=con,
               if_exists='replace',
               index=False)
     con.close()
+
 
 def main():
     get_gross_migration_ratios_by_race()
