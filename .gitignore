@@ -182,3 +182,4 @@ cython_debug/
 *.mxd
 *.docx
 *.sqlite-journal
+/population/inputs/raw_files/Census/2000
