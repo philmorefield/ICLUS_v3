@@ -173,7 +173,8 @@ def get_acs_2011_2015_migration():
 
     # make FIPS changes and cosolidate origin population
     df_p = df[['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'ORIGIN_POPULATION_M']]
-    df_p = df_p.rename(columns={'MIGRATION_AGE_GROUP': 'POPULATION_AGE_GROUP'})
+    df_p = df_p.rename(columns={'ORIGIN_FIPS': 'COFIPS',
+                                'MIGRATION_AGE_GROUP': 'POPULATION_AGE_GROUP'})
     df_p = make_fips_changes(df_p)
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'DESTINATION_FIPS'])
