@@ -117,12 +117,12 @@ def get_acs_2011_2015_population_by_age():
                      skiprows=[1],
                      encoding='latin-1')
 
-    cols = ['COFIPS', '0_TO_4', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
+    cols = ['ORIGIN_FIPS', '0_TO_4', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
             '25_TO_34', '35_TO_44', '45_TO_54', '55_TO_59', '60_TO_64',
             '65_TO_74', '75_TO_84', '85_AND_OVER']
     df.columns = cols
-    df['COFIPS'] = df['COFIPS'].str[-5:]
-    df = df.melt(id_vars='COFIPS', var_name='POPULATION_AGE_GROUP', value_name='ORIGIN_POPULATION_P')
+    df['ORIGIN_FIPS'] = df['ORIGIN_FIPS'].str[-5:]
+    df = df.melt(id_vars='ORIGIN_FIPS', var_name='POPULATION_AGE_GROUP', value_name='ORIGIN_POPULATION_P')
 
     df = make_fips_changes(df)
 
@@ -172,12 +172,22 @@ def get_acs_2011_2015_migration():
     df_m = make_fips_changes(df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'MIGRATION_AGE_GROUP', 'FLOW']])
 
     # make FIPS changes and cosolidate origin population
-    df_p = df[['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'ORIGIN_POPULATION_M']]
+    df_p = df[['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'ORIGIN_POPULATION_M']].drop_duplicates()
     df_p = df_p.rename(columns={'ORIGIN_FIPS': 'COFIPS',
                                 'MIGRATION_AGE_GROUP': 'POPULATION_AGE_GROUP'})
     df_p = make_fips_changes(df_p)
 
-    df = df.sort_values(by=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP', 'DESTINATION_FIPS'])
+    # join the origin population from the migration file back to the migration
+    # dataframe
+    df = df_m.merge(right=df_p,
+                    how='left',
+                    left_on=['ORIGIN_FIPS', 'MIGRATION_AGE_GROUP'],
+                    right_on=['COFIPS', 'POPULATION_AGE_GROUP'])
+
+    df = df.rename(columns={'ORIGIN_POPULATION_M': 'ORIGIN_POPULATION',
+                            'MIGRATION_AGE_GROUP': 'AGE_GROUP'})
+    df = df.drop(columns=['COFIPS', 'POPULATION_AGE_GROUP'])
+    df = df.sort_values(by=['ORIGIN_FIPS', 'AGE_GROUP', 'DESTINATION_FIPS'])
 
     assert not df.isna().any().any(), "NaN values present after cleaning"
 
@@ -241,14 +251,11 @@ def calculate_flow_percentages(migration, population):
     '''
 
     # 1. Calculate the 15_TO_17 population in each county
-    subset_migration = migration.loc[migration.MIGRATION_AGE_GROUP == '18_TO_19']
+    subset_migration = migration.loc[migration.AGE_GROUP == '18_TO_19']
     subset_population = population.loc[population.POPULATION_AGE_GROUP == '15_TO_19']
     df_15_17 = subset_migration.merge(right=subset_population,
-                                      left_on='ORIGIN_FIPS',
-                                      right_on='COFIPS',
+                                      on='ORIGIN_FIPS',
                                       how='left')
-
-
 
     # 2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_14", and "15_TO_17"
     df = disaggregate_5_to_17_age_group(df)
