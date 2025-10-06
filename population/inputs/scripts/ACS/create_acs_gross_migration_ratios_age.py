@@ -198,11 +198,9 @@ def calculate_5_to_17_migration_rate(df):
     '''
     Purpose: calculate the 5_TO_17 migration rate by county
     '''
-    df = df[['ORIGIN_FIPS', 'FLOW', 'ORIGIN_POPULATION']]
-    df = df.rename(columns={'ORIGIN_POPULATION': 'ORIGIN_POPULATION_5_TO_17'})
-    df = df.groupby(by='ORIGIN_FIPS', as_index=False).sum()
-    df['MIGRATION_RATE_5_TO_17'] = df['FLOW'].div(df['ORIGIN_POPULATION_5_TO_17'])
-    df = df.drop(columns=['FLOW', 'ORIGIN_POPULATION_5_TO_17'])
+    df = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'FLOW', 'ORIGIN_POPULATION']]
+    df['MIGRATION_RATE_5_TO_17'] = df['FLOW'].div(df['ORIGIN_POPULATION'])
+    df = df.drop(columns=['FLOW', 'ORIGIN_POPULATION'])
 
     return df
 
@@ -226,20 +224,29 @@ def calculate_flow_percentages(migration, population):
     # 1. Calculate the 15_TO_17 population in each county
     subset_migration = migration.loc[migration.AGE_GROUP == '18_TO_19']
     subset_population = population.loc[population.POPULATION_AGE_GROUP == '15_TO_19']
-    df_15_17 = subset_migration.merge(right=subset_population,
-                                      on='ORIGIN_FIPS',
-                                      how='left')
-    df_15_17.eval('POP_15_TO_17 = ORIGIN_POPULATION_P - ORIGIN_POPULATION', inplace=True)
+    df = subset_migration.merge(right=subset_population,
+                                on='ORIGIN_FIPS',
+                                how='left')
+    df.eval('POP_15_TO_17 = ORIGIN_POPULATION_P - ORIGIN_POPULATION', inplace=True)
 
     # one Texas county shows negative population for 15_TO_17, set to zero
-    assert len(df_15_17.loc[df_15_17.POP_15_TO_17 < 0]) == 1
-    df_15_17['POP_15_TO_17'] = df_15_17['POP_15_TO_17'].clip(lower=0)
+    assert len(df.loc[df.POP_15_TO_17 < 0]) == 1
+    df['POP_15_TO_17'] = df['POP_15_TO_17'].clip(lower=0)
 
-    df_15_17 = df_15_17.rename(columns={'POP_15_TO_17': '15_TO_17'})
-    df_15_17 = df_15_17.drop(columns=['POPULATION_AGE_GROUP', 'ORIGIN_POPULATION_P'])
+    df = df.rename(columns={'POP_15_TO_17': '15_TO_17'})
+    df = df.drop(columns=['POPULATION_AGE_GROUP', 'ORIGIN_POPULATION_P'])
 
+    df_18_19 = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP', 'FLOW', 'ORIGIN_POPULATION']]
+    df_15_17 = df[['ORIGIN_FIPS', 'DESTINATION_FIPS', '15_TO_17']]
+    df_15_17 = df_15_17.melt(id_vars=['ORIGIN_FIPS', 'DESTINATION_FIPS'], var_name='AGE_GROUP', value_name='ORIGIN_POPULATION')
     # Additional steps needed:
     # - calculate the 5_TO_17 migration rate by county; use this rate for the
+
+    df_15_17 = df_15_17.merge(right=migrate_5_to_17,
+                              on=['ORIGIN_FIPS', 'DESTINATION_FIPS'],
+                              how='left')
+    df_15_17['FLOW'] = df_15_17['MIGRATION_RATE_5_TO_17'] * df_15_17['ORIGIN_POPULATION']
+
     #   newly created 15_TO_17 age group
 
     # 5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
