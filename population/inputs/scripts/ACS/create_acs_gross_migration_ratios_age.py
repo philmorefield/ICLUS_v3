@@ -194,46 +194,15 @@ def get_acs_2011_2015_migration():
     return df
 
 
-def disaggregate_5_to_17_age_group(df_orig):
+def calculate_5_to_17_migration_rate(df):
     '''
-    Disaggregate migration for 5_TO_17 age group into 5_TO_9, 10_TO_14, and
-    15_TO_17. I use the population of each age group in origin counties to
-    disaggregate the migration flows.
+    Purpose: calculate the 5_TO_17 migration rate by county
     '''
-    df = df_orig.copy()
-
-    # Select only the 5_TO_17 age group
-    df = df.query('MIGRATION_AGE_GROUP == "5_TO_17"')
-
-    # Calculate total population in the 5_TO_17 age group by origin county
-    df['TOTAL_POPULATION_5_17'] = df.groupby(by='COFIPS')['ORIGIN_POPULATION_CENSUS'].transform('sum')
-
-    # Calculate the fraction of the population in each age group within the 5_TO_17 category
-    df['FRACTION_5_17'] = df['ORIGIN_POPULATION_CENSUS'].div(df['TOTAL_POPULATION_5_17'])
-
-    # Calculate the within-flow weights for each origin-destination dyad
-    df['SUM_FRACTION_5_17'] = df.groupby(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'])['FRACTION_5_17'].transform('sum')
-    df['MIGRATION_FLOW_FRACTION'] = df['FRACTION_5_17'].div(df['SUM_FRACTION_5_17'])
-
-    # Assign migration flows for each disaggregated age group based on the calculated fractions
-    df['FLOW_DISAGGREGATED'] = df['MIGRATION_FLOW_FRACTION'].mul(df['FLOW'])
-    assert round(df['FLOW_DISAGGREGATED'].sum()) == round(df['FLOW'].sum() / 3.0), "Disaggregation error: Total flow mismatch"
-
-    df.loc[:, 'MIGRATION_AGE_GROUP'] = df.loc[:, 'ORIGIN_AGE_GROUP_CENSUS']
-    df['FLOW'] = df['FLOW'].astype(float)
-    df.loc[:, 'FLOW'] = df.loc[:, 'FLOW_DISAGGREGATED']
-
-    df = df.drop(columns=['FRACTION_5_17',
-                          'TOTAL_POPULATION_5_17',
-                          'FRACTION_5_17',
-                          'SUM_FRACTION_5_17',
-                          'MIGRATION_FLOW_FRACTION',
-                          'FLOW_DISAGGREGATED'])
-
-    df_orig = df_orig.loc[~df_orig.MIGRATION_AGE_GROUP.isin(['5_TO_17'])]
-    df = pd.concat([df_orig, df], ignore_index=True)
-
-    assert not df.isna().any().any(), "NaN values present after disaggregation"
+    df = df[['ORIGIN_FIPS', 'FLOW', 'ORIGIN_POPULATION']]
+    df = df.rename(columns={'ORIGIN_POPULATION': 'ORIGIN_POPULATION_5_TO_17'})
+    df = df.groupby(by='ORIGIN_FIPS', as_index=False).sum()
+    df['MIGRATION_RATE_5_TO_17'] = df['FLOW'].div(df['ORIGIN_POPULATION_5_TO_17'])
+    df = df.drop(columns=['FLOW', 'ORIGIN_POPULATION_5_TO_17'])
 
     return df
 
@@ -250,15 +219,28 @@ def calculate_flow_percentages(migration, population):
     3. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
     '''
 
+    # calculate the 5_TO_17 migration rate by county
+    migrate_5_to_17 = calculate_5_to_17_migration_rate(migration.query("AGE_GROUP == '5_TO_17'"))
+
+
     # 1. Calculate the 15_TO_17 population in each county
     subset_migration = migration.loc[migration.AGE_GROUP == '18_TO_19']
     subset_population = population.loc[population.POPULATION_AGE_GROUP == '15_TO_19']
     df_15_17 = subset_migration.merge(right=subset_population,
                                       on='ORIGIN_FIPS',
                                       how='left')
+    df_15_17.eval('POP_15_TO_17 = ORIGIN_POPULATION_P - ORIGIN_POPULATION', inplace=True)
 
-    # 2. Disaggretate the MIGRATION_AGE_GROUP "5_TO_17" into "5_TO_14", and "15_TO_17"
-    df = disaggregate_5_to_17_age_group(df)
+    # one Texas county shows negative population for 15_TO_17, set to zero
+    assert len(df_15_17.loc[df_15_17.POP_15_TO_17 < 0]) == 1
+    df_15_17['POP_15_TO_17'] = df_15_17['POP_15_TO_17'].clip(lower=0)
+
+    df_15_17 = df_15_17.rename(columns={'POP_15_TO_17': '15_TO_17'})
+    df_15_17 = df_15_17.drop(columns=['POPULATION_AGE_GROUP', 'ORIGIN_POPULATION_P'])
+
+    # Additional steps needed:
+    # - calculate the 5_TO_17 migration rate by county; use this rate for the
+    #   newly created 15_TO_17 age group
 
     # 5. Rename the MIGRATION_AGE_GROUP "1_TO_4" to "0_TO_4"
     df.loc[df.MIGRATION_AGE_GROUP == '1_TO_4', 'MIGRATION_AGE_GROUP'] = '0_TO_4'

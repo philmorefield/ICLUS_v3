@@ -1,0 +1,310 @@
+{
+    "workbench.colorTheme": "Visual Studio Light",
+    "editor.semanticTokenColorCustomizations": {
+        "enabled": true,
+        "rules": {
+            "intrinsic": "#407090"
+        }
+    },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": [
+                    "entity.name.type.class.python"
+                ],
+                "settings": {
+                    "foreground": "#0000ff",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "storage.type.function.python"
+                ],
+                "settings": {
+                    "foreground": "#00007f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "entity.name.function.python"
+                ],
+                "settings": {
+                    "foreground": "#007f7f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "storage.type.class.python"
+                ],
+                "settings": {
+                    "foreground": "#00007f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "keyword.control"
+                ],
+                "settings": {
+                    "foreground": "#00007f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "keyword.operator.comparison"
+                ],
+                "settings": {
+                    "foreground": "#000000",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "keyword.operator.assignment"
+                ],
+                "settings": {
+                    "foreground": "#000000",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "keyword.operator.logical.python"
+                ],
+                "settings": {
+                    "foreground": "#00007f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "constant.numeric.dec.python"
+                ],
+                "settings": {
+                    "foreground": "#007f7f",
+                }
+            },
+            {
+                "scope": [
+                    "constant.language.python"
+                ],
+                "settings": {
+                    "foreground": "#00007f",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": [
+                    "support.variable.magic.python"
+                ],
+                "settings": {
+                    "foreground": "#407090",
+                    "fontStyle": ""
+                }
+            },
+            {
+                "scope": [
+                    "string.quoted.docstring.multi.python"
+                ],
+                "settings": {
+                    "foreground": "#7f0000",
+                    "fontStyle": ""
+                }
+            },
+            {
+                "scope": [
+                    "storage.type.string.python"
+                ],
+                "settings": {
+                    "foreground": "#7f0000",
+                    "fontStyle": "bold"
+                }
+            },
+        ]
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.foreground": "#26db26",
+        "activityBar.inactiveForeground": "#c7c3c3",
+        "activityBar.activeBorder": "#26db26",
+        "breadcrumb.background": "#808080",
+        "breadcrumb.foreground": "#ececec",
+        "breadcrumb.activeSelectionForeground": "#000000",
+        "breadcrumb.focusForeground": "#26db26",
+        "tab.activeBackground": "#fdfcf9",
+        "tab.inactiveBackground": "#e4e3e0",
+        "tab.border": "#000000",
+        "tab.activeBorderTop": "#000000",
+        "titleBar.border": "#000000",
+        "editor.lineHighlightBackground": "#7171dd50",
+        "editor.foreground": "#000000",
+        "editor.background": "#ebf7df",
+        "editorRuler.foreground": "#ffd1d1",
+        "editor.selectionBackground": "#ffff77",
+        "editor.inactiveSelectionBackground": "#ffff77",
+        "editor.selectionHighlightBackground": "#efc8b0",
+        "editor.stackFrameHighlightBackground": "#ffa3a375",
+        "editorGroupHeader.tabsBackground": "#e4e3e0",
+        "minimap.background": "#ccd8c0",
+        "editorLineNumber.foreground": "#000000",
+        "editorGutter.background": "#ccd8c0",
+        "list.hoverBackground": "#7171dd50",
+        "list.hoverForeground": "#000000",
+        "list.activeSelectionBackground": "#7171dd50",
+        "list.activeSelectionForeground": "#000000",
+        "list.focusOutline": "#7171dd50",
+        "focusBorder": "#26db26",
+        "sideBar.background": "#ebf7df",
+        "sideBar.border": "#808080",
+        "sideBarSectionHeader.border": "#c7c3c3",
+        "sideBarSectionHeader.background": "#c7c3c3",
+        "statusBar.noFolderBorder": "#808080",
+        "statusBar.noFolderBackground": "#808080",
+        "statusBar.border": "#808080",
+        "button.foreground": "#000000",
+        "button.background": "#c7c3c3",
+    },
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter.notebook.ipynb",
+        "*.sqlite": "default"
+    },
+    "editor.autoClosingBrackets": "never",
+    "editor.autoClosingOvertype": "never",
+    "editor.autoClosingQuotes": "never",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.fontWeight": "500",
+    "editor.renderWhitespace": "none",
+    "editor.rulers": [
+        79
+    ],
+    "editor.scrollBeyondLastLine": false,
+    "kite.showWelcomeNotificationOnStartup": false,
+    "python.languageServer": "Pylance",
+    "workbench.iconTheme": null,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "C:\\Users\\Phil\\OneDrive\\Dissertation\\analysis\\part_3_a\\inputs\\part_3_a_inputs.sqlite",
+            "name": "part_3_a_inputs"
+        }
+    ],
+    "sqltools.useNodeRuntime": true,
+    "terminal.integrated.cursorBlinking": true,
+    "terminal.integrated.cursorStyle": "line",
+    "terminal.integrated.experimentalUseTitleEvent": true,
+    "terminal.integrated.letterSpacing": 1,
+    "terminal.integrated.lineHeight": 1.2,
+    "pythonIndent.keepHangingBracketOnLine": true,
+    "pythonIndent.trimLinesWithOnlyWhitespace": true,
+    "search.smartCase": true,
+    "sqlite.recordsPerPage": 100,
+    "editor.minimap.showSlider": "always",
+    "editor.minimap.maxColumn": 200,
+    "pythonIndent.useTabOnHangingIndent": true,
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.tabCompletion": "on",
+    "security.workspace.trust.untrustedFiles": "open",
+    "files.trimTrailingWhitespace": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "workbench.panel.defaultLocation": "right",
+    "debug.showBreakpointsInOverviewRuler": true,
+    "debug.terminal.clearBeforeReusing": true,
+    "workbench.editor.highlightModifiedTabs": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.indentation": false,
+    "editor.guides.highlightActiveIndentation": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnType": true
+    },
+    "workbench.startupEditor": "none",
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "python.formatting.provider": "none",
+    "sqliteViewer.maxFileSize": 0,
+    "notebook.dragAndDropEnabled": false,
+    "terminal.integrated.shellIntegration.suggestEnabled": true,
+    "python.terminal.focusAfterLaunch": true,
+    "launch": {
+        "configurations": [],
+        "compounds": []
+    },
+    "flake8.args": [
+        "--ignore=E501"
+    ],
+    "terminal.integrated.shellIntegration.history": 25,
+    "terminal.integrated.enablePersistentSessions": false,
+    "workbench.editorLargeFileConfirmation": 10240,
+    "sqltools.connectionExplorer.groupConnected": true,
+    "sqltools.csvExport.record_delimiter": "unicode",
+    "sqltools.disableNodeDetectNotifications": true,
+    "sqltools.tableTreeItemsExpanded": true,
+    "ruff.showNotifications": "always",
+    "editor.formatOnSave": true,
+    "isort.check": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true,
+    "pylint.args": [
+        "--disable=C0301",
+        "--disable=C0116",
+        "--disable=C0114"
+    ],
+    "chat.commandCenter.enabled": false,
+    "debug.showVariableTypes": true,
+    "accessibility.verbosity.debug": false,
+    "debug.hideSlowPreLaunchWarning": true,
+    "task.slowProviderWarning": false,
+    "pylint.lintOnChange": true,
+    "python.terminal.shellIntegration.enabled": true,
+    "editor.unusualLineTerminators": "auto",
+    "debug.hideLauncherWhileDebugging": true,
+    "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
+    "debug.toolBarLocation": "commandCenter",
+    "debug.gutterMiddleClickAction": "none",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "debug.focusEditorOnBreak": false,
+    "debug.showSubSessionsInToolBar": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "debug.disassemblyView.showSourceCode": false,
+    "debug.focusWindowOnBreak": false,
+    "debug.console.closeOnEnd": true,
+    "editor.renderControlCharacters": false,
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.alwaysShowEditorActions": true,
+    "workbench.editor.editorActionsLocation": "titleBar",
+    "workbench.editor.preferHistoryBasedLanguageDetection": true,
+    "github.copilot.nextEditSuggestions.enabled": false,
+    "python.analysis.autoImportCompletions": true,
+    "editor.minimap.enabled": false,
+    "terminal.integrated.enableImages": true,
+    "terminal.integrated.enableVisualBell": true,
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": ""
+    },
+    "terminal.integrated.hideOnLastClosed": false,
+    "terminal.integrated.shellIntegration.enabled": false,
+    "terminal.integrated.smoothScrolling": true,
+    "terminal.integrated.suggest.enabled": true,
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false,
+        "python": true
+    },
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "scm.diffDecorationsIgnoreTrimWhitespace": "true",
+    "scm.alwaysShowRepositories": true,
+    "debug.allowBreakpointsEverywhere": true,
+    "window.confirmSaveUntitledWorkspace": false,
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python.defaultInterpreterPath": "c:\\Users\\philm\\miniforge3"
+}
