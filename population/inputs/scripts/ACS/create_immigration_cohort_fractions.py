@@ -1,41 +1,20 @@
 import os
 import sqlite3
 
-from itertools import product
-
 import pandas as pd
 
-DATABASES = 'D:\\projects\\ICLUS_v3\\population\\inputs\\databases'
+DATABASES = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
 ACS_DB = os.path.join(DATABASES, 'acs.sqlite')
 MIGRATION_DB = os.path.join(DATABASES, 'migration.sqlite')
-
-ETHNICITIES = ('HISPANIC', 'NONHISPANIC')
-RACES = ('WHITE', 'BLACK', 'ASIAN', 'NHPI', 'AIAN', 'OTHER', 'TWO_OR_MORE')
-
-
-def retrieve_race_weights():
-    '''
-    For each of four races (WHITE, BLACK, ASIAN, OTHER), this calculates the
-    average annual (2011-2015) percentage of immigrants for each county.
-    '''
-    print("Processing race weights...")
-
-    con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_race_2006_2015'
-    df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
-    con.close()
-
-    return df
 
 
 def retrieve_sex_weights():
     print("Processing sex weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_sex_2006_2015'
-    # df = pd.read_sql(sql=query, index_col=['DESTINATION_FIPS', 'SEX'], con=con)
+    query = 'SELECT * FROM acs_immigration_weights_sex_2011_2015'
     df = pd.read_sql(sql=query, con=con)
-    df = df.melt(id_vars=['DESTINATION_FIPS'], var_name='SEX', value_name='SEX_FRACTION')
+    df = df.melt(id_vars=['DESTINATION_FIPS'], var_name='SEX', value_name='VALUE')
     df = df.set_index(keys=['DESTINATION_FIPS', 'SEX'])
     con.close()
 
@@ -46,76 +25,55 @@ def retrieve_age_weights():
     print("Processing age weights...")
 
     con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_age_2006_2015'
-    df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
+    query = 'SELECT * FROM acs_immigration_weights_age_2011_2015'
+    df = pd.read_sql(sql=query, con=con)
     con.close()
 
-    return df
-
-
-def retrieve_hispanic_weights():
-    print("Processing hispanic weights...")
-
-    con = sqlite3.connect(ACS_DB)
-    query = 'SELECT * FROM acs_immigration_weights_hispanic_2006_2015'
-    df = pd.read_sql(sql=query, index_col='DESTINATION_FIPS', con=con)
-    con.close()
+    df = (df.melt(id_vars=['DESTINATION_FIPS'],
+                 var_name='AGE',
+                 value_name='VALUE')
+            .set_index(keys=['DESTINATION_FIPS', 'AGE']))
 
     return df
 
 
 def main():
-    cy_race = retrieve_race_weights()
-    cy_sex = retrieve_sex_weights()
-    cy_hispanic = retrieve_hispanic_weights()
-    cy_age = retrieve_age_weights()
+    sex = retrieve_sex_weights()
+    age = retrieve_age_weights()
 
-    df = None
-    for ethnicity, race in product(ETHNICITIES, RACES):
-        # TODO: Re-evaluate how to handle OTHER immigration
-        if race == 'OTHER':
-            continue
-        label = f'{ethnicity}_{race}'
+    df = sex.mul(other=age, axis='index').reset_index()
+    df['AGE'] = df.AGE.astype(int)
 
-        # multiply weights for RACE, HISPANIC, AGE, and SEX
-        if label == 'NONHISPANIC_WHITE':
-            weight3 = cy_hispanic['WHITE_NONHISPANIC']
-        else:
-            weight1 = cy_hispanic[ethnicity]
-            if race in ('WHITE', 'BLACK', 'ASIAN'):
-                weight2 = cy_race[race]
-            else:
-                weight2 = cy_race['OTHER']
-            weight3 = weight1.add(other=weight2, axis='index', fill_value=0)
-        temp = cy_age.add(other=weight3, axis='index').fillna(0)
+    # bin rows by age group
+    df['AGE_GROUP'] = '0-4'
+    df.loc[df.AGE >= 85, 'AGE_GROUP'] = '85+'
+    df.loc[df.AGE.between(80, 84), 'AGE_GROUP'] = '80-84'
+    df.loc[df.AGE.between(75, 79), 'AGE_GROUP'] = '75-79'
+    df.loc[df.AGE.between(70, 74), 'AGE_GROUP'] = '70-74'
+    df.loc[df.AGE.between(65, 69), 'AGE_GROUP'] = '65-69'
+    df.loc[df.AGE.between(60, 64), 'AGE_GROUP'] = '60-64'
+    df.loc[df.AGE.between(55, 59), 'AGE_GROUP'] = '55-59'
+    df.loc[df.AGE.between(50, 54), 'AGE_GROUP'] = '50-54'
+    df.loc[df.AGE.between(45, 49), 'AGE_GROUP'] = '45-49'
+    df.loc[df.AGE.between(40, 44), 'AGE_GROUP'] = '40-44'
+    df.loc[df.AGE.between(35, 39), 'AGE_GROUP'] = '35-39'
+    df.loc[df.AGE.between(30, 34), 'AGE_GROUP'] = '30-34'
+    df.loc[df.AGE.between(25, 29), 'AGE_GROUP'] = '25-29'
+    df.loc[df.AGE.between(20, 24), 'AGE_GROUP'] = '20-24'
+    df.loc[df.AGE.between(15, 19), 'AGE_GROUP'] = '15-19'
+    df.loc[df.AGE.between(10, 14), 'AGE_GROUP'] = '10-14'
+    df.loc[df.AGE.between(5, 9), 'AGE_GROUP'] = '5-9'
 
-        # convert the product of all weights into fractions
-        if label == 'NONHISPANIC_WHITE':
-            temp.update(other=temp.div(other=2000000))
-        else:
-            temp.update(other=temp.div(other=3000000))
-        if temp.sum().min() < 0.9:
-            print("Wait!")
+    df = df.drop(columns='AGE')
+    df = df.groupby(by=['DESTINATION_FIPS', 'AGE_GROUP', 'SEX'], as_index=False).sum()
+    df['AGE_SEX_SUM'] = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False)['VALUE'].transform('sum')
+    df['PERCENT_OF_AGE_SEX_COHORT'] = df['VALUE'] / df['AGE_SEX_SUM']
 
-        temp = pd.concat(objs=[temp, temp], keys=['MALE', 'FEMALE'], names=['SEX'])
-        temp = temp.reorder_levels(order=['DESTINATION_FIPS', 'SEX']).sort_index()
-        temp.update(other=temp.mul(other=cy_sex.squeeze(), axis='index'))
-
-        temp.reset_index(inplace=True)
-        temp['ETHNICITY_RACE'] = label
-
-        if df is None:
-            df = temp.copy()
-        else:
-            df = pd.concat(objs=[df, temp], ignore_index=True)
-
-        del temp
-
-    df.set_index(keys=['DESTINATION_FIPS', 'ETHNICITY_RACE', 'SEX'], inplace=True)
-    df.reset_index(inplace=True)
+    df = df.rename(columns={'DESTINATION_FIPS': 'GEOID'})
+    df = df[['GEOID', 'AGE_GROUP', 'SEX', 'PERCENT_OF_AGE_SEX_COHORT']]
 
     con = sqlite3.connect(ACS_DB)
-    df.to_sql(name='acs_immigration_cohort_fractions_2006_2015',
+    df.to_sql(name='acs_immigration_age_sex_fractions_2011_2015',
               con=con,
               if_exists='replace',
               index=False)

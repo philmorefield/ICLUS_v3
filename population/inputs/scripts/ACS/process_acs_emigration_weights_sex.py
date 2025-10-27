@@ -1,0 +1,67 @@
+import os
+import sqlite3
+
+import pandas as pd
+
+
+SEX_MAP = {1: 'MALE', 2: 'FEMALE'}
+
+
+def main():
+    xlsx_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\ACS\\2011_2015\\migration'
+    xlsx_file = 'county-to-county-by-sex-2011-2015-current-residence-sort.xlsx'
+
+    columns = ('D_STFIPS', 'D_COFIPS', 'O_STFIPS', 'O_COFIPS', 'SEX', 'D_STATE', 'D_COUNTY', 'D_POP',
+                'D_POP_MOE', 'D_NONMOVERS', 'D_NONMOVERS_MOE', 'D_MOVERS',
+                'D_MOVERS_MOE', 'D_MOVERS_SAME_CY', 'D_MOVERS_SAME_CY_MOE',
+                'D_MOVERS_FROM_DIFF_CY_SAME_ST',
+                'D_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'D_MOVERS_FROM_DIFF_ST',
+                'D_MOVERS_DIFF_ST_MOE', 'D_MOVERS_FROM_ABROAD',
+                'D_MOVERS_FROM_ABROAD_MOE', 'O_STATE', 'O_COUNTY', 'O_POP',
+                'O_POP_MOE', 'O_NONMOVERS', 'O_NOMMOVERS_MOE', 'O_MOVERS',
+                'O_MOVERS_MOE', 'O_MOVERS_SAME_CY', 'O_MOVERS_SAME_CY_MOE',
+                'O_MOVERS_FROM_DIFF_CY_SAME_ST',
+                'O_MOVERS_FROM_DIFF_CY_SAME_ST_MOE', 'O_MOVERS_FROM_DIFF_ST',
+                'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
+                'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
+
+
+    xlsx = pd.ExcelFile(os.path.join(xlsx_folder, xlsx_file))
+    df = pd.concat([xlsx.parse(sheet_name=name, header=None, names=columns, skiprows=4, skipfooter=8) for name in xlsx.sheet_names if name != 'Puerto Rico'])
+
+    df = df[~df.O_STFIPS.str.contains('XXX')]
+
+    foreign = ['EUR', 'ASI', 'SAM', 'ISL', 'NAM', 'CAM', 'CAR', 'AFR', 'OCE']
+    df = df.loc[df.D_STFIPS.isin(foreign), ['O_STFIPS', 'O_COFIPS', 'SEX', 'TOTAL_FLOW']]
+
+    df['O_STFIPS'] = df.O_STFIPS.astype(int).astype(str).str.zfill(2)
+    df['O_COFIPS'] = df.O_COFIPS.astype(int).astype(str).str.zfill(3)
+    df['ORIGIN_FIPS'] = df.O_STFIPS + df.O_COFIPS
+
+    df.SEX = df.SEX.replace(to_replace=SEX_MAP)
+    df = df[['ORIGIN_FIPS', 'SEX', 'TOTAL_FLOW']]
+
+    assert not df.isnull().any().any()
+
+    df = df.groupby(['ORIGIN_FIPS', 'SEX'], as_index=False).sum()
+    df['SEX_SUM'] = df.groupby('SEX')['TOTAL_FLOW'].transform('sum')
+    df['WEIGHT_x_10^6'] = (df['TOTAL_FLOW'] / df['SEX_SUM']) * 1000000
+    df = df.pivot_table(index='ORIGIN_FIPS',
+                        columns='SEX',
+                        values='WEIGHT_x_10^6',
+                        fill_value=0)
+    df.reset_index(inplace=True)
+    df.columns.name = None
+
+    p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
+    f = 'acs.sqlite'
+    con = sqlite3.connect(os.path.join(p, f))
+    df.to_sql(name='acs_emigration_weights_sex_2011_2015',
+              con=con,
+              if_exists='replace',
+              index=False)
+    con.close()
+
+
+if __name__ == '__main__':
+    main()

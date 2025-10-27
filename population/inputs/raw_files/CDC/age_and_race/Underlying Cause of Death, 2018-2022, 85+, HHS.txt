@@ -1,0 +1,204 @@
+"Notes"	"Single Race 6"	"Single Race 6 Code"	"Sex"	"Sex Code"	"HHS Region"	"HHS Region Code"	Deaths	Population	Crude Rate
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	105	2894	3628.2
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	224	11017	2033.2
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	193	5453	3539.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	778	14454	5382.6
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	629	10019	6278.1
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	2494	29074	8578.1
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	195	2410	8091.3
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	766	5818	13166.0
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	2342	27639	8473.5
+	"American Indian or Alaska Native"	"1002-5"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	1005	8070	12453.5
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	67	2021	3315.2
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	113	6051	1867.5
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	123	3589	3427.1
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	475	9596	4950.0
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	372	6041	6157.9
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	1492	17124	8712.9
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	119	1895	6279.7
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	448	3147	14235.8
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	1419	15850	8952.7
+	"American Indian or Alaska Native"	"1002-5"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	579	4728	12246.2
+	"Asian"	"A"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	1888	23579	8007.1
+	"Asian"	"A"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	9268	118994	7788.6
+	"Asian"	"A"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	4562	54484	8373.1
+	"Asian"	"A"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	4672	56474	8272.8
+	"Asian"	"A"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	5147	60886	8453.5
+	"Asian"	"A"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	4161	48136	8644.3
+	"Asian"	"A"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	783	8612	9092.0
+	"Asian"	"A"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	1143	11251	10159.1
+	"Asian"	"A"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	47571	524869	9063.4
+	"Asian"	"A"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	4273	45401	9411.7
+	"Asian"	"A"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	1423	16337	8710.3
+	"Asian"	"A"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	7065	78937	8950.2
+	"Asian"	"A"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	3259	35681	9133.7
+	"Asian"	"A"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	2943	35821	8215.9
+	"Asian"	"A"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	3340	37072	9009.5
+	"Asian"	"A"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	2794	31469	8878.6
+	"Asian"	"A"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	440	5185	8486.0
+	"Asian"	"A"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	610	5938	10272.8
+	"Asian"	"A"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	31647	301079	10511.2
+	"Asian"	"A"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	2406	22262	10807.7
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	4654	43793	10627.3
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	27351	263935	10362.8
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	35065	271283	12925.6
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	74941	571352	13116.4
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	35342	275089	12847.5
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	26613	199747	13323.4
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	5706	42182	13527.1
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	937	8159	11484.3
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	16191	135713	11930.3
+	"Black or African American"	"2054-5"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	1195	10096	11836.4
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	2489	20709	12018.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	13011	108624	11978.0
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	17615	112921	15599.4
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	36240	240878	15045.0
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	18483	124098	14893.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	13591	89939	15111.4
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	2862	18787	15233.9
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	694	4546	15266.2
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	9977	71136	14025.2
+	"Black or African American"	"2054-5"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	750	5658	13255.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	18	350	Unreliable
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	35	1524	2296.6
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	33	657	5022.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	100	1113	8984.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	52	571	9106.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	78	988	7894.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	22	293	7508.5
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	53	606	8745.9
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	886	13581	6523.8
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	114	1089	10468.3
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	Suppressed	281	Suppressed
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	15	613	Unreliable
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	16	170	Unreliable
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	58	941	6163.7
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	27	315	8571.4
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	62	643	9642.3
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	14	156	Unreliable
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	52	424	12264.2
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	593	9205	6442.2
+	"Native Hawaiian or Other Pacific Islander"	"NHOPI"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	85	851	9988.2
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	152373	1057293	14411.6
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	236121	1729118	13655.6
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	263828	1816533	14523.7
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	495632	3574040	13867.6
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	470117	3172584	14818.1
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	256305	1771403	14469.0
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	136225	950589	14330.6
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	83849	588144	14256.5
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	299570	2245270	13342.3
+	"White"	"2106-3"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	104389	710978	14682.5
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	93983	545532	17227.8
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	145635	908716	16026.5
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	166263	979074	16981.7
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	326823	2173744	15035.0
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	298928	1696049	17625.0
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	169455	1028648	16473.6
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	86896	510991	17005.4
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	58240	352712	16512.1
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	212212	1402348	15132.6
+	"White"	"2106-3"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	71934	430859	16695.5
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	227	5993	3787.8
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	356	18013	1976.4
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	326	13055	2497.1
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	761	26884	2830.7
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	729	19389	3759.9
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	822	19319	4254.9
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	307	5549	5532.5
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	189	4080	4632.4
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	3636	44635	8146.1
+	"More than one race"	"M"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	496	8337	5949.4
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	150	2956	5074.4
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	210	8754	2398.9
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	159	6817	2332.4
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	443	14353	3086.5
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	427	10458	4083.0
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	530	12917	4103.1
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	198	3491	5671.7
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	113	2776	4070.6
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	2349	30003	7829.2
+	"More than one race"	"M"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	336	4728	7106.6
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #2  NJ, NY"	"HHS2"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	0	Not Available	Not Available
+	"Not Available"	"999"	"Female"	"F"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #1  CT, ME, MA, NH, RI, VT"	"HHS1"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #2  NJ, NY"	"HHS2"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #3  DE, DC, MD, PA, VA, WV"	"HHS3"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #4  AL, FL, GA, KY, MS, NC, SC, TN"	"HHS4"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #5  IL, IN, MI, MN, OH, WI"	"HHS5"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #6  AR, LA, NM, OK, TX"	"HHS6"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #7  IA, KS, MO, NE"	"HHS7"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #8  CO, MT, ND, SD, UT, WY"	"HHS8"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #9  AZ, CA, HI, NV"	"HHS9"	0	Not Available	Not Available
+	"Not Available"	"999"	"Male"	"M"	"HHS Region #10  AK, ID, OR, WA"	"HHS10"	0	Not Available	Not Available
+"---"
+"Dataset: Underlying Cause of Death, 2018-2023, Single Race"
+"Query Parameters:"
+"Ten-Year Age Groups: 85+ years"
+"Year/Month: 2018; 2019; 2020; 2021; 2022"
+"Group By: Single Race 6; Sex; HHS Region"
+"Show Totals: Disabled"
+"Show Zero Values: True"
+"Show Suppressed: True"
+"Calculate Rates Per: 100,000"
+"Rate Options: Archive postcensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/ucd-expanded.html for more information."
+"---"
+"Query Date: Mar 27, 2025 7:21:20 PM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Mortality 2018-2023 on CDC WONDER Online Database, released in 2024. Data are from the Multiple Cause of Death Files,"
+"2018-2023, as compiled from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative"
+"Program. Accessed at http://wonder.cdc.gov/ucd-icd10-expanded.html on Mar 27, 2025 7:21:20 PM"
+"---"
+Messages:
+"1. Totals are not available for these results due to suppression constraints. More Information:"
+"http://wonder.cdc.gov/wonder/help/faq.html#Privacy."
+"---"
+Caveats:
+"1. Data are Suppressed when the data meet the criteria for confidentiality constraints. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Assurance of Confidentiality."
+"2. Death rates are flagged as Unreliable when the rate is calculated with a numerator of 20 or less. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Unreliable."
+"3. Deaths of persons with Age ""Not Stated"" are included in ""All"" counts and rates, but are not distributed among age groups,"
+"so are not included in age-specific counts, age-specific rates or in any age-adjusted rates. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Not Stated."
+"4. The population figures for years 2023 are single-race estimates of the July 1 resident population, from the Vintage 2023"
+"postcensal series released by the Census Bureau on June 27, 2024. The 2023 series is based on the Modified Blended Base produced"
+"by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The Modified Blended Base consists of the blend"
+"of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic Analysis Estimates, and 2020 Census data"
+"from the internal Census Edited File (CEF). The population figures for years 2022 are single-race estimates of the July 1"
+"resident population, from the Vintage 2022 postcensal series released by the Census Bureau on June 22, 2023. The 2022 series is"
+"based on the Modified Blended Base produced by the US Census Bureau in lieu of the April 1, 2020 decennial population count. The"
+"Modified Blended Base consists of the blend of Vintage 2020 postcensal population estimates for April 1, 2020, 2020 Demographic"
+"Analysis Estimates, and 2020 Census data from the internal Census Edited File (CEF). The population figures for years 2021 are"
+"single-race estimates of the July 1 resident population, based on the Blended Base produced by the US Census Bureau in lieu of"
+"the April 1, 2020 decennial population count, from the Vintage 2021 postcensal series released by the Census Bureau on June 30,"
+"2022. The population figures for year 2020 are single-race estimates of the July 1 resident population, from the Vintage 2020"
+"postcensal series based on April 2010 Census, released by the Census Bureau on July 27, 2021. The population figures for year"
+"2019 are single-race estimates of the July 1 resident population, from the Vintage 2019 postcensal series based on April 2010"
+"Census, released by the Census Bureau on June 25, 2020. The population figures for year 2018 are single-race estimates of the"
+"July 1 resident population, from the Vintage 2018 postcensal series based on April 2010 Census, released by the Census Bureau on"
+"June 20, 2019. #Population Data# <br/><b>Note:</b> Archive rates and populations figures for 2018 and later years are not yet"
+"available. The postcensal series for each year will become the archive populations, after the postcensal series are superseded"
+"by the intercensal July 1 population estimates from the Census Bureau for years before 2020."
+"5. Connecticut population estimates for 2022 and later years are reported for 9 planning regions as county equivalent areas,"
+"instead of the former 8 legacy counties in the Vintage 2022 postcensal series released by the Census Bureau on June 22, 2023,"
+"and in the Vintage 2023 postcensal series released by the Census Bureau on June 27, 2024. Populations estimates for the former"
+"counties are not available for 2022 and later years. More information:"
+"http://wonder.cdc.gov/wonder/help/ucd-expanded.html#Connecticut-2022."
+"6. After the creation of the final 2023 dataset, North Carolina updated the cause of death information for over 900 death"
+"certificates to include a cause of death code indicating drug overdose (ICD-10 underlying cause-of-death codes: X40-X44,"
+"X60-X64, X85, and Y10-Y14). Jurisdictions can continue to update death certificates after the closing of the mortality file. As"
+"a result, users should consider that the actual death count for drug overdose deaths for North Carolina in 2023 is over 4,400"
+"deaths, with a crude rate of approximately 41.0 per 100,000 population, and an age-adjusted rate of approximately 42.1 per"
+"100,000 population. These deaths will not be updated on the final mortality datasets."
