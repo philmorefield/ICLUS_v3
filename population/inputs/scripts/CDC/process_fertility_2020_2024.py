@@ -28,13 +28,12 @@ import pandas as pd
 na_values = ['Suppressed', 'Not Applicable', 'None', 'Missing', 'Not Available']
 
 
-if os.path.exists('D:\\OneDrive\\ICLUS_v3'):
-    ICLUS_FOLDER = 'D:\\OneDrive\\ICLUS_v3'
-else:
-    ICLUS_FOLDER = 'D:\\projects\\ICLUS_v3'
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
 
-CSV_FILES = os.path.join(ICLUS_FOLDER, 'population\\inputs\\raw_files\\CDC\\age')
-DATABASE_FOLDER = os.path.join(ICLUS_FOLDER, 'population\\inputs\\databases')
+CSV_FILES = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\CDC\\age')
+DATABASE_FOLDER = os.path.join(BASE_FOLDER, 'inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
 
 
@@ -74,23 +73,20 @@ def apply_county_level_fertility(df):
     df = df.merge(right=fert_uc, how='left', on=['STFIPS', 'AGE_GROUP'])
     df.loc[df.FERTILITY.isnull(), 'FERTILITY'] = df['FERT_UC']
     df = df.drop(columns=['FERT_UC', 'STFIPS'])
+    df = df.loc[~df.COFIPS.str.endswith('999')]
 
     # At this point in time, some data sources report county level data for
     # CT and others report by "Planning Region". For consistency I will treat
     # CT as a single county equivalent.
     fert_ct = fert.loc[fert.COFIPS.str.startswith('09'), ['AGE_GROUP', 'BIRTHS', 'FEMALE_POPULATION']]
     fert_ct = fert_ct.groupby(by=['AGE_GROUP'], as_index=False).sum()
-    fert_ct['FERTILITY_CT'] = fert_ct['BIRTHS'] / fert_ct['FEMALE_POPULATION'] * 1000
+    fert_ct['FERTILITY'] = fert_ct['BIRTHS'] / fert_ct['FEMALE_POPULATION'] * 1000
     fert_ct['COFIPS'] = '09999'
+    fert_ct = fert_ct[['COFIPS', 'AGE_GROUP', 'FERTILITY']]
 
-    df = df.merge(right=fert_ct[['COFIPS', 'AGE_GROUP', 'FERTILITY_CT']],
-                  how='left',
-                  on=['COFIPS', 'AGE_GROUP'])
+    df = pd.concat(objs=[df, fert_ct], ignore_index=True, axis=0)
 
-    df.loc[df.FERTILITY.isnull() & (df.COFIPS.str.startswith('09')), 'FERTILITY'] = df['FERTILITY_CT']
-    df = df.drop(columns='FERTILITY_CT')
-
-    return df
+    return df.sort_values(by=['COFIPS', 'AGE_GROUP'])
 
 
 
