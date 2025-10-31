@@ -1,0 +1,171 @@
+import os
+import sqlite3
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+import seaborn as sns
+
+
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
+
+
+BASE_YEAR = 2020
+FUTURE_YEAR = 2050
+
+
+sort_dict = {'0-4': 1,
+             '5-9': 2,
+             '10-14': 3,
+             '15-19': 4,
+             '20-24': 5,
+             '25-29': 6,
+             '30-34': 7,
+             '35-39': 8,
+             '40-44': 9,
+             '45-49': 10,
+             '50-54': 11,
+             '55-59': 12,
+             '60-64': 13,
+             '65-69': 14,
+             '70-74': 15,
+             '75-79': 16,
+             '80-84': 17,
+             '85+': 18}
+
+
+# def make_movie():
+#     f = matplotlib.figure.Figure(figsize=[x/dpi for x in video_dim], dpi=dpi)
+#     canvas = FigureCanvas(f)
+#     for idx in range(0, men.shape[1]):  # len(wt)):
+#         f.clf()
+#         f = make_plot(f, t_idx=idx, group_size=group_size)
+#         f.savefig('movie%.4d.png' % idx)
+
+
+def get_p1v0_projection():
+    p = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population\\outputs'
+    f = 'phase1_v0_CBO_20251028173818.sqlite'
+
+    con = sqlite3.connect(os.path.join(p, f))
+
+    query = f'SELECT AGE_GROUP, SEX, {FUTURE_YEAR} AS "Population" \
+              FROM population_by_age_sex_CBO'
+    df = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    df = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False).sum()
+    df.rename(columns={'AGE_GROUP': 'Age group',
+                       'SEX': 'Sex'},
+              inplace=True)
+
+    df.loc[df.Sex == 'MALE', 'Population'] *= -1
+    df['SORT_INDEX'] = df['Age group'].map(sort_dict)
+    df.sort_values(by=['SORT_INDEX', 'Sex'], ascending=False, inplace=True)
+
+    return df
+
+
+def main():
+
+    df = get_p1v0_projection()
+    plot_seaborn(df)
+
+
+def get_Census_estimate():
+    p = os.path.join(BASE_FOLDER, 'inputs', 'databases')
+    f = 'population.sqlite'
+    t = 'county_population_ageracegender_2010_to_2020'
+    con = sqlite3.connect(os.path.join(p, f))
+
+    query = f'SELECT SEX, AGE_GROUP, POPULATION FROM {t} \
+              WHERE YEAR == {BASE_YEAR}'
+    df = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    df = df.groupby(by=['AGE_GROUP', 'SEX'], as_index=False).sum()
+    df.rename(columns={'POPULATION': 'Population',
+                       'AGE_GROUP': 'Age group',
+                       'SEX': 'Sex'},
+              inplace=True)
+
+    df.loc[df.Sex == 'MALE', 'Population'] *= -1
+    df.sort_values(by='Age group', ascending=False, inplace=True)
+
+    male = df.loc[df.Sex == 'MALE', 'Population'].values
+    female = df.loc[df.Sex == 'FEMALE', 'Population'].values
+
+    return male, female
+
+
+def plot_seaborn(df):
+    # draw the population pyramid
+    g = sns.barplot(data=df,
+                    x='Population',
+                    y='Age group',
+                    hue='Sex',
+                    orient='horizontal',
+                    dodge=False)
+
+    for p in g.patches:
+        p.set_height(1.0)
+        p.set_linewidth(0.25)
+        p.set_edgecolor('white')
+
+    g.tick_params(left=False)
+
+    male_min = df.loc[df.Sex == 'MALE', 'Population'].min()
+    female_max = df.loc[df.Sex == 'FEMALE', 'Population'].max()
+    abs_max = max(abs(male_min), female_max)
+    g.set_xlim(-abs_max * 1.2, abs_max * 1.2)
+
+    g.set_xlabel('Population')
+
+    plt.gcf().set_figheight(6.0)
+    plt.gcf().set_figwidth(8.0)
+    g.get_legend().remove()
+
+    plt.figtext(x=0.25, y=0.93, s='Male', fontsize='large')
+    plt.figtext(x=0.75, y=0.93, s='Female', fontsize='large')
+
+    plt.tight_layout()
+    sns.despine(fig=plt.gcf(), top=True, left=True, right=True)
+
+    labels = g.get_xticklabels()
+    for label in labels:
+        old_text = label.get_text()
+        label.set_text(old_text.replace("\N{MINUS SIGN}", ''))
+    g.set_xticklabels(labels)
+
+    # draw the Census 2020 estimate
+    Census_male, Census_female = get_Census_estimate()
+
+    Census_vert = []
+    Census_horiz = []
+
+    for i in range(Census_male.shape[0] - 1, -1, -1):
+        Census_vert.append(i + 0.6)
+        Census_vert.append(i - 0.4)
+        Census_horiz.append(Census_male[i])
+        Census_horiz.append(Census_male[i])
+
+    for i in range(0, Census_male.shape[0]):
+        Census_vert.append(i - 0.4)
+        Census_vert.append(i + 0.6)
+        Census_horiz.append(Census_female[i])
+        Census_horiz.append(Census_female[i])
+
+    plt.gca().plot(Census_horiz, Census_vert, 'black')
+
+    plt.gca().set_ylim(17.5, -0.5)
+    plt.subplots_adjust(top=0.925)
+    plt.show()
+    plt.close()
+
+    return
+
+
+if __name__ == '__main__':
+    main()
