@@ -17,11 +17,11 @@ if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
 
 d = datetime.now()
-TIME_STAMP = f'{d.year}{d.month}{d.day}{d.hour}{d.minute}{d.second}'
+
 
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
-OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs')
-OUTPUT_DATABASE = os.path.join(OUTPUT_FOLDER, f'phase1_v0_CBO_{TIME_STAMP}.sqlite')
+OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs', 'CBO')
+OUTPUT_DATABASE = os.path.join(OUTPUT_FOLDER, 'phase1_v0.sqlite')
 POP_DB = os.path.join(INPUT_FOLDER, 'databases', 'population.sqlite')
 MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
 CDC_DB = os.path.join(INPUT_FOLDER, 'databases', 'cdc.sqlite')

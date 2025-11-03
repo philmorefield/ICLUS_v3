@@ -1,10 +1,9 @@
 import os
 
-from matplotlib.artist import get
+from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from matplotlib import pyplot as plt
 
 sns.set_theme(style='whitegrid')
 
@@ -16,35 +15,10 @@ CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
 WITTGENSTEIN_PATH = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'Wittgenstein', 'v3')
 
+YEAR_MIN = 2010
+YEAR_MAX = 2050
+
 POP2023 = 336806231  # from Census 2023 estimate
-
-
-def get_census_2017_projections():
-    data_dir = os.path.join(CENSUS_CSV_PATH, '2017\\projections\\total_population')
-    df = None
-    for scenario in ('0', 'high', 'low', 'mid'):
-        fp = os.path.join(data_dir, f'np2017_d1_{scenario}.csv')
-        result = (pd.read_csv(filepath_or_buffer=fp, usecols=['SEX', 'ORIGIN', 'RACE', 'YEAR', 'TOTAL_POP'])
-                  .query('SEX == 0 & RACE == 0 & ORIGIN == 0')
-                  .drop(columns=['SEX', 'ORIGIN', 'RACE'])
-                  .rename(columns={'TOTAL_POP': f'np2017_d1_{scenario}'})
-                  .set_index(keys='YEAR'))
-        if df is None:
-            df = result.copy()
-        else:
-            df = df.join(other=result)
-
-    df = df.melt(var_name='Scenario', value_name='Total Population', ignore_index=False)
-    df['Total Population'] = (df['Total Population'] / 1000000.0).round().astype(int)
-    df['Data Source'] = 'U.S. Census (2017)'
-    df['Scenario'] = df['Scenario'].map(arg={'np2017_d1_0': 'Zero immigration (Census)',
-                                             'np2017_d1_low': 'Low immigration (Census)',
-                                             'np2017_d1_mid': 'Medium immigration (Census)',
-                                             'np2017_d1_high': 'High immigration (Census)'})
-    df.reset_index(inplace=True)
-    df.rename(columns={'YEAR': 'Year'}, inplace=True)
-
-    return df
 
 
 def get_census_2023_projections():
@@ -66,7 +40,7 @@ def get_census_2023_projections():
     df = df.div(df.loc[[2023]].values, axis='columns').mul(POP2023)
 
     df = df.melt(var_name='Scenario', value_name='Total Population', ignore_index=False)
-    df['Total Population'] = (df['Total Population'] / 1000000.0)
+    df['Total Population'] = df['Total Population'] / 1000000.0
     df['Data Source'] = 'U.S. Census (2023)'
     df['Scenario'] = df['Scenario'].map(arg={'np2023_d1_zero': 'Zero immigration (Census)',
                                              'np2023_d1_low': 'Low immigration (Census)',
@@ -74,8 +48,6 @@ def get_census_2023_projections():
                                              'np2023_d1_hi': 'High immigration (Census)'})
     df.reset_index(inplace=True)
     df.rename(columns={'YEAR': 'Year'}, inplace=True)
-
-
 
     return df
 
@@ -128,11 +100,10 @@ def get_historical_population_to_2020():
     return df
 
 
-
 def get_historical_population_to_2024():
     data_dir = os.path.join(CENSUS_CSV_PATH, '2024')
     usecols = ['SUMLEV'] + [f'POPESTIMATE{year}' for year in range(2020, 2024)]
-    fp = os.path.join(data_dir, 'co-est2024-alldata.csv')
+    fp = os.path.join(data_dir, 'intercensal\\co-est2024-alldata.csv')
     df = pd.read_csv(filepath_or_buffer=fp, usecols=usecols, encoding='latin1').query('SUMLEV == 40')
     df.drop(columns='SUMLEV', inplace=True)
     df = df.sum(axis=0).reset_index()
@@ -144,10 +115,11 @@ def get_historical_population_to_2024():
 
     return df
 
+
 def get_cbo_projections():
-    folder = "D:\\OneDrive\\Data\\population_projections\\raw_files\\CBO\\CSV files"
-    filename = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
-    df = pd.read_csv(os.path.join(folder, filename))
+    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
+    csv_fn = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
+    df = pd.read_csv(os.path.join(csv_folder, csv_fn))
     df.columns = ['Year', 'Age', 'Sex', 'Total Population']
     df = df[['Year', 'Total Population']].groupby(by='Year').sum().reset_index()
     df['Total Population'] = (df['Total Population'] / 1000000.0).round().astype(int)
@@ -162,9 +134,9 @@ def get_cbo_projections():
 
 def main():
     obs = get_historical_population()
-    census_projections = get_census_2023_projections().query('Year >= 2023 & Year <= 2050')
-    witt_v3 = get_wittgenstein_v3_projections().query('Year >= 2023 & Year <= 2050')
-    cbo = get_cbo_projections().query('Year >= 2023 & Year <= 2050')
+    census_projections = get_census_2023_projections().query('Year >= 2023 & Year <= 2100')
+    witt_v3 = get_wittgenstein_v3_projections().query('Year >= 2023 & Year <= 2100')
+    cbo = get_cbo_projections().query('Year >= 2023 & Year <= 2100')
 
     # plot Census lines in blue and shaded area between high and low
     for scenario in census_projections['Scenario'].unique():
@@ -189,18 +161,7 @@ def main():
                      y2=line[1].get_ydata(),
                      color='blue', alpha=0.2)
 
-    # df = pd.concat(objs=[census_projections, witt_v3], ignore_index=True, verify_integrity=True)
-
-    # sns.lineplot(data=df,
-    #              x='Year',
-    #              y='Total Population',
-    #              hue='Data Source',
-    #              style='Scenario',
-    #              dashes=False,
-    #              markers=True)
-    #['1', '_', '|', 'x', '4', '+', '2'])
-
-    # plot Wittgenstein line in red and shaded area between high and low
+    # plot Wittgenstein line in green and shaded area between high and low
     for scenario in witt_v3['Scenario'].unique():
         df = witt_v3.query(f'Scenario == "{scenario}"')
         if scenario == 'SSP2':
@@ -212,7 +173,7 @@ def main():
         sns.lineplot(x='Year',
                     y='Total Population',
                     data=df,
-                    color='red',
+                    color='green',
                     label=label,
                     linewidth=linewidth,
                     ax=plt.gca())
@@ -221,15 +182,15 @@ def main():
     plt.fill_between(x=line[4].get_xdata(),
                      y1=line[8].get_ydata(),
                      y2=line[7].get_ydata(),
-                     color='red', alpha=0.2)
+                     color='green', alpha=0.2)
 
-    # plot CBO projection in green
+    # plot CBO projection in orange
     sns.lineplot(x='Year',
                  y='Total Population',
                  data=cbo,
-                 color='gold',
+                 color='orange',
                  linewidth=2,
-                 label='CBO (2024)',
+                 label='CBO (Sept 2025)',
                  ax=plt.gca())
 
     sns.lineplot(x='YEAR',
@@ -240,15 +201,13 @@ def main():
                 label='Historical',
                 ax=plt.gca())
 
-    plt.xlim(left=2010, right=2050)
+    plt.xlim(left=YEAR_MIN, right=YEAR_MAX)
     plt.gca().set_ylabel('U.S. Population (millions)')
     plt.gca().xaxis.grid(False)
-    # plt.gcf().set_size_inches((8, 5))
     plt.gca().get_legend().get_frame().set_alpha(1.0)
     # plt.tight_layout()
 
     plt.show()
-    ...
 
 
 if __name__ == '__main__':
