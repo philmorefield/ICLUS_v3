@@ -46,12 +46,12 @@ sort_dict = {'0-4': 1,
 
 
 def get_p1v0_projection():
-    p = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population\\outputs'
-    f = 'phase1_v0_CBO_20251028173818.sqlite'
+    p = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population\\outputs\\CBO'
+    f = 'phase1_v0.sqlite'
 
     con = sqlite3.connect(os.path.join(p, f))
 
-    query = f'SELECT AGE_GROUP, SEX, {FUTURE_YEAR} AS "Population" \
+    query = f'SELECT AGE_GROUP, SEX, "{FUTURE_YEAR}" AS "Population" \
               FROM population_by_age_sex_CBO'
     df = pd.read_sql(sql=query, con=con)
     con.close()

@@ -1,3 +1,4 @@
+import datetime
 import os
 import sqlite3
 
@@ -17,7 +18,7 @@ PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'CBO', 'phase1_v0.sqlite')
 SCENARIO = 'CBO'
 
 YEAR_MIN = 2015
-YEAR_MAX = 2050
+YEAR_MAX = 2100
 
 def main():
     fig = plt.figure(constrained_layout=True)
@@ -44,15 +45,16 @@ def main():
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2024', 'intercensal')
     csv_fn = 'co-est2024-alldata.csv'
     df = pd.read_csv(os.path.join(csv_folder, csv_fn), encoding='latin-1')
-    columns = ['SUMLEV', 'ESTIMATESBASE2020'] + [f'POPESTIMATE{year}' for year in range(2020, 2025)]
-    post2020pop = df[columns].rename(columns={'ESTIMATESBASE2020': 'POPESTIMATE2020'})
-    post2020pop = post2020pop.query('SUMLEV == 40').drop(columns='SUMLEV').sum().reset_index()
+    columns = ['SUMLEV', 'ESTIMATESBASE2020'] + [f'POPESTIMATE{year}' for year in range(2021, 2025)]
+    post2020pop = df[columns]
+    post2020pop = post2020pop.rename(columns={'ESTIMATESBASE2020': 'POPESTIMATE2020'})
+    post2020pop = post2020pop.loc[post2020pop.SUMLEV == 40]
+    post2020pop = post2020pop.drop(columns='SUMLEV').sum().reset_index()
     post2020pop.columns = ['YEAR', 'POPULATION']
     post2020pop['YEAR'] = post2020pop['YEAR'].str[-4:].astype(int)
     post2020pop['POPULATION'] = post2020pop['POPULATION'] / 1000000
 
     histpop = pd.concat([pre2020pop, post2020pop], ignore_index=True)
-
 
     # future population
     query = f'SELECT * FROM population_by_age_sex_{SCENARIO}'
@@ -76,8 +78,7 @@ def main():
     cbo = cbo[cbo['YEAR'] >= 2025]
     cbo['POPULATION'] = cbo['POPULATION'] / 1000000
 
-    sns.lineplot(x='YEAR', y='POPULATION', data=pre2020pop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
-    sns.lineplot(x='YEAR', y='POPULATION', data=post2020pop, linewidth=2, color='gray', legend=False, ax=ax_pop)
+    sns.lineplot(x='YEAR', y='POPULATION', data=histpop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
     sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='P1v0 projection')
     sns.lineplot(x='YEAR', y='POPULATION', data=cbo, linewidth=2, color='purple', legend=False, ax=ax_pop, label='CBO projection')
 
@@ -343,6 +344,10 @@ def main():
     plt.gca().set_xlim(xmin=YEAR_MIN, xmax=YEAR_MAX)
 
     # plt.tight_layout()
+    month = datetime.date.today().month
+    day = datetime.date.today().day
+    year = datetime.date.today().year
+    plt.figtext(x=0.85, y=0.95, s=f'Created: {month}/{day}/{year}', size=5)
     plt.show()
 
     return

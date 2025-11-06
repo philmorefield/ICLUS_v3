@@ -65,7 +65,7 @@ def set_launch_population():
     2024 launch population is taken from Census Intercensal Population
     Estimates.
     '''
-    census_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'census', '2024')
+    census_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'Census', '2024', 'intercensal')
     csv_name = 'cc-est2024-agesex-all.csv'
     df = pl.read_csv(source=os.path.join(census_input_folder, csv_name),
                      encoding='latin1').filter(pl.col('YEAR') == 6)
@@ -106,11 +106,11 @@ def set_launch_population():
 
     return df
 
-def main(scenario):
+def main(scenario, fert_adj_pct, mort_adj_pct):
     '''
     TODO: Add docstring
     '''
-    model = Projector(scenario=scenario)
+    model = Projector(scenario=scenario, fert_adj=fert_adj_pct, mort_adj=mort_adj_pct)
     model.run()
 
 
@@ -118,7 +118,7 @@ class Projector():
     '''
     TODO: Add docstring
     '''
-    def __init__(self, scenario):
+    def __init__(self, scenario, fert_adj, mort_adj):
 
         # time-related attributes
         self.launch_year = 2024
@@ -136,12 +136,14 @@ class Projector():
 
         # mortality-related attributes
         self.deaths = None
+        self.mort_adj = mort_adj
 
         # migration-related attributes
         self.net_migration = None
 
         # fertility-related attributes
         self.births = None
+        self.fert_adj = fert_adj
 
 
     def run(self, final_projection_year=2098):
@@ -290,7 +292,6 @@ class Projector():
         self.current_pop = self.current_pop.sort(['GEOID', 'SEX', 'AGE_GROUP'])
 
         # shift 20 percent of the population in each cohort
-
         self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') * 0.2)
                                            .shift(fill_value=0)
                                            .over('GEOID', 'SEX')
@@ -340,7 +341,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
+        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * (1.0 + (0.01 * self.mort_adj)) * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
         # calculate deaths
         df = df.with_columns((pl.col('MORT_PROJ') * pl.col('POPULATION')).alias('DEATHS'))
@@ -442,10 +443,10 @@ class Projector():
         # compute all county to county migration flows
         # join current population with migration rates ORIGIN_FIPS
         migr = rates.join(other=self.current_pop.clone(),
-                                         left_on=['ORIGIN_FIPS', 'AGE_GROUP', 'SEX'],
-                                         right_on=['GEOID', 'AGE_GROUP', 'SEX'],
-                                         how='left',
-                                         coalesce=True).rename({'POPULATION': 'ORIGIN_POPULATION'})
+                          left_on=['ORIGIN_FIPS', 'AGE_GROUP', 'SEX'],
+                          right_on=['GEOID', 'AGE_GROUP', 'SEX'],
+                          how='left',
+                          coalesce=True).rename({'POPULATION': 'ORIGIN_POPULATION'})
 
         assert sum(migr.null_count()).item() == 0
 
@@ -542,7 +543,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('FERTILITY') * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
+        df = df.with_columns(((pl.col('FERTILITY') * (1.0 + (0.01 * self.fert_adj)) * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
         df = (df.select(['GEOID', 'MALE', 'FEMALE'])
@@ -569,14 +570,16 @@ class Projector():
         assert births.shape[0] == 6256
         assert sum(births.null_count()).item() == 0
         births.write_database(table_name=f'births_by_age_sex_{self.scenario}',
-                      connection=uri,
-                      if_table_exists='replace',
-                      engine='adbc')
+                              connection=uri,
+                              if_table_exists='replace',
+                              engine='adbc')
 
         print(f"finished! ({total_births_this_year:,} births this year)")
 
 
 if __name__ == '__main__':
     print(time.ctime())
-    main(scenario='CBO')
+    main(scenario='CBO',
+         fert_adj_pct=-5.0,
+         mort_adj_pct=-15.0)
     print(time.ctime())
