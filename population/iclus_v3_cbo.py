@@ -26,7 +26,6 @@ POP_DB = os.path.join(INPUT_FOLDER, 'databases', 'population.sqlite')
 MIG_DB = os.path.join(INPUT_FOLDER, 'databases', 'migration.sqlite')
 CDC_DB = os.path.join(INPUT_FOLDER, 'databases', 'cdc.sqlite')
 CBO_DB = os.path.join(INPUT_FOLDER, 'databases', 'cbo.sqlite')
-# CENSUS_DB = os.path.join(INPUT_FOLDER, 'databases', 'census.sqlite')
 ACS_DB = os.path.join(INPUT_FOLDER, 'databases', 'acs.sqlite')
 
 SEXES = ('MALE', 'FEMALE')

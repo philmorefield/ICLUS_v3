@@ -20,7 +20,52 @@ SCENARIO = 'CBO'
 YEAR_MIN = 2015
 YEAR_MAX = 2100
 
+
+def get_cbo_population():
+    cols = ['AGE',
+            'TOTAL_POPULATION',
+            'BLANK1',
+            'TOTAL_MALE',
+            'TOTAL_MALE_SINGLE',
+            'TOTAL_MALE_MARRIED',
+            'TOTAL_MALE_WIDOWED',
+            'TOTAL_MALE_DIVORCED',
+            'BLANK2',
+            'TOTAL_FEMALE',
+            'TOTAL_FEMALE_SINGLE',
+            'TOTAL_FEMALE_MARRIED',
+            'TOTAL_FEMALE_WIDOWED',
+            'TOTAL_FEMALE_DIVORCED']
+
+    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections')
+    csv_fn = '57059-2025-09-Demographic-Projections.xlsx'
+    df = pd.read_excel(io=os.path.join(csv_folder, csv_fn),
+                       sheet_name='2. Pop by age, sex, marital',
+                       names=cols,
+                       skiprows=9,
+                       skipfooter=6).dropna(axis='columns', how='all').dropna()
+
+    df = df[['AGE', 'TOTAL_POPULATION', 'TOTAL_MALE', 'TOTAL_FEMALE']].dropna()
+    df = df.loc[df['AGE'] != 'Age']
+    df['TOTAL_POPULATION'] = df['TOTAL_POPULATION'].astype(int)
+    df['TOTAL_MALE'] = df['TOTAL_MALE'].astype(int)
+    df['TOTAL_FEMALE'] = df ['TOTAL_FEMALE'].astype(int)
+
+    n = 101
+    df_list = [df[i:i+n] for i in range(0, df.shape[0], n)]
+
+    for i in range(len(df_list)):
+        df_list[i]['YEAR'] = 2022 + i
+
+    df = pd.concat(df_list, ignore_index=True)
+
+    return df
+
+
 def main():
+
+    cbo = get_cbo_population()
+
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(3, 2)
 
@@ -69,18 +114,14 @@ def main():
     proj_pop['POPULATION'] = proj_pop['POPULATION'] / 1000000
 
     # CBO future population
-    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
-    csv_fn = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
-    cbo = pd.read_csv(os.path.join(csv_folder, csv_fn))
-    cbo.columns = ['YEAR', 'AGE', 'SEX', 'POPULATION']
-    cbo = cbo.drop(columns=['AGE', 'SEX'])
-    cbo = cbo.groupby(by='YEAR', as_index=False).sum()
-    cbo = cbo[cbo['YEAR'] >= 2025]
-    cbo['POPULATION'] = cbo['POPULATION'] / 1000000
+    cbo_pop = cbo.loc[cbo['YEAR'] >= 2025, ['TOTAL_POPULATION', 'YEAR']]
+    cbo_pop = cbo_pop.groupby(by='YEAR', as_index=False).sum()
+    cbo_pop = cbo_pop.rename(columns={'TOTAL_POPULATION': 'POPULATION'})
+    cbo_pop['POPULATION'] = cbo_pop['POPULATION'] / 1000000
 
     sns.lineplot(x='YEAR', y='POPULATION', data=histpop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
     sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='P1v0 projection')
-    sns.lineplot(x='YEAR', y='POPULATION', data=cbo, linewidth=2, color='purple', legend=False, ax=ax_pop, label='CBO projection')
+    sns.lineplot(x='YEAR', y='POPULATION', data=cbo_pop, linewidth=2, color='purple', legend=False, ax=ax_pop, label='CBO projection')
 
     plt.title('U.S. POPULATION')
     ax_pop.set_xticklabels([])
@@ -131,7 +172,7 @@ def main():
     proj_births['BIRTHS'] = proj_births['BIRTHS'] / 1000000
 
     # CBO future births
-    fert_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
+    fert_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections', 'CSV files')
     fert_csv_fn = 'fertilityRates_byYearAgePlace.csv'
     fert_df = pd.read_csv(os.path.join(fert_csv_folder, fert_csv_fn))
     fert_df.columns = ['YEAR', 'AGE', 'PLACE', 'FERTILITY_RATE_PER_K']
@@ -139,16 +180,14 @@ def main():
     fert_df = fert_df[fert_df['YEAR'] >= 2025].set_index(['YEAR', 'AGE'])
     fert_df = fert_df.rename(columns={'FERTILITY_RATE_PER_K': 'VALUE'})
 
-    pop_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
-    pop_csv_fn = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
-    pop_df = pd.read_csv(os.path.join(pop_csv_folder, pop_csv_fn))
-    pop_df.columns = ['YEAR', 'AGE', 'SEX', 'POPULATION']
-    pop_df.AGE = pop_df.AGE.str.replace('+', '').astype(int)
-    pop_df = pop_df.query('YEAR >= 2025 & AGE >= 14 & AGE <= 49 & SEX == "female"').drop(columns='SEX')
-    pop_df = pop_df.set_index(['YEAR', 'AGE'])
-    pop_df = pop_df.rename(columns={'POPULATION': 'VALUE'})
+    cbo_female = cbo.loc[cbo['YEAR'] >= 2025, ['AGE', 'TOTAL_FEMALE', 'YEAR']]
+    cbo_female = cbo_female.rename(columns={'TOTAL_FEMALE': 'VALUE'})
+    cbo_female['AGE'] = cbo_female['AGE'].astype(str).str.replace('100+', '100').astype(int)
+    cbo_female = cbo_female.query('YEAR >= 2025 & AGE >= 14 & AGE <= 49')
+    cbo_female = cbo_female.set_index(['YEAR', 'AGE'])
+    cbo_female = cbo_female.rename(columns={'POPULATION': 'VALUE'})
 
-    cbo_births = pop_df.mul(fert_df, axis=0).div(1000).reset_index().drop(columns='AGE')
+    cbo_births = cbo_female.mul(fert_df, axis=0).div(1000).reset_index().drop(columns='AGE')
     cbo_births = cbo_births.groupby(by='YEAR', as_index=False).sum()
     cbo_births = cbo_births.rename(columns={'VALUE': 'BIRTHS'})
     cbo_births['BIRTHS'] = cbo_births['BIRTHS'] / 1000000
@@ -262,7 +301,7 @@ def main():
     proj_deaths['DEATHS'] = proj_deaths['DEATHS'] / 1000000
 
     # CBO future deaths
-    mort_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
+    mort_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections', 'CSV files')
     mort_csv_fn = 'mortalityRates_byYearAgeSex.csv'
     mort_df = pd.read_csv(os.path.join(mort_csv_folder, mort_csv_fn))
     mort_df.columns = ['YEAR', 'AGE', 'SEX', 'MORTALITY_RATE_PER_K']
