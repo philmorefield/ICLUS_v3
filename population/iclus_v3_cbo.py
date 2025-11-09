@@ -579,6 +579,6 @@ class Projector():
 if __name__ == '__main__':
     print(time.ctime())
     main(scenario='CBO',
-         fert_adj_pct=-5.0,
-         mort_adj_pct=-15.0)
+         fert_adj_pct=0.0,
+         mort_adj_pct=0.0)
     print(time.ctime())

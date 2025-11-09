@@ -54,8 +54,8 @@ def get_cbo_population():
     n = 101
     df_list = [df[i:i+n] for i in range(0, df.shape[0], n)]
 
-    for i in range(len(df_list)):
-        df_list[i]['YEAR'] = 2022 + i
+    for i, df_item in enumerate(df_list):
+        df_item['YEAR'] = 2022 + i
 
     df = pd.concat(df_list, ignore_index=True)
 
@@ -114,7 +114,8 @@ def main():
     proj_pop['POPULATION'] = proj_pop['POPULATION'] / 1000000
 
     # CBO future population
-    cbo_pop = cbo.loc[cbo['YEAR'] >= 2025, ['TOTAL_POPULATION', 'YEAR']]
+    # cbo_pop = cbo.loc[cbo['YEAR'] >= 2025, ['TOTAL_POPULATION', 'YEAR']]
+    cbo_pop = cbo[['TOTAL_POPULATION', 'YEAR']]
     cbo_pop = cbo_pop.groupby(by='YEAR', as_index=False).sum()
     cbo_pop = cbo_pop.rename(columns={'TOTAL_POPULATION': 'POPULATION'})
     cbo_pop['POPULATION'] = cbo_pop['POPULATION'] / 1000000
@@ -308,16 +309,20 @@ def main():
     mort_df = mort_df[mort_df['YEAR'] >= 2025].set_index(['YEAR', 'AGE', 'SEX'])
     mort_df = mort_df.rename(columns={'MORTALITY_RATE_PER_K': 'VALUE'})
 
-    pop_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
-    pop_csv_fn = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
-    pop_df = pd.read_csv(os.path.join(pop_csv_folder, pop_csv_fn))
-    pop_df.columns = ['YEAR', 'AGE', 'SEX', 'POPULATION']
-    pop_df.AGE = pop_df.AGE.str.replace('+', '').astype(int)
-    pop_df = pop_df.query('YEAR >= 2025')
-    pop_df = pop_df.set_index(['YEAR', 'AGE', 'SEX'])
-    pop_df = pop_df.rename(columns={'POPULATION': 'VALUE'})
+    cbo_pop = cbo.copy()
+    cbo_pop['AGE'] = cbo_pop['AGE'].astype(str).str.replace('100+', '100').astype(int)
+    cbo_pop = cbo_pop.rename(columns={'TOTAL_FEMALE': 'female',
+                                      'TOTAL_MALE': 'male'})
+    cbo_pop = cbo_pop[['YEAR', 'AGE', 'female', 'male']]
+    cbo_pop = cbo_pop.melt(id_vars=['YEAR', 'AGE'],
+                           value_vars=['female', 'male'],
+                           value_name='VALUE',
+                           var_name='SEX')
 
-    cbo_deaths = pop_df.mul(mort_df, axis=0).div(1000).reset_index().drop(columns=['AGE', 'SEX'])
+    cbo_pop = cbo_pop.query('YEAR >= 2025')
+    cbo_pop = cbo_pop.set_index(['YEAR', 'AGE', 'SEX'])
+
+    cbo_deaths = cbo_pop.mul(mort_df, axis=0).div(1000).reset_index().drop(columns=['AGE', 'SEX'])
     cbo_deaths = cbo_deaths.groupby(by='YEAR', as_index=False).sum()
     cbo_deaths = cbo_deaths.rename(columns={'VALUE': 'DEATHS'})
     cbo_deaths['DEATHS'] = cbo_deaths['DEATHS'] / 1000000
