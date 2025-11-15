@@ -129,6 +129,8 @@ def main():
               index=False)
     con.close()
 
+    df.to_csv(path_or_buf=os.path.join(DATABASE_FOLDER, 'fertility_2020_2024_county.csv'), index=False)
+
     print("Finished!")
 
 

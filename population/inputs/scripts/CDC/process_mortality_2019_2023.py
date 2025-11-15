@@ -276,13 +276,16 @@ def main():
     df = make_fips_changes(df)
 
     df = df.sort_values(by=['AGE_GROUP', 'COFIPS'], key=lambda x: x.map(AGE_GROUP_SORT_MAP))
-
+    df = df.rename(columns={'MORTALITY': 'MORTALITY_RATE_100K',
+                            'COFIPS': 'GEOID'})
     con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
     df.to_sql(name='mortality_2019_2023_county',
               con=con,
               if_exists='replace',
               index=False)
     con.close()
+
+    df.to_csv(os.path.join(DATABASE_FOLDER, 'mortality_2019_2023_county.csv'), index=False)
 
     print("Finished!")
 
