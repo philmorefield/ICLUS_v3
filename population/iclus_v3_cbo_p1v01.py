@@ -421,9 +421,8 @@ class Projector():
         '''
         print("Calculating net immigration...", end='')
         # get the County level age-sex proportions
-        uri = f'sqlite:{ACS_DB}'
-        query = 'SELECT *  FROM acs_immigration_age_sex_fractions_2011_2015'
-        county_weights = pl.read_database_uri(query=query, uri=uri)
+        county_weights_csv = os.path.join(DATABASE_FOLDER, 'acs_immigration_age_sex_fractions_2011_2015')
+        county_weights = pl.read_csv(source=county_weights_csv)
 
         # this is the net migrants for each age-sex combination
         uri = f'sqlite:{CBO_DB}'

@@ -3,8 +3,12 @@ import sqlite3
 
 import pandas as pd
 
-xlsx_folder = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\raw_files\\ACS\\2011_2015\\migration'
-xlsx_file = 'county-to-county-by-age-2011-2015-current-residence-sort.xlsx'
+
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
+DATABASES = os.path.join(BASE_FOLDER, 'inputs\\databases')
+ACS_DB = os.path.join(DATABASES, 'acs.sqlite')
 
 AGE_MAP = {1: '1_to_4',
            2: '5_to_17',
@@ -51,6 +55,8 @@ def main():
                 'O_MOVERS_DIFF_ST_MOE', 'O_MOVERS_PUERTO_RICO',
                 'O_MOVERS_PUERTO_RICO_MOE', 'TOTAL_FLOW', 'TOTAL_FLOW_MOE')
 
+    xlsx_folder = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\ACS\\2011_2015\\migration')
+    xlsx_file = 'county-to-county-by-age-2011-2015-current-residence-sort.xlsx'
     xlsx = pd.ExcelFile(os.path.join(xlsx_folder, xlsx_file))
     df = pd.concat([xlsx.parse(sheet_name=name, header=None, names=columns, skiprows=4, skipfooter=8) for name in xlsx.sheet_names if name != 'Puerto Rico'])
 
@@ -92,14 +98,15 @@ def main():
     df.rename(columns={'index': 'DESTINATION_FIPS'}, inplace=True)
     df.columns.name = None
 
-    p = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
-    f = 'acs.sqlite'
-    con = sqlite3.connect(os.path.join(p, f))
+    con = sqlite3.connect(ACS_DB)
     df.to_sql(name='acs_immigration_weights_age_2011_2015',
               con=con,
               if_exists='replace',
               index=False)
     con.close()
+
+    df.to_csv(path_or_buf=os.path.join(DATABASES, 'acs_immigration_weights_age_2011_2015.csv'),
+              index=False)
 
 
 if __name__ == '__main__':
