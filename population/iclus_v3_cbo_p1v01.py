@@ -44,7 +44,7 @@ def make_fips_changes(df):
     df_fips = df_fips.with_columns(pl.col('OLD_FIPS').cast(pl.Utf8).str.zfill(5))
     df_fips = df_fips.with_columns(pl.col('NEW_FIPS').cast(pl.Utf8).str.zfill(5))
 
-    if {'GEOID', 'AGE_GROUP', 'SEX'}.issubset(df.columns):
+    if {'GEOID', 'AGE', 'SEX'}.issubset(df.columns):
         df = df.join(other=df_fips,
                      how='left',
                      left_on='GEOID',
@@ -55,7 +55,7 @@ def make_fips_changes(df):
                              .alias('GEOID'))
 
         df = df.drop(['NEW_FIPS', 'NEW_NAME', 'NEW_STUSPS'])
-        df = df.group_by(['GEOID', 'AGE_GROUP', 'SEX']).agg(pl.col('POPULATION').sum())
+        df = df.group_by(['GEOID', 'AGE', 'SEX']).agg(pl.col('POPULATION').sum())
     else:
         Exception("DataFrame doesn't have required columns for FIPS changes")
 
@@ -114,7 +114,6 @@ def set_launch_population():
     '''
     census_sya_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'Census', '2024', 'intercensal', 'syasex')
 
-
     df_list = None
     for csv in os.listdir(census_sya_input_folder):
         if csv.endswith('.csv'):
@@ -132,54 +131,20 @@ def set_launch_population():
                 df_list.append(temp)
     df = pl.concat(items=df_list, how='vertical')
 
-    # csv_name = 'cc-est2024-agesex-all.csv'
-    # df = pl.read_csv(source=os.path.join(CENSUS_CSV_FOLDER, '2024', 'intercensal', csv_name),
-    #                  encoding='latin1').filter(pl.col('YEAR') == 6)
-    # df = df.with_columns((pl.col('STATE').cast(pl.Utf8).str.zfill(2) +
-    #                       pl.col('COUNTY').cast(pl.Utf8).str.zfill(3))
-    #                       .alias('GEOID'))
-
-    # df = df[['GEOID', 'AGE04_FEM', 'AGE04_MALE', 'AGE59_FEM', 'AGE59_MALE',
-    #          'AGE1014_FEM', 'AGE1014_MALE', 'AGE1519_FEM', 'AGE1519_MALE',
-    #          'AGE2024_FEM', 'AGE2024_MALE', 'AGE2529_FEM', 'AGE2529_MALE',
-    #          'AGE3034_FEM', 'AGE3034_MALE', 'AGE3539_FEM', 'AGE3539_MALE',
-    #          'AGE4044_FEM', 'AGE4044_MALE', 'AGE4549_FEM', 'AGE4549_MALE',
-    #          'AGE5054_FEM', 'AGE5054_MALE', 'AGE5559_FEM', 'AGE5559_MALE',
-    #          'AGE6064_FEM', 'AGE6064_MALE', 'AGE6569_FEM', 'AGE6569_MALE',
-    #          'AGE7074_FEM', 'AGE7074_MALE', 'AGE7579_FEM', 'AGE7579_MALE',
-    #          'AGE8084_FEM', 'AGE8084_MALE', 'AGE85PLUS_FEM', 'AGE85PLUS_MALE']]
-
-    # df.columns = ['GEOID', '0-4_FEMALE', '0-4_MALE', '5-9_FEMALE', '5-9_MALE',
-    #               '10-14_FEMALE', '10-14_MALE', '15-19_FEMALE', '15-19_MALE',
-    #               '20-24_FEMALE', '20-24_MALE', '25-29_FEMALE', '25-29_MALE',
-    #               '30-34_FEMALE', '30-34_MALE', '35-39_FEMALE', '35-39_MALE',
-    #               '40-44_FEMALE', '40-44_MALE', '45-49_FEMALE', '45-49_MALE',
-    #               '50-54_FEMALE', '50-54_MALE', '55-59_FEMALE', '55-59_MALE',
-    #               '60-64_FEMALE', '60-64_MALE', '65-69_FEMALE', '65-69_MALE',
-    #               '70-74_FEMALE', '70-74_MALE', '75-79_FEMALE', '75-79_MALE',
-    #               '80-84_FEMALE', '80-84_MALE', '85+_FEMALE', '85+_MALE']
-
-    # df = df.unpivot(index='GEOID',
-    #                 variable_name='AGE_GROUP',
-    #                 value_name='POPULATION')
-
-    # df = df.with_columns(pl.col('AGE_GROUP').str.split('_').list.get(1).alias('SEX'))
-    # df = df.with_columns(pl.col('AGE_GROUP').str.split('_').list.get(0).alias('AGE_GROUP'))
-    # df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
     df = df.sort(['GEOID', 'AGE', 'SEX'])
     df = make_fips_changes(df)
-    assert df.shape == (540768, 4)
+    assert df.shape == (538016, 4)
 
     return df
 
-def main(scenario, version, fert_adj_pct, mort_adj_pct):
+def main(scenario, version, fert_adj_pct, mort_calibr_pct):
     '''
     TODO: Add docstring
     '''
     model = Projector(scenario=scenario,
                       version=version,
                       fert_adj=fert_adj_pct,
-                      mort_adj=mort_adj_pct)
+                      mort_calibr=mort_calibr_pct)
     model.run()
 
 
@@ -187,7 +152,7 @@ class Projector():
     '''
     TODO: Add docstring
     '''
-    def __init__(self, scenario, version, fert_adj, mort_adj):
+    def __init__(self, scenario, version, fert_adj, mort_calibr):
 
         # time-related attributes
         self.launch_year = 2024
@@ -206,7 +171,7 @@ class Projector():
 
         # mortality-related attributes
         self.deaths = None
-        self.mort_adj = mort_adj
+        self.mort_calibr = mort_calibr
 
         # migration-related attributes
         self.net_migration = None
@@ -237,7 +202,7 @@ class Projector():
 
             self.mortality()  # creates self.death
             self.current_pop = (self.current_pop.join(self.deaths,
-                                                      on=['GEOID', 'AGE_GROUP', 'SEX'],
+                                                      on=['GEOID', 'AGE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .with_columns(pl.col('POPULATION') - pl.col('DEATHS')
@@ -335,7 +300,7 @@ class Projector():
             # print("***************** PARAMETERS ******************")
             # print("Scenario: ", self.scenario)
             # print("CDC fertility adjustment:", f'{self.cdc_fert_adj * 100}%')
-            # print("CDC mortality adjustment:", f'{self.cdc_mort_adj * 100}%')
+            # print("CDC mortality adjustment:", f'{self.cdc_mort_calibr * 100}%')
             # print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
             # print("Output database:", os.path.basename(OUTPUT_DATABASE))
             # print("***********************************************")
@@ -394,30 +359,35 @@ class Projector():
                              .with_columns([pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)),
                                             pl.col('GEOID').cast(pl.String).str.zfill(5).alias('GEOID')]))
 
-
-
         df = bin_age_groups(self.current_pop.clone())
         df = df.join(other=county_mort_rates,
                         on=['AGE_GROUP', 'SEX', 'GEOID'],
                         how='left',
                         coalesce=True)
 
+        assert sum(df.null_count()).item() == 0
+
         # get CBO mortality rate adjustments
-        cbo_mort = os.path.join(DATABASE_FOLDER, 'cbo_mortality_p1v01.csv')
-        cbo_mort_multiply = pl.read_csv(source=cbo_mort).with_columns(pl.col('AGE'))
+        cbo_mort_csv = os.path.join(DATABASE_FOLDER, 'cbo_mortality_p1v01.csv')
+        cbo_mort_multiply = pl.read_csv(source=cbo_mort_csv).with_columns(pl.col('AGE'))
         cbo_mort_multiply = cbo_mort_multiply.select(['AGE', 'SEX', f'ASMR_{self.current_projection_year}'])
         cbo_mort_multiply = cbo_mort_multiply.rename({f'ASMR_{self.current_projection_year}': 'MORT_MULTIPLY'})
+        # cbo_mort_multiply = cbo_mort_multiply.with_columns(replaced=pl.col('AGE').replace(85, '85+').cast(pl.Enum(AGE_GROUPS)))
 
-        df = df.join(other=mort_multiply,
-                     on=['AGE_GROUP', 'SEX'],
+         # join CBO mortality rate adjustments
+
+        df = df.join(other=cbo_mort_multiply,
+                     on=['AGE', 'SEX'],
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * (1.0 + (0.01 * self.mort_adj)) * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
+        assert sum(df.null_count()).item() == 0
+
+        df = df.with_columns(((pl.col('MORTALITY_RATE_100K') * (1.0 + (0.01 * self.mort_calibr)) * pl.col('MORT_MULTIPLY')) / 100000.0).alias('MORT_PROJ'))
 
         # calculate deaths
         df = df.with_columns((pl.col('MORT_PROJ') * pl.col('POPULATION')).alias('DEATHS'))
-        df = df.select(['GEOID', 'AGE_GROUP', 'SEX', 'DEATHS'])
+        df = df.select(['GEOID', 'AGE', 'SEX', 'DEATHS'])
         assert sum(df.null_count()).item() == 0
 
         # store deaths
@@ -434,7 +404,7 @@ class Projector():
             current_deaths = self.deaths.clone()
             current_deaths = current_deaths.rename({'DEATHS': str(self.current_projection_year)})
             deaths = pl.concat(items=[deaths, current_deaths], how='align')
-        deaths.sort(by=['GEOID', 'SEX', 'AGE_GROUP'])
+        deaths.sort(by=['GEOID', 'SEX', 'AGE'])
         # assert deaths.shape[0] == 675648
         assert sum(deaths.null_count()).item() == 0
 
@@ -654,5 +624,5 @@ if __name__ == '__main__':
     main(scenario='CBO',
          version='p1v01',
          fert_adj_pct=0.0,
-         mort_adj_pct=0.0)
+         mort_calibr_pct=0.0)
     print(time.ctime())

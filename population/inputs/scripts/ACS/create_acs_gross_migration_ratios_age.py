@@ -299,6 +299,9 @@ def get_gross_migration_ratios_by_age():
               index=False)
     con.close()
 
+    df.to_csv(os.path.join(DATABASE_FOLDER, 'acs_gross_migration_ratios_2011_2015_age.csv'),
+              index=False)
+
 def main():
     get_gross_migration_ratios_by_age()
 

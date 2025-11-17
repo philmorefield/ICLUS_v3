@@ -71,8 +71,8 @@ def main():
     df_asmr_base = df_asmr_base.groupby(['AGE', 'SEX'], as_index=False).mean()
     df_asmr_base = df_asmr_base.rename(columns={'ASMR': 'ASMR_BASE'})
 
-    # starting with 2026, calculate the % change from the base year ASMR
-    df = df.query('YEAR >= 2026').pivot_table(index=['AGE', 'SEX'], columns='YEAR')
+    # starting with 2025, calculate the % change from the base year ASMR
+    df = df.query('YEAR >= 2025').pivot_table(index=['AGE', 'SEX'], columns='YEAR')
     df.columns.name = None
     df.columns = df.columns.droplevel(0)
     df.columns = [f'ASMR_{col}' for col in df.columns]
@@ -97,7 +97,7 @@ def main():
 
     df = df.drop(columns='POPULATION')
 
-    for year in range(2026, 2099):
+    for year in range(2025, 2099):
         sya_pop_year = sya_pop.query(f'YEAR == {year}').drop(columns='YEAR')
 
         # calculate population-weighted ASMR for 85+
@@ -113,7 +113,14 @@ def main():
 
         df = df.drop(columns='POPULATION')
 
-    for year in range(2026, 2099):
+        ...
+
+    # combine age groups >= 85 into a single 85+ group
+    df.loc[df.AGE >= 85, 'AGE'] = 85
+    df = df.groupby(by=['AGE', 'SEX'], as_index=False).mean()
+
+    # calculate future ASMR as a ratio of the base year ASMR
+    for year in range(2025, 2099):
         df[f'ASMR_{year}'] = df[f'ASMR_{year}'] / df['ASMR_BASE']
     df = df.drop(columns='ASMR_BASE')
     df = df.sort_values(by=['AGE', 'SEX'])

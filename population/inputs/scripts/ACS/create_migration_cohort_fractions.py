@@ -3,18 +3,19 @@ import sqlite3
 
 import pandas as pd
 
-DATABASES = 'D:\\OneDrive\\ICLUS_v3\\population\\inputs\\databases'
+
+BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
+if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
+    BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
+DATABASES = os.path.join(BASE_FOLDER, 'inputs', 'databases')
 ACS_DB = os.path.join(DATABASES, 'acs.sqlite')
 
 
 def retrieve_sex_ratios():
     print("Processing sex ratios...")
 
-    con = sqlite3.connect(ACS_DB)
-    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, SEX, MIGRATION_PROPORTION as VALUE \
-            FROM acs_gross_migration_ratios_2011_2015_sex'
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
+    csv = os.path.join(DATABASES, 'acs_gross_migration_ratios_2011_2015_sex.csv')
+    df = pd.read_csv(csv)
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'])
     df = df.set_index(keys=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'SEX'])
@@ -25,11 +26,8 @@ def retrieve_sex_ratios():
 def retrieve_age_ratios():
     print("Processing age ratios...")
 
-    con = sqlite3.connect(ACS_DB)
-    query = 'SELECT ORIGIN_FIPS, DESTINATION_FIPS, AGE_GROUP, MIGRATION_RATE as VALUE \
-             FROM acs_gross_migration_ratios_2011_2015_age'
-    df = pd.read_sql(sql=query, con=con)
-    con.close()
+    csv = os.path.join(DATABASES, 'acs_gross_migration_ratios_2011_2015_age.csv')
+    df = pd.read_csv(csv)
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'])
     df = df.set_index(keys=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'])
@@ -57,6 +55,15 @@ def main():
               if_exists='replace',
               index=False)
     con.close()
+
+    sex.to_csv(os.path.join(DATABASES, 'acs_gross_migration ratios_2011_2015_sex.csv'),
+               index=False)
+
+    age.to_csv(os.path.join(DATABASES, 'acs_gross_migration_ratios_2011_2015_age.csv'),
+               index=False)
+
+    df.to_csv(os.path.join(DATABASES, 'acs_gross_migration_age_sex_fractions_2011_2015.csv'),
+              index=False)
 
     print("Finished!")
 
