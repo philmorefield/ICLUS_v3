@@ -35,7 +35,7 @@ def parse_age_groups(s):
         s = s.split('_to_')
         return list(range(int(s[0]), int(s[1]) + 1))
     elif s == '75+':
-        return range(75, 100)
+        return range(75, 101)
     else:
         raise Exception
 

@@ -426,6 +426,7 @@ class Projector():
 
         # this is the net migrants for each age-sex combination
         df_cbo = pl.read_csv(source=os.path.join(DATABASE_FOLDER, 'cbo_national_net_migration_by_year_age_sex.csv'))
+        df_cbo = df_cbo.filter(pl.col('YEAR') == self.current_projection_year)
         df = (county_weights.join(other=df_cbo,
                                   on=['AGE', 'SEX'],
                                   how='left',
