@@ -222,7 +222,7 @@ class Projector():
             # calculate net international immigration
             self.immigration()  # creates self.immigrants
             self.current_pop = (self.current_pop.join(self.immigrants,
-                                                      on=['GEOID', 'AGE_GROUP', 'SEX'],
+                                                      on=['GEOID', 'AGE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .with_columns(pl.when(pl.col('NET_IMMIGRATION').is_not_null()).then(pl.col('POPULATION') + pl.col('NET_IMMIGRATION'))
@@ -243,7 +243,7 @@ class Projector():
             # calculate domestic migration
             self.migration()  # creates self.net_migration
             self.current_pop = (self.current_pop.join(other=self.net_migration,
-                                                      on=['GEOID', 'AGE_GROUP', 'SEX'],
+                                                      on=['GEOID', 'AGE', 'SEX'],
                                                       how='left',
                                                       coalesce=True)
                                 .fill_null(0)
@@ -421,18 +421,13 @@ class Projector():
         '''
         print("Calculating net immigration...", end='')
         # get the County level age-sex proportions
-        county_weights_csv = os.path.join(DATABASE_FOLDER, 'acs_immigration_age_sex_fractions_2011_2015')
+        county_weights_csv = os.path.join(DATABASE_FOLDER, 'acs_immigration_age_sex_fractions_2011_2015.csv')
         county_weights = pl.read_csv(source=county_weights_csv)
 
         # this is the net migrants for each age-sex combination
-        uri = f'sqlite:{CBO_DB}'
-        query = f'SELECT AGE_GROUP, SEX, NET_IMMIGRATION  \
-                  FROM cbo_2025_9_migration \
-                  WHERE YEAR = "{self.current_projection_year}"'
-        df_cbo = pl.read_database_uri(query=query, uri=uri)
-
+        df_cbo = pl.read_csv(source=os.path.join(DATABASE_FOLDER, 'cbo_national_net_migration_by_year_age_sex.csv'))
         df = (county_weights.join(other=df_cbo,
-                                  on=['AGE_GROUP', 'SEX'],
+                                  on=['AGE', 'SEX'],
                                   how='left',
                                   coalesce=True)
                             .with_columns((pl.col('NET_IMMIGRATION') * pl.col('PERCENT_OF_AGE_SEX_COHORT'))
@@ -440,7 +435,6 @@ class Projector():
                             .drop('PERCENT_OF_AGE_SEX_COHORT'))
 
         assert sum(df.null_count()).item() == 0
-        df = df.with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
 
         self.immigrants = df.clone()
 
