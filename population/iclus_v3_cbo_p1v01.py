@@ -90,13 +90,13 @@ def set_launch_population():
 
     return df
 
-def main(scenario, version, fert_adj_pct, mort_calibr_pct):
+def main(scenario, version, fert_calibr_pct, mort_calibr_pct):
     '''
     TODO: Add docstring
     '''
     model = Projector(scenario=scenario,
                       version=version,
-                      fert_adj=fert_adj_pct,
+                      fert_calibr=fert_calibr_pct,
                       mort_calibr=mort_calibr_pct)
     model.run()
 
@@ -105,7 +105,7 @@ class Projector():
     '''
     TODO: Add docstring
     '''
-    def __init__(self, scenario, version, fert_adj, mort_calibr):
+    def __init__(self, scenario, version, fert_calibr, mort_calibr):
 
         # time-related attributes
         self.launch_year = 2024
@@ -131,7 +131,7 @@ class Projector():
 
         # fertility-related attributes
         self.births = None
-        self.fert_adj = fert_adj
+        self.fert_calibr_pct = fert_calibr
 
 
     def run(self, final_projection_year=2098):
@@ -227,18 +227,12 @@ class Projector():
             # add new 85 year olds to the 85+ group
             self.current_pop = self.current_pop.group_by(['GEOID', 'AGE', 'SEX']).agg(pl.col('POPULATION').sum())
 
-            assert self.current_pop.shape == (112608, 4)
+            assert self.current_pop.shape == (531760, 4)
 
-            # add births
-            self.current_pop = (self.current_pop.join(other=self.births,
-                                                      on=['GEOID', 'AGE', 'SEX'],
-                                                      how='left',
-                                                      coalesce=True)
-                                .with_columns(pl.when(pl.col('BIRTHS').is_not_null())
-                                              .then(pl.col('POPULATION') + pl.col('BIRTHS'))
-                                              .otherwise(pl.col('POPULATION'))
-                                .alias('POPULATION'))
-                                .drop('BIRTHS'))
+            # add births to self.current_pop
+            self.births = self.births.rename(mapping={'BIRTHS': 'POPULATION'})
+            self.births = self.births[:, self.current_pop.columns]
+            self.current_pop = pl.concat(items=[self.current_pop, self.births], how='vertical')
 
             assert self.current_pop.shape == (112608, 4)
             self.births = None
@@ -258,7 +252,7 @@ class Projector():
             # print("\n")
             # print("***************** PARAMETERS ******************")
             # print("Scenario: ", self.scenario)
-            # print("CDC fertility adjustment:", f'{self.cdc_fert_adj * 100}%')
+            # print("CDC fertility adjustment:", f'{self.cdc_fert_calibr * 100}%')
             # print("CDC mortality adjustment:", f'{self.cdc_mort_calibr * 100}%')
             # print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
             # print("Output database:", os.path.basename(OUTPUT_DATABASE))
@@ -274,38 +268,6 @@ class Projector():
                                 engine='adbc')
             del temp
 
-    def advance_age_groups(self):
-        '''
-        Since cohorts are aggregated into 5-year age groups, advance 20 percent
-        of the population in each cohorts to the next AGE_GROUP
-        '''
-        print("Advancing the age of the population by one year...", end='')
-        starting_pop = self.current_pop.select('POPULATION').sum().item()
-
-
-
-        # VERY IMPORTANT that the dataframe is sorted exactly like this
-        self.current_pop = self.current_pop.sort(['GEOID', 'SEX', 'AGE'])
-
-        # shift 20 percent of the population in each cohort
-        self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') * 0.2)
-                                           .shift(fill_value=0)
-                                           .over('GEOID', 'SEX')
-                                           .alias('AGE_ADVANCING'))
-
-        # reduce the population in each age cohort by 20%, except for 85+
-        self.current_pop = self.current_pop.with_columns(pl.when(pl.col('AGE_GROUP') != pl.lit('85+'))
-                                                         .then(pl.col('POPULATION') * 0.8)
-                                                         .otherwise(pl.col('POPULATION'))
-                                                         .alias('POPULATION'))
-
-        self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') + pl.col('AGE_ADVANCING')).alias('POPULATION'))
-        self.current_pop = self.current_pop.drop('AGE_ADVANCING')
-
-        # a rounding difference of << 1 is possible
-        assert starting_pop - self.current_pop.select('POPULATION').sum().item() < 1
-
-        print("finished!")
 
     def mortality(self):
         '''
@@ -508,13 +470,6 @@ class Projector():
         '''
         print("Calculating fertility...", end='')
 
-        fertility_age_groups = ('15-19',
-                                '20-24',
-                                '25-29',
-                                '30-34',
-                                '35-39',
-                                '40-44')
-
         # get CDC fertility rates by AGE_GROUP (15-44) and COUNTY
         county_fert_rates = (pl.read_csv(source=os.path.join(DATABASE_FOLDER, 'fertility_2020_2024_county.csv'))
                                          .with_columns(pl.col('GEOID').cast(pl.String).str.zfill(5).alias('GEOID')))
@@ -538,7 +493,7 @@ class Projector():
                      how='left',
                      coalesce=True)
 
-        df = df.with_columns(((pl.col('FERTILITY') * (1.0 + (0.01 * self.fert_adj)) * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
+        df = df.with_columns(((pl.col('FERTILITY') * (1.0 + (0.01 * self.fert_calibr_pct)) * pl.col('FERT_MULT') / 1000) * pl.col('POPULATION')).alias('TOTAL_BIRTHS'))
         df = df.with_columns((pl.col('TOTAL_BIRTHS') * 0.512195122).alias('MALE'))  # from Mathews, et al. (2005)
         df = df.with_columns((pl.col('TOTAL_BIRTHS') - pl.col('MALE')).alias('FEMALE'))
         df = (df.select(['GEOID', 'MALE', 'FEMALE'])
@@ -576,6 +531,6 @@ if __name__ == '__main__':
     print(time.ctime())
     main(scenario='CBO',
          version='p1v01',
-         fert_adj_pct=0.0,
+         fert_calibr_pct=0.0,
          mort_calibr_pct=0.0)
     print(time.ctime())
