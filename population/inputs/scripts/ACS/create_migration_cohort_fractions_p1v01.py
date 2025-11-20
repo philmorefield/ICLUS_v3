@@ -19,6 +19,7 @@ def retrieve_sex_ratios():
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS'])
     df = df.set_index(keys=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'SEX'])
+    df = df.rename(columns={'MIGRATION_PROPORTION': 'VALUE'})
 
     return df
 
@@ -31,8 +32,19 @@ def retrieve_age_ratios():
 
     df = df.sort_values(by=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'])
     df = df.set_index(keys=['ORIGIN_FIPS', 'DESTINATION_FIPS', 'AGE_GROUP'])
+    df = df.rename(columns={'MIGRATION_RATE': 'VALUE'})
 
     return df
+
+
+def convert_age_group_to_list(s):
+    if s == '75+':
+        result = list(range(75, 86)) # highest age group is 85+
+    else:
+        s = s.split('-')
+        result = list(range(int(s[0]), int(s[1]) + 1))
+
+    return result
 
 
 def main():
@@ -49,18 +61,16 @@ def main():
     df = df.rename(columns={'VALUE': 'MIGRATION_RATE'})
     df['AGE_GROUP'] = df['AGE_GROUP'].str.replace('_TO_', '-').str.replace('_AND_OVER', '+')
 
+    # expand age groups
+    df['AGE_GROUP'] = df['AGE_GROUP'].apply(lambda x: convert_age_group_to_list(x))
+    df = df.explode('AGE_GROUP', ignore_index=True).rename(columns={'AGE_GROUP': 'AGE'})
+
     con = sqlite3.connect(ACS_DB)
     df.to_sql(name='acs_gross_migration_age_sex_fractions_2011_2015',
               con=con,
               if_exists='replace',
               index=False)
     con.close()
-
-    sex.to_csv(os.path.join(DATABASES, 'acs_gross_migration ratios_2011_2015_sex.csv'),
-               index=False)
-
-    age.to_csv(os.path.join(DATABASES, 'acs_gross_migration_ratios_2011_2015_age.csv'),
-               index=False)
 
     df.to_csv(os.path.join(DATABASES, 'acs_gross_migration_age_sex_fractions_2011_2015.csv'),
               index=False)

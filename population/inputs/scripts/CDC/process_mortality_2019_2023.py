@@ -265,6 +265,16 @@ def make_fips_changes(df):
     return df
 
 
+def convert_age_group_to_list(s):
+    if s == '85+':
+        result = [85] # highest age group is 85+
+    else:
+        s = s.split('-')
+        result = list(range(int(s[0]), int(s[1]) + 1))
+
+    return result
+
+
 def main():
     # create the template Dataframe that hold all county/race/age combinations
     # and start merging information
@@ -278,12 +288,17 @@ def main():
     df = df.sort_values(by=['AGE_GROUP', 'COFIPS'], key=lambda x: x.map(AGE_GROUP_SORT_MAP))
     df = df.rename(columns={'MORTALITY': 'MORTALITY_RATE_100K',
                             'COFIPS': 'GEOID'})
-    con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
-    df.to_sql(name='mortality_2019_2023_county',
-              con=con,
-              if_exists='replace',
-              index=False)
-    con.close()
+
+    # expand age groups
+    df['AGE_GROUP'] = df['AGE_GROUP'].apply(lambda x: convert_age_group_to_list(x))
+    df = df.explode('AGE_GROUP', ignore_index=True).rename(columns={'AGE_GROUP': 'AGE'})
+
+    # con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
+    # df.to_sql(name='mortality_2019_2023_county',
+    #           con=con,
+    #           if_exists='replace',
+    #           index=False)
+    # con.close()
 
     df.to_csv(os.path.join(DATABASE_FOLDER, 'mortality_2019_2023_county.csv'), index=False)
 

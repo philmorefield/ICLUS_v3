@@ -3,7 +3,7 @@
 '''
 
 import os
-import sqlite3
+# import sqlite3
 
 import pandas as pd
 
@@ -113,8 +113,6 @@ def main():
 
         df = df.drop(columns='POPULATION')
 
-        ...
-
     # combine age groups >= 85 into a single 85+ group
     df.loc[df.AGE >= 85, 'AGE'] = 85
     df = df.groupby(by=['AGE', 'SEX'], as_index=False).mean()
@@ -124,12 +122,13 @@ def main():
         df[f'ASMR_{year}'] = df[f'ASMR_{year}'] / df['ASMR_BASE']
     df = df.drop(columns='ASMR_BASE')
     df = df.sort_values(by=['AGE', 'SEX'])
-    con = sqlite3.connect(database=OUTPUT_DB)
-    df.to_sql(name='cbo_mortality',
-              con=con,
-              if_exists='replace',
-              index=False)
-    con.close()
+
+    # con = sqlite3.connect(database=OUTPUT_DB)
+    # df.to_sql(name='cbo_mortality',
+    #           con=con,
+    #           if_exists='replace',
+    #           index=False)
+    # con.close()
 
     df.to_csv(path_or_buf=os.path.join(os.path.dirname(OUTPUT_DB), 'cbo_mortality_p1v01.csv'),
               index=False)

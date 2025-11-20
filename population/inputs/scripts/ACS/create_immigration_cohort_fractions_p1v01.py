@@ -113,6 +113,8 @@ def create_maps(df):
 
             fn = f'county_immigration_fractions_{sex}_{age}.png'
             plt.savefig(os.path.join(FIGURES, fn), dpi=300)
+            plt.clf()
+
 
 
 
@@ -147,7 +149,7 @@ def create_and_save_dataframe():
 
 def main():
     df = create_and_save_dataframe()
-    create_maps(df)
+    # create_maps(df)
 
 if __name__ == '__main__':
     main()

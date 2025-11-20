@@ -106,11 +106,8 @@ def create_template():
 
 
 def convert_age_group_to_list(s):
-    if s == '75+':
-        result = list(range(75, 86)) # highest age group is 85+
-    else:
-        s = s.split('-')
-        result = list(range(int(s[0]), int(s[1]) + 1))
+    s = s.split('-')
+    result = list(range(int(s[0]), int(s[1]) + 1))
 
     return result
 
@@ -129,12 +126,16 @@ def main():
 
     assert not df.isnull().any().any()
 
-    con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
-    df.to_sql(name='fertility_2020_2024_county',
-              con=con,
-              if_exists='replace',
-              index=False)
-    con.close()
+    # expand age groups
+    df['AGE_GROUP'] = df['AGE_GROUP'].apply(lambda x: convert_age_group_to_list(x))
+    df = df.explode('AGE_GROUP', ignore_index=True).rename(columns={'AGE_GROUP': 'AGE'})
+    df = df.rename(columns={'COFIPS': 'GEOID'})
+    # con = sqlite3.connect(os.path.join(DATABASE_FOLDER, 'cdc.sqlite'))
+    # df.to_sql(name='fertility_2020_2024_county',
+    #           con=con,
+    #           if_exists='replace',
+    #           index=False)
+    # con.close()
 
     df.to_csv(path_or_buf=os.path.join(DATABASE_FOLDER, 'fertility_2020_2024_county.csv'), index=False)
 
