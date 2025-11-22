@@ -21,50 +21,41 @@ YEAR_MIN = 2015
 YEAR_MAX = 2100
 
 
-def get_cbo_population():
-    cols = ['AGE',
-            'TOTAL_POPULATION',
-            'BLANK1',
-            'TOTAL_MALE',
-            'TOTAL_MALE_SINGLE',
-            'TOTAL_MALE_MARRIED',
-            'TOTAL_MALE_WIDOWED',
-            'TOTAL_MALE_DIVORCED',
-            'BLANK2',
-            'TOTAL_FEMALE',
-            'TOTAL_FEMALE_SINGLE',
-            'TOTAL_FEMALE_MARRIED',
-            'TOTAL_FEMALE_WIDOWED',
-            'TOTAL_FEMALE_DIVORCED']
+def get_census_sya_population():
+    '''
+    2024 launch population is taken from U.S. Census Intercensal Population
+    Estimates.
+    '''
+    census_sya_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'Census', '2024', 'intercensal', 'syasex')
 
-    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections')
-    csv_fn = '57059-2025-09-Demographic-Projections.xlsx'
-    df = pd.read_excel(io=os.path.join(csv_folder, csv_fn),
-                       sheet_name='2. Pop by age, sex, marital',
-                       names=cols,
-                       skiprows=9,
-                       skipfooter=6).dropna(axis='columns', how='all').dropna()
+    df_list = None
+    for csv in os.listdir(census_sya_input_folder):
+        if csv.endswith('.csv'):
+            temp = pl.read_csv(source=os.path.join(census_sya_input_folder, csv),
+                                  encoding='latin1').filter(pl.col('YEAR') >= 2)
+            temp = temp.with_columns((pl.col('STATE').cast(pl.Utf8).str.zfill(2) +
+                        pl.col('COUNTY').cast(pl.Utf8).str.zfill(3))
+                        .alias('GEOID')).rename({'TOT_MALE': 'MALE', 'TOT_FEMALE': 'FEMALE'})
+            temp = temp.select(['GEOID', 'AGE', 'MALE', 'FEMALE'])
+            temp = temp.unpivot(index=['GEOID', 'AGE'], variable_name='SEX', value_name='POPULATION')
 
-    df = df[['AGE', 'TOTAL_POPULATION', 'TOTAL_MALE', 'TOTAL_FEMALE']].dropna()
-    df = df.loc[df['AGE'] != 'Age']
-    df['TOTAL_POPULATION'] = df['TOTAL_POPULATION'].astype(int)
-    df['TOTAL_MALE'] = df['TOTAL_MALE'].astype(int)
-    df['TOTAL_FEMALE'] = df ['TOTAL_FEMALE'].astype(int)
+            if df_list is None:
+                df_list = [temp]
+            else:
+                df_list.append(temp)
+    df = pl.concat(items=df_list, how='vertical')
 
-    n = 101
-    df_list = [df[i:i+n] for i in range(0, df.shape[0], n)]
-
-    for i, df_item in enumerate(df_list):
-        df_item['YEAR'] = 2022 + i
-
-    df = pd.concat(df_list, ignore_index=True)
+    df = df.sort(['GEOID', 'AGE', 'SEX'])
+    df = make_fips_changes(df)
+    assert df.shape == (538016, 4)
 
     return df
 
 
 def main():
 
-    cbo = get_cbo_population()
+    # cbo = get_cbo_population()
+    # census = get_census_sya_population()
 
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(3, 2)
@@ -77,11 +68,23 @@ def main():
 
     # historical population, 2010-2020
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2020', 'intercensal')
+    fips_csv = os.path.join(csv_folder, 'CC-EST2020-ALLDATA.csv')
+    fips = pd.read_csv(filepath_or_buffer=fips_csv,
+                       encoding='latin-1',
+                       usecols=['STATE', 'COUNTY', 'STNAME', 'CTYNAME']).drop_duplicates()
+
+    fips['GEOID'] = fips['STATE'].astype(str).str.zfill(2) + fips['COUNTY'].astype(str).str.zfill(3)
+
+
     csv_fn = 'co-est2020int-pop.xlsx'
     df = pd.read_excel(os.path.join(csv_folder, csv_fn),
                        skipfooter=6,
                        skiprows=5,
                        names=['COUNTY_STATE', '2010_base'] + [year for year in range(2010, 2021)])
+    df[['CTYNAME', 'STNAME']] = df['COUNTY_STATE'].str.split(',', expand=True)
+    df = df.drop(columns='COUNTY_STATE')
+    df = df.merge(fips, on=['CTYNAME', 'STNAME'], how='left')
+
     pre2020pop = df.drop(columns=['COUNTY_STATE', '2010_base']).sum().T.reset_index()
     pre2020pop.columns = ['YEAR', 'POPULATION']
     pre2020pop['POPULATION'] = pre2020pop['POPULATION'] / 1000000
@@ -107,7 +110,7 @@ def main():
     proj_pop = pd.read_sql_query(sql=query, con=con)
     con.close()
 
-    proj_pop = proj_pop.drop(columns=['GEOID', 'AGE_GROUP', 'SEX']).sum()
+    proj_pop = proj_pop.drop(columns=['GEOID', 'AGE', 'SEX']).sum()
     proj_pop = proj_pop.reset_index()
     proj_pop.columns = ['YEAR', 'POPULATION']
     proj_pop['YEAR'] = proj_pop['YEAR'].astype(int)
@@ -167,7 +170,7 @@ def main():
     proj_births = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_births = proj_births.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_births = proj_births.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_births.columns = ['YEAR', 'BIRTHS']
     proj_births['YEAR'] = proj_births['YEAR'].astype(int)
     proj_births['BIRTHS'] = proj_births['BIRTHS'] / 1000000
@@ -237,14 +240,14 @@ def main():
 
     # future migration
     columns = (', ').join([f'NETMIG{year}' for year in range(2025, 2099)])
-    columns = 'GEOID, AGE_GROUP ,' + columns
+    columns = 'GEOID, AGE ,' + columns
     query = f'SELECT {columns} FROM migration_by_age_sex_{SCENARIO}'
     con = sqlite3.connect(PROJECTIONS_DB)
     proj_migration = pd.read_sql(sql=query, con=con)
     con.close()
 
     proj_migration.columns = [col.replace('NETMIG', '') for col in proj_migration.columns]
-    proj_migration = proj_migration.drop(columns=['GEOID', 'AGE_GROUP'])
+    proj_migration = proj_migration.drop(columns=['GEOID', 'AGE'])
     proj_migration = proj_migration.clip(lower=0).sum().T.reset_index()
     proj_migration.columns = ['YEAR', 'MIGRATION']
     proj_migration['YEAR'] = proj_migration['YEAR'].astype(int)
@@ -296,7 +299,7 @@ def main():
     proj_deaths = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_deaths = proj_deaths.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_deaths = proj_deaths.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_deaths.columns = ['YEAR', 'DEATHS']
     proj_deaths['YEAR'] = proj_deaths['YEAR'].astype(int)
     proj_deaths['DEATHS'] = proj_deaths['DEATHS'] / 1000000
@@ -373,7 +376,7 @@ def main():
     proj_immig = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_immig = proj_immig.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_immig = proj_immig.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_immig.columns = ['YEAR', 'IMMIGRATION']
     proj_immig['YEAR'] = proj_immig['YEAR'].astype(int)
     proj_immig['IMMIGRATION'] = proj_immig['IMMIGRATION'] / 1000000

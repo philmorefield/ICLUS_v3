@@ -9,8 +9,6 @@ Created: November 10th, 2025
 import os
 import time
 
-from datetime import datetime
-
 import polars as pl
 
 
@@ -18,20 +16,12 @@ BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
 if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
     BASE_FOLDER = 'C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'
 
-d = datetime.now()
-
-
 INPUT_FOLDER = os.path.join(BASE_FOLDER, 'inputs')
 CENSUS_CSV_FOLDER = os.path.join(INPUT_FOLDER, 'raw_files', 'Census')
 DATABASE_FOLDER = os.path.join(INPUT_FOLDER, 'databases')
 OUTPUT_FOLDER = os.path.join(BASE_FOLDER, 'outputs', 'CBO')
 OUTPUT_DATABASE = os.path.join(OUTPUT_FOLDER, 'p1v01.sqlite')
-
-
-SEXES = ('MALE', 'FEMALE')
-# AGE_GROUPS = ('0-4', '5-9', '10-14', '15-19', '20-24', '25-29', '30-34',
-#               '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
-#               '70-74', '75-79', '80-84', '85+')
+OUTPUT_DATABASE_URI = f'sqlite:{OUTPUT_DATABASE}'
 
 
 def make_fips_changes(df):
@@ -147,7 +137,7 @@ class Projector():
             print("###        ###")
             print("##############")
             print(f"{time.ctime()}")
-            print(f"Total population (start): {self.current_pop.select('POPULATION').sum()[0, 0]:,}\n")
+            print(f"Total population (start): {int(self.current_pop.select('POPULATION').sum().item()):,}\n")
 
             ############
             ## DEATHS ##
@@ -184,7 +174,7 @@ class Projector():
                                 .drop('NET_IMMIGRATION'))
 
             # assert self.current_pop.shape == (675648, 5)
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.immigrants = None
@@ -201,13 +191,11 @@ class Projector():
                                                       coalesce=True)
                                 .fill_null(0)
                                 .with_columns((pl.col('POPULATION') + pl.col('NET_MIGRATION'))
-                                .alias('POPULATION')
-                                .round(0)
-                                .cast(pl.UInt64)))
+                                .alias('POPULATION')))
             self.current_pop = self.current_pop.drop('NET_MIGRATION')
 
             # assert self.current_pop.shape == (675648, 5)
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
+            # self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').clip(lower_bound=0))
             assert sum(self.current_pop.null_count()).item() == 0
             assert self.current_pop.filter(pl.col('POPULATION') < 0).shape[0] == 0
             self.net_migration = None
@@ -232,13 +220,39 @@ class Projector():
             # add births to self.current_pop
             self.births = self.births.rename(mapping={'BIRTHS': 'POPULATION'})
             self.births = self.births[:, self.current_pop.columns]
-            self.current_pop = pl.concat(items=[self.current_pop, self.births], how='vertical')
+            self.current_pop = pl.concat(items=[self.current_pop, self.births],
+                                         how='vertical_relaxed')
 
-            assert self.current_pop.shape == (112608, 4)
+            assert self.current_pop.shape == (538016, 4)
             self.births = None
 
             self.current_pop = self.current_pop.sort(['GEOID', 'SEX', 'AGE'])
-            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').round().alias('POPULATION').cast(pl.UInt64))
+
+            # add cumulative remainders from previous time steps
+            if self.current_projection_year > self.launch_year + 1:
+                query = f'SELECT * FROM population_by_age_sex_{self.scenario}_r'
+                remainders = pl.read_database_uri(query=query, uri=OUTPUT_DATABASE_URI)
+                self.current_pop = (self.current_pop.join(other=remainders,
+                                                          on=['GEOID', 'AGE', 'SEX'],
+                                                          how='left',
+                                                          coalesce=True))
+
+                self.current_pop = self.current_pop.with_columns(pl.when(pl.col('POPULATION_REMAINDER').is_not_null())
+                                                                   .then(pl.col('POPULATION') + pl.col('POPULATION_REMAINDER'))
+                                                                   .otherwise(pl.col('POPULATION'))
+                                                                   .alias('POPULATION'))
+
+            # calculate and save fractional population
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').round().alias('POPULATION_ROUNDED'))
+            self.current_pop = self.current_pop.with_columns((pl.col('POPULATION') - pl.col('POPULATION_ROUNDED')).alias('POPULATION_REMAINDER'))
+            population_r = self.current_pop.select(['GEOID', 'AGE', 'SEX', 'POPULATION_REMAINDER']).clone()
+            self.current_pop = self.current_pop.with_columns(pl.col('POPULATION').round().alias('POPULATION'))
+            self.current_pop = self.current_pop.select(['GEOID', 'AGE', 'SEX', 'POPULATION'])
+
+            population_r.write_database(table_name=f'population_by_age_sex_{self.scenario}_r',
+                                        connection=OUTPUT_DATABASE_URI,
+                                        if_table_exists='replace',
+                                        engine='adbc')
 
             if self.population_time_series is None:
                 self.population_time_series = self.current_pop.clone()
@@ -247,23 +261,13 @@ class Projector():
             self.population_time_series = self.population_time_series.rename({'POPULATION': str(self.current_projection_year)})
             self.current_projection_year += 1
 
-            print(f"Total population (end): {self.current_pop.select('POPULATION').sum().item():,}\n")
-
-            # print("\n")
-            # print("***************** PARAMETERS ******************")
-            # print("Scenario: ", self.scenario)
-            # print("CDC fertility adjustment:", f'{self.cdc_fert_calibr * 100}%')
-            # print("CDC mortality adjustment:", f'{self.cdc_mort_calibr * 100}%')
-            # print("Census immigration historical 2023-2024:", self.census_imm_hist2324)
-            # print("Output database:", os.path.basename(OUTPUT_DATABASE))
-            # print("***********************************************")
+            print(f"Total population (end): {int(self.current_pop.select('POPULATION').sum().item()):,}\n")
 
             # save results to sqlite3 database
-            uri = f'sqlite:{OUTPUT_DATABASE}'
             temp = self.population_time_series.clone()
             temp = temp.sort(by=['GEOID', 'SEX', 'AGE'])
             temp.write_database(table_name=f'population_by_age_sex_{self.scenario}',
-                                connection=uri,
+                                connection=OUTPUT_DATABASE_URI,
                                 if_table_exists='replace',
                                 engine='adbc')
             del temp
@@ -276,7 +280,7 @@ class Projector():
 
         print("Calculating mortality...", end='')
 
-        # get CDC mortality rates by AGE_GROUP, SEX, and COUNTY
+        # get CDC mortality rates by AGE, SEX, and COUNTY
         mort_rates = os.path.join(DATABASE_FOLDER, 'mortality_2019_2023_county.csv')
         county_mort_rates = (pl.read_csv(source=mort_rates)
                              .with_columns(pl.col('GEOID').cast(pl.String).str.zfill(5).alias('GEOID')))
@@ -294,10 +298,8 @@ class Projector():
         cbo_mort_multiply = pl.read_csv(source=cbo_mort_csv).with_columns(pl.col('AGE'))
         cbo_mort_multiply = cbo_mort_multiply.select(['AGE', 'SEX', f'ASMR_{self.current_projection_year}'])
         cbo_mort_multiply = cbo_mort_multiply.rename({f'ASMR_{self.current_projection_year}': 'MORT_MULTIPLY'})
-        # cbo_mort_multiply = cbo_mort_multiply.with_columns(replaced=pl.col('AGE').replace(85, '85+').cast(pl.Enum(AGE_GROUPS)))
 
-         # join CBO mortality rate adjustments
-
+        # join CBO mortality rate adjustments
         df = df.join(other=cbo_mort_multiply,
                      on=['AGE', 'SEX'],
                      how='left',
@@ -317,12 +319,11 @@ class Projector():
         total_deaths_this_year = round(self.deaths.select(pl.col('DEATHS').sum()).item())
 
         # store time series of mortality in sqlite3
-        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
             deaths = self.deaths.rename({'DEATHS': str(self.current_projection_year)})
         else:
             query = f'SELECT * FROM deaths_by_age_sex_{self.scenario}'
-            deaths = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
+            deaths = pl.read_database_uri(query=query, uri=OUTPUT_DATABASE_URI)
             current_deaths = self.deaths.clone()
             current_deaths = current_deaths.rename({'DEATHS': str(self.current_projection_year)})
             deaths = pl.concat(items=[deaths, current_deaths], how='align')
@@ -331,7 +332,7 @@ class Projector():
         assert sum(deaths.null_count()).item() == 0
 
         deaths.write_database(table_name=f'deaths_by_age_sex_{self.scenario}',
-                              connection=uri,
+                              connection=OUTPUT_DATABASE_URI,
                               if_table_exists='replace',
                               engine='adbc')
 
@@ -365,12 +366,11 @@ class Projector():
         self.immigrants = df.clone()
 
         # store time series of immigration in sqlite3
-        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
             immigration = self.immigrants.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
         else:
             query = f'SELECT * FROM immigration_by_age_sex_{self.scenario}'
-            immigration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
+            immigration = pl.read_database_uri(query=query, uri=OUTPUT_DATABASE_URI)
             current_immigration = self.immigrants.clone()
             current_immigration = current_immigration.rename({'NET_IMMIGRATION': str(self.current_projection_year)}).clone()
             immigration = pl.concat(items=[immigration, current_immigration], how='align')
@@ -378,7 +378,7 @@ class Projector():
         assert sum(immigration.null_count()).item() == 0
 
         immigration.write_database(table_name=f'immigration_by_age_sex_{self.scenario}',
-                                   connection=uri,
+                                   connection=OUTPUT_DATABASE_URI,
                                    if_table_exists='replace',
                                    engine='adbc')
 
@@ -438,14 +438,13 @@ class Projector():
         assert self.net_migration.filter(pl.col('NET_MIGRATION').is_nan()).shape[0] == 0
 
         # store time series of migration in sqlite3
-        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
             migration = self.net_migration.rename({'NET_MIGRATION': f'NETMIG{self.current_projection_year}',
                                                     'INFLOWS': f'INMIG{self.current_projection_year}',
                                                     'OUTFLOWS': f'OUTMIG{self.current_projection_year}'}).clone()
         else:
             query = f'SELECT * FROM migration_by_age_sex_{self.scenario}'
-            migration = pl.read_database_uri(query=query, uri=uri).with_columns(pl.col('AGE_GROUP').cast(pl.Enum(AGE_GROUPS)))
+            migration = pl.read_database_uri(query=query, uri=OUTPUT_DATABASE_URI)
             current_migration = self.net_migration.clone().rename({'NET_MIGRATION': f'NETMIG{self.current_projection_year}',
                                                                    'INFLOWS': f'INMIG{self.current_projection_year}',
                                                                    'OUTFLOWS': f'OUTMIG{self.current_projection_year}'})
@@ -456,7 +455,7 @@ class Projector():
 
         self.net_migration = self.net_migration.drop(['INFLOWS', 'OUTFLOWS'])
         migration.write_database(table_name=f'migration_by_age_sex_{self.scenario}',
-                                 connection=uri,
+                                 connection=OUTPUT_DATABASE_URI,
                                  if_table_exists='replace',
                                  engine='adbc')
 
@@ -470,7 +469,7 @@ class Projector():
         '''
         print("Calculating fertility...", end='')
 
-        # get CDC fertility rates by AGE_GROUP (15-44) and COUNTY
+        # get CDC fertility rates by AGE (15-44) and COUNTY
         county_fert_rates = (pl.read_csv(source=os.path.join(DATABASE_FOLDER, 'fertility_2020_2024_county.csv'))
                                          .with_columns(pl.col('GEOID').cast(pl.String).str.zfill(5).alias('GEOID')))
 
@@ -507,12 +506,11 @@ class Projector():
         total_births_this_year = round(self.births.select('BIRTHS').sum().item())
 
         # store time series of fertility in sqlite3
-        uri = f'sqlite:{OUTPUT_DATABASE}'
         if self.current_projection_year == self.launch_year + 1:
             births = self.births.rename({'BIRTHS': str(self.current_projection_year)})
         else:
             query = f'SELECT * FROM births_by_age_sex_{self.scenario}'
-            births = pl.read_database_uri(query=query, uri=uri)
+            births = pl.read_database_uri(query=query, uri=OUTPUT_DATABASE_URI)
             current_births = self.births.clone()
             current_births = current_births.rename({'BIRTHS': str(self.current_projection_year)}).clone()
             births = pl.concat(items=[births, current_births], how='align')
@@ -520,7 +518,7 @@ class Projector():
         assert births.shape[0] == 6256
         assert sum(births.null_count()).item() == 0
         births.write_database(table_name=f'births_by_age_sex_{self.scenario}',
-                              connection=uri,
+                              connection=OUTPUT_DATABASE_URI,
                               if_table_exists='replace',
                               engine='adbc')
 

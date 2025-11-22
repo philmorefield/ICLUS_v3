@@ -55,7 +55,7 @@ def get_cbo_population():
     df_list = [df[i:i+n] for i in range(0, df.shape[0], n)]
 
     for i, df_item in enumerate(df_list):
-        df_item['YEAR'] = 2022 + i
+        df_item.loc[:, 'YEAR'] = 2022 + i
 
     df = pd.concat(df_list, ignore_index=True)
 
@@ -107,7 +107,7 @@ def main():
     proj_pop = pd.read_sql_query(sql=query, con=con)
     con.close()
 
-    proj_pop = proj_pop.drop(columns=['GEOID', 'AGE_GROUP', 'SEX']).sum()
+    proj_pop = proj_pop.drop(columns=['GEOID', 'AGE', 'SEX']).sum()
     proj_pop = proj_pop.reset_index()
     proj_pop.columns = ['YEAR', 'POPULATION']
     proj_pop['YEAR'] = proj_pop['YEAR'].astype(int)
@@ -167,7 +167,7 @@ def main():
     proj_births = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_births = proj_births.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_births = proj_births.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_births.columns = ['YEAR', 'BIRTHS']
     proj_births['YEAR'] = proj_births['YEAR'].astype(int)
     proj_births['BIRTHS'] = proj_births['BIRTHS'] / 1000000
@@ -237,14 +237,14 @@ def main():
 
     # future migration
     columns = (', ').join([f'NETMIG{year}' for year in range(2025, 2099)])
-    columns = 'GEOID, AGE_GROUP ,' + columns
+    columns = 'GEOID, AGE ,' + columns
     query = f'SELECT {columns} FROM migration_by_age_sex_{SCENARIO}'
     con = sqlite3.connect(PROJECTIONS_DB)
     proj_migration = pd.read_sql(sql=query, con=con)
     con.close()
 
     proj_migration.columns = [col.replace('NETMIG', '') for col in proj_migration.columns]
-    proj_migration = proj_migration.drop(columns=['GEOID', 'AGE_GROUP'])
+    proj_migration = proj_migration.drop(columns=['GEOID', 'AGE'])
     proj_migration = proj_migration.clip(lower=0).sum().T.reset_index()
     proj_migration.columns = ['YEAR', 'MIGRATION']
     proj_migration['YEAR'] = proj_migration['YEAR'].astype(int)
@@ -296,7 +296,7 @@ def main():
     proj_deaths = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_deaths = proj_deaths.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_deaths = proj_deaths.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_deaths.columns = ['YEAR', 'DEATHS']
     proj_deaths['YEAR'] = proj_deaths['YEAR'].astype(int)
     proj_deaths['DEATHS'] = proj_deaths['DEATHS'] / 1000000
@@ -373,7 +373,7 @@ def main():
     proj_immig = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_immig = proj_immig.drop(columns=['GEOID', 'SEX', 'AGE_GROUP']).sum().T.reset_index()
+    proj_immig = proj_immig.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_immig.columns = ['YEAR', 'IMMIGRATION']
     proj_immig['YEAR'] = proj_immig['YEAR'].astype(int)
     proj_immig['IMMIGRATION'] = proj_immig['IMMIGRATION'] / 1000000
