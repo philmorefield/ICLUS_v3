@@ -16,9 +16,9 @@ POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sql
 PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'CBO', 'p1v01.sqlite')
 
 SCENARIO = 'CBO'
-
 YEAR_MIN = 2015
 YEAR_MAX = 2100
+GEOID = '06037'  # Los Angeles County, CA
 
 
 def get_census_sya_population():
@@ -82,10 +82,15 @@ def main():
                        skiprows=5,
                        names=['COUNTY_STATE', '2010_base'] + [year for year in range(2010, 2021)])
     df[['CTYNAME', 'STNAME']] = df['COUNTY_STATE'].str.split(',', expand=True)
+    df['CTYNAME'] = df['CTYNAME'].str.lstrip('.').str.strip()
+    df['STNAME'] = df['STNAME'].str.strip()
     df = df.drop(columns='COUNTY_STATE')
     df = df.merge(fips, on=['CTYNAME', 'STNAME'], how='left')
+    df = df.query(f'GEOID == "{GEOID}"')
+    county_name = df['CTYNAME'].values[0]
+    state_name = df['STNAME'].values[0]
 
-    pre2020pop = df.drop(columns=['COUNTY_STATE', '2010_base']).sum().T.reset_index()
+    pre2020pop = df.drop(columns=['2010_base', 'STATE', 'COUNTY', 'CTYNAME', 'STNAME', 'GEOID']).T.reset_index()
     pre2020pop.columns = ['YEAR', 'POPULATION']
     pre2020pop['POPULATION'] = pre2020pop['POPULATION'] / 1000000
 
@@ -93,11 +98,13 @@ def main():
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2024', 'intercensal')
     csv_fn = 'co-est2024-alldata.csv'
     df = pd.read_csv(os.path.join(csv_folder, csv_fn), encoding='latin-1')
-    columns = ['SUMLEV', 'ESTIMATESBASE2020'] + [f'POPESTIMATE{year}' for year in range(2021, 2025)]
+    df['GEOID'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
+    df = df.query(f'GEOID == "{GEOID}"')
+    columns = ['ESTIMATESBASE2020'] + [f'POPESTIMATE{year}' for year in range(2021, 2025)]
     post2020pop = df[columns]
     post2020pop = post2020pop.rename(columns={'ESTIMATESBASE2020': 'POPESTIMATE2020'})
-    post2020pop = post2020pop.loc[post2020pop.SUMLEV == 40]
-    post2020pop = post2020pop.drop(columns='SUMLEV').sum().reset_index()
+
+    post2020pop = post2020pop.T.reset_index()
     post2020pop.columns = ['YEAR', 'POPULATION']
     post2020pop['YEAR'] = post2020pop['YEAR'].str[-4:].astype(int)
     post2020pop['POPULATION'] = post2020pop['POPULATION'] / 1000000
@@ -116,18 +123,10 @@ def main():
     proj_pop['YEAR'] = proj_pop['YEAR'].astype(int)
     proj_pop['POPULATION'] = proj_pop['POPULATION'] / 1000000
 
-    # CBO future population
-    # cbo_pop = cbo.loc[cbo['YEAR'] >= 2025, ['TOTAL_POPULATION', 'YEAR']]
-    cbo_pop = cbo[['TOTAL_POPULATION', 'YEAR']]
-    cbo_pop = cbo_pop.groupby(by='YEAR', as_index=False).sum()
-    cbo_pop = cbo_pop.rename(columns={'TOTAL_POPULATION': 'POPULATION'})
-    cbo_pop['POPULATION'] = cbo_pop['POPULATION'] / 1000000
-
     sns.lineplot(x='YEAR', y='POPULATION', data=histpop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
     sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='P1v0 projection')
-    sns.lineplot(x='YEAR', y='POPULATION', data=cbo_pop, linewidth=2, color='purple', legend=False, ax=ax_pop, label='CBO projection')
 
-    plt.title('U.S. POPULATION')
+    plt.title('TOTAL POPULATION\n' + f'{county_name}, {state_name}')
     ax_pop.set_xticklabels([])
     plt.gca().set_xlabel("")
     plt.gca().set_ylabel("")
