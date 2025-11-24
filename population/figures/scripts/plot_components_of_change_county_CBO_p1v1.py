@@ -16,40 +16,40 @@ POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sql
 PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'CBO', 'p1v01.sqlite')
 
 SCENARIO = 'CBO'
-YEAR_MIN = 2015
-YEAR_MAX = 2100
+YEAR_MIN = 2010
+YEAR_MAX = 2050
 GEOID = '06037'  # Los Angeles County, CA
 
 
-def get_census_sya_population():
-    '''
-    2024 launch population is taken from U.S. Census Intercensal Population
-    Estimates.
-    '''
-    census_sya_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'Census', '2024', 'intercensal', 'syasex')
+# def get_census_sya_population():
+#     '''
+#     2024 launch population is taken from U.S. Census Intercensal Population
+#     Estimates.
+#     '''
+#     census_sya_input_folder = os.path.join(INPUT_FOLDER, 'raw_files', 'Census', '2024', 'intercensal', 'syasex')
 
-    df_list = None
-    for csv in os.listdir(census_sya_input_folder):
-        if csv.endswith('.csv'):
-            temp = pl.read_csv(source=os.path.join(census_sya_input_folder, csv),
-                                  encoding='latin1').filter(pl.col('YEAR') >= 2)
-            temp = temp.with_columns((pl.col('STATE').cast(pl.Utf8).str.zfill(2) +
-                        pl.col('COUNTY').cast(pl.Utf8).str.zfill(3))
-                        .alias('GEOID')).rename({'TOT_MALE': 'MALE', 'TOT_FEMALE': 'FEMALE'})
-            temp = temp.select(['GEOID', 'AGE', 'MALE', 'FEMALE'])
-            temp = temp.unpivot(index=['GEOID', 'AGE'], variable_name='SEX', value_name='POPULATION')
+#     df_list = None
+#     for csv in os.listdir(census_sya_input_folder):
+#         if csv.endswith('.csv'):
+#             temp = pl.read_csv(source=os.path.join(census_sya_input_folder, csv),
+#                                   encoding='latin1').filter(pl.col('YEAR') >= 2)
+#             temp = temp.with_columns((pl.col('STATE').cast(pl.Utf8).str.zfill(2) +
+#                         pl.col('COUNTY').cast(pl.Utf8).str.zfill(3))
+#                         .alias('GEOID')).rename({'TOT_MALE': 'MALE', 'TOT_FEMALE': 'FEMALE'})
+#             temp = temp.select(['GEOID', 'AGE', 'MALE', 'FEMALE'])
+#             temp = temp.unpivot(index=['GEOID', 'AGE'], variable_name='SEX', value_name='POPULATION')
 
-            if df_list is None:
-                df_list = [temp]
-            else:
-                df_list.append(temp)
-    df = pl.concat(items=df_list, how='vertical')
+#             if df_list is None:
+#                 df_list = [temp]
+#             else:
+#                 df_list.append(temp)
+#     df = pl.concat(items=df_list, how='vertical')
 
-    df = df.sort(['GEOID', 'AGE', 'SEX'])
-    df = make_fips_changes(df)
-    assert df.shape == (538016, 4)
+#     df = df.sort(['GEOID', 'AGE', 'SEX'])
+#     df = make_fips_changes(df)
+#     assert df.shape == (538016, 4)
 
-    return df
+#     return df
 
 
 def main():
@@ -84,15 +84,15 @@ def main():
     df[['CTYNAME', 'STNAME']] = df['COUNTY_STATE'].str.split(',', expand=True)
     df['CTYNAME'] = df['CTYNAME'].str.lstrip('.').str.strip()
     df['STNAME'] = df['STNAME'].str.strip()
-    df = df.drop(columns='COUNTY_STATE')
+    df = df.drop(columns=['2010_base', 'COUNTY_STATE'])
     df = df.merge(fips, on=['CTYNAME', 'STNAME'], how='left')
     df = df.query(f'GEOID == "{GEOID}"')
     county_name = df['CTYNAME'].values[0]
     state_name = df['STNAME'].values[0]
 
-    pre2020pop = df.drop(columns=['2010_base', 'STATE', 'COUNTY', 'CTYNAME', 'STNAME', 'GEOID']).T.reset_index()
+    pre2020pop = df.drop(columns=['STATE', 'COUNTY', 'CTYNAME', 'STNAME', 'GEOID']).T.reset_index()
     pre2020pop.columns = ['YEAR', 'POPULATION']
-    pre2020pop['POPULATION'] = pre2020pop['POPULATION'] / 1000000
+    pre2020pop['POPULATION'] = pre2020pop['POPULATION']
 
     # historical population, 2020-2024
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2024', 'intercensal')
@@ -107,7 +107,7 @@ def main():
     post2020pop = post2020pop.T.reset_index()
     post2020pop.columns = ['YEAR', 'POPULATION']
     post2020pop['YEAR'] = post2020pop['YEAR'].str[-4:].astype(int)
-    post2020pop['POPULATION'] = post2020pop['POPULATION'] / 1000000
+    post2020pop['POPULATION'] = post2020pop['POPULATION']
 
     histpop = pd.concat([pre2020pop, post2020pop], ignore_index=True)
 
@@ -117,11 +117,11 @@ def main():
     proj_pop = pd.read_sql_query(sql=query, con=con)
     con.close()
 
-    proj_pop = proj_pop.drop(columns=['GEOID', 'AGE', 'SEX']).sum()
-    proj_pop = proj_pop.reset_index()
+    proj_pop = proj_pop.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
+    proj_pop = proj_pop.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_pop.columns = ['YEAR', 'POPULATION']
     proj_pop['YEAR'] = proj_pop['YEAR'].astype(int)
-    proj_pop['POPULATION'] = proj_pop['POPULATION'] / 1000000
+    proj_pop['POPULATION'] = proj_pop['POPULATION']
 
     sns.lineplot(x='YEAR', y='POPULATION', data=histpop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
     sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='P1v0 projection')
@@ -138,30 +138,31 @@ def main():
     ############
 
     # historical births
-    columns = ['SUMLEV'] + ['BIRTHS' + str(year) for year in range(2010, 2021)]
+    columns = ['BIRTHS' + str(year) for year in range(2010, 2021)]
     ax_births = fig.add_subplot(gs[1, :1])
     csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
     hist_births = pd.read_csv(csv, encoding='latin-1')
+    hist_births['GEOID'] = hist_births['STATE'].astype(str).str.zfill(2) + hist_births['COUNTY'].astype(str).str.zfill(3)
 
-    hist_births = hist_births[columns]
-    hist_births = hist_births.query('SUMLEV == 50')
-    hist_births = hist_births.drop(columns='SUMLEV').sum().reset_index()
+    hist_births = hist_births.loc[hist_births.GEOID == GEOID, columns]
+    hist_births = hist_births.T.reset_index()
     hist_births.columns = ['YEAR', 'BIRTHS']
     hist_births['YEAR'] = hist_births['YEAR'].str[-4:].astype(int)
     hist_births.loc[hist_births['YEAR'] == 2010, 'BIRTHS'] *= 4
-    hist_births['BIRTHS'] = hist_births['BIRTHS'] / 1000000
+    hist_births['BIRTHS'] = hist_births['BIRTHS']
 
     # historical births, 2020-2024
-    columns = ['SUMLEV'] + ['BIRTHS' + str(year) for year in range(2020, 2025)]
+    columns = ['BIRTHS' + str(year) for year in range(2020, 2025)]
     csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
     post2020_births = pd.read_csv(csv, encoding='latin-1')
-    post2020_births = post2020_births[columns]
-    post2020_births = post2020_births.query('SUMLEV == 50')
-    post2020_births = post2020_births.drop(columns='SUMLEV').sum().reset_index()
+    post2020_births['GEOID'] = post2020_births['STATE'].astype(str).str.zfill(2) + post2020_births['COUNTY'].astype(str).str.zfill(3)
+
+    post2020_births = post2020_births.loc[post2020_births.GEOID == GEOID, columns]
+    post2020_births = post2020_births.T.reset_index()
     post2020_births.columns = ['YEAR', 'BIRTHS']
     post2020_births['YEAR'] = post2020_births['YEAR'].str[-4:].astype(int)
     post2020_births.loc[post2020_births['YEAR'] == 2020, 'BIRTHS'] *= 4
-    post2020_births['BIRTHS'] = post2020_births['BIRTHS'] / 1000000
+    post2020_births['BIRTHS'] = post2020_births['BIRTHS']
 
     # future births
     query = f'SELECT * FROM births_by_age_sex_{SCENARIO}'
@@ -169,36 +170,15 @@ def main():
     proj_births = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_births = proj_births.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
+    proj_births = proj_births.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
+    proj_births = proj_births.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_births.columns = ['YEAR', 'BIRTHS']
     proj_births['YEAR'] = proj_births['YEAR'].astype(int)
-    proj_births['BIRTHS'] = proj_births['BIRTHS'] / 1000000
-
-    # CBO future births
-    fert_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections', 'CSV files')
-    fert_csv_fn = 'fertilityRates_byYearAgePlace.csv'
-    fert_df = pd.read_csv(os.path.join(fert_csv_folder, fert_csv_fn))
-    fert_df.columns = ['YEAR', 'AGE', 'PLACE', 'FERTILITY_RATE_PER_K']
-    fert_df = fert_df.query('PLACE == "all"').drop(columns='PLACE')
-    fert_df = fert_df[fert_df['YEAR'] >= 2025].set_index(['YEAR', 'AGE'])
-    fert_df = fert_df.rename(columns={'FERTILITY_RATE_PER_K': 'VALUE'})
-
-    cbo_female = cbo.loc[cbo['YEAR'] >= 2025, ['AGE', 'TOTAL_FEMALE', 'YEAR']]
-    cbo_female = cbo_female.rename(columns={'TOTAL_FEMALE': 'VALUE'})
-    cbo_female['AGE'] = cbo_female['AGE'].astype(str).str.replace('100+', '100').astype(int)
-    cbo_female = cbo_female.query('YEAR >= 2025 & AGE >= 14 & AGE <= 49')
-    cbo_female = cbo_female.set_index(['YEAR', 'AGE'])
-    cbo_female = cbo_female.rename(columns={'POPULATION': 'VALUE'})
-
-    cbo_births = cbo_female.mul(fert_df, axis=0).div(1000).reset_index().drop(columns='AGE')
-    cbo_births = cbo_births.groupby(by='YEAR', as_index=False).sum()
-    cbo_births = cbo_births.rename(columns={'VALUE': 'BIRTHS'})
-    cbo_births['BIRTHS'] = cbo_births['BIRTHS'] / 1000000
+    proj_births['BIRTHS'] = proj_births['BIRTHS']
 
     sns.lineplot(x='YEAR', y='BIRTHS', data=hist_births, linewidth=2, color='gray', legend=False, ax=ax_births)
     sns.lineplot(x='YEAR', y='BIRTHS', data=proj_births, linewidth=2, color='orange', legend=False, ax=ax_births)
     sns.lineplot(x='YEAR', y='BIRTHS', data=post2020_births, linewidth=2, color='gray', legend=False, ax=ax_births)
-    sns.lineplot(x='YEAR', y='BIRTHS', data=cbo_births, linewidth=2, color='purple', legend=False, ax=ax_births)
 
     plt.title('BIRTHS')
     ax_births.set_xticklabels([])
@@ -213,29 +193,30 @@ def main():
     # historical migration
     ax_migration = fig.add_subplot(gs[1, 1:])
 
-    columns = ['SUMLEV'] + ['DOMESTICMIG' + str(year) for year in range(2010, 2021)]
+    columns = ['DOMESTICMIG' + str(year) for year in range(2010, 2021)]
     csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
     hist_migration = pd.read_csv(csv, encoding='latin-1')
+    hist_migration['GEOID'] = hist_migration['STATE'].astype(str).str.zfill(2) + hist_migration['COUNTY'].astype(str).str.zfill(3)
 
-    hist_migration = hist_migration[columns]
-    hist_migration = hist_migration.query('SUMLEV == 50').clip(lower=0)
-    hist_migration = hist_migration.drop(columns='SUMLEV').sum().reset_index()
+    hist_migration = hist_migration.loc[hist_migration.GEOID == GEOID, columns]
+    hist_migration = hist_migration.T.reset_index()
     hist_migration.columns = ['YEAR', 'MIGRATION']
     hist_migration['YEAR'] = hist_migration['YEAR'].str[-4:].astype(int)
     hist_migration.loc[hist_migration['YEAR'] == 2010, 'MIGRATION'] *= 4
-    hist_migration['MIGRATION'] = hist_migration['MIGRATION'] / 1000000
+    hist_migration['MIGRATION'] = hist_migration['MIGRATION']
 
     # historical migration, 2020-2024
-    columns = ['SUMLEV'] + ['DOMESTICMIG' + str(year) for year in range(2020, 2025)]
+    columns = ['DOMESTICMIG' + str(year) for year in range(2020, 2025)]
     csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
     post2020_migration = pd.read_csv(csv, encoding='latin-1')
-    post2020_migration = post2020_migration[columns]
-    post2020_migration = post2020_migration.query('SUMLEV == 50').clip(lower=0)
-    post2020_migration = post2020_migration.drop(columns='SUMLEV').sum().reset_index()
+    post2020_migration['GEOID'] = post2020_migration['STATE'].astype(str).str.zfill(2) + post2020_migration['COUNTY'].astype(str).str.zfill(3)
+
+    post2020_migration = post2020_migration.loc[post2020_migration.GEOID == GEOID, columns]
+    post2020_migration = post2020_migration.T.reset_index()
     post2020_migration.columns = ['YEAR', 'MIGRATION']
     post2020_migration['YEAR'] = post2020_migration['YEAR'].str[-4:].astype(int)
     post2020_migration.loc[post2020_migration['YEAR'] == 2020, 'MIGRATION'] *= 4
-    post2020_migration['MIGRATION'] = post2020_migration['MIGRATION'] / 1000000
+    post2020_migration['MIGRATION'] = post2020_migration['MIGRATION']
 
     # future migration
     columns = (', ').join([f'NETMIG{year}' for year in range(2025, 2099)])
@@ -245,12 +226,10 @@ def main():
     proj_migration = pd.read_sql(sql=query, con=con)
     con.close()
 
-    proj_migration.columns = [col.replace('NETMIG', '') for col in proj_migration.columns]
-    proj_migration = proj_migration.drop(columns=['GEOID', 'AGE'])
-    proj_migration = proj_migration.clip(lower=0).sum().T.reset_index()
+    proj_migration = proj_migration.query('GEOID == @GEOID').drop(columns='AGE')
+    proj_migration = proj_migration.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_migration.columns = ['YEAR', 'MIGRATION']
-    proj_migration['YEAR'] = proj_migration['YEAR'].astype(int)
-    proj_migration['MIGRATION'] = proj_migration['MIGRATION'] / 1000000
+    proj_migration['YEAR'] = proj_migration['YEAR'].str[-4:].astype(int)
 
     sns.lineplot(x='YEAR', y='MIGRATION', data=hist_migration, linewidth=2, color='gray', legend=False, ax=ax_migration)
     sns.lineplot(x='YEAR', y='MIGRATION', data=proj_migration, linewidth=2, color='orange', legend=False, ax=ax_migration)
@@ -269,16 +248,17 @@ def main():
     ax_deaths = fig.add_subplot(gs[2, :1])
 
     # historical deaths, 2010-2020
-    columns = ['SUMLEV'] + ['DEATHS' + str(year) for year in range(2010, 2021)]
+    columns = ['DEATHS' + str(year) for year in range(2010, 2021)]
     csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
     hist_deaths = pd.read_csv(csv, encoding='latin-1')
-    hist_deaths = hist_deaths[columns]
-    hist_deaths = hist_deaths.query('SUMLEV == 50')
-    hist_deaths = hist_deaths.drop(columns='SUMLEV').sum().reset_index()
+    hist_deaths['GEOID'] = hist_deaths['STATE'].astype(str).str.zfill(2) + hist_deaths['COUNTY'].astype(str).str.zfill(3)
+
+    hist_deaths = hist_deaths.loc[hist_deaths.GEOID == GEOID, columns]
+    hist_deaths = hist_deaths.T.reset_index()
     hist_deaths.columns = ['YEAR', 'DEATHS']
     hist_deaths['YEAR'] = hist_deaths['YEAR'].str[-4:].astype(int)
     hist_deaths.loc[hist_deaths['YEAR'] == 2010, 'DEATHS'] *= 4
-    hist_deaths['DEATHS'] = hist_deaths['DEATHS'] / 1000000
+    hist_deaths['DEATHS'] = hist_deaths['DEATHS']
 
     # historical deaths, 2020-2024
     columns = ['SUMLEV'] + ['DEATHS' + str(year) for year in range(2020, 2025)]
@@ -290,7 +270,7 @@ def main():
     post2020_deaths.columns = ['YEAR', 'DEATHS']
     post2020_deaths['YEAR'] = post2020_deaths['YEAR'].str[-4:].astype(int)
     post2020_deaths.loc[post2020_deaths['YEAR'] == 2020, 'DEATHS'] *= 4
-    post2020_deaths['DEATHS'] = post2020_deaths['DEATHS'] / 1000000
+    post2020_deaths['DEATHS'] = post2020_deaths['DEATHS']
 
     # future deaths
     query = f'SELECT * FROM deaths_by_age_sex_{SCENARIO}'
@@ -301,7 +281,7 @@ def main():
     proj_deaths = proj_deaths.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_deaths.columns = ['YEAR', 'DEATHS']
     proj_deaths['YEAR'] = proj_deaths['YEAR'].astype(int)
-    proj_deaths['DEATHS'] = proj_deaths['DEATHS'] / 1000000
+    proj_deaths['DEATHS'] = proj_deaths['DEATHS']
 
     # CBO future deaths
     mort_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections', 'CSV files')
@@ -311,28 +291,9 @@ def main():
     mort_df = mort_df[mort_df['YEAR'] >= 2025].set_index(['YEAR', 'AGE', 'SEX'])
     mort_df = mort_df.rename(columns={'MORTALITY_RATE_PER_K': 'VALUE'})
 
-    cbo_pop = cbo.copy()
-    cbo_pop['AGE'] = cbo_pop['AGE'].astype(str).str.replace('100+', '100').astype(int)
-    cbo_pop = cbo_pop.rename(columns={'TOTAL_FEMALE': 'female',
-                                      'TOTAL_MALE': 'male'})
-    cbo_pop = cbo_pop[['YEAR', 'AGE', 'female', 'male']]
-    cbo_pop = cbo_pop.melt(id_vars=['YEAR', 'AGE'],
-                           value_vars=['female', 'male'],
-                           value_name='VALUE',
-                           var_name='SEX')
-
-    cbo_pop = cbo_pop.query('YEAR >= 2025')
-    cbo_pop = cbo_pop.set_index(['YEAR', 'AGE', 'SEX'])
-
-    cbo_deaths = cbo_pop.mul(mort_df, axis=0).div(1000).reset_index().drop(columns=['AGE', 'SEX'])
-    cbo_deaths = cbo_deaths.groupby(by='YEAR', as_index=False).sum()
-    cbo_deaths = cbo_deaths.rename(columns={'VALUE': 'DEATHS'})
-    cbo_deaths['DEATHS'] = cbo_deaths['DEATHS'] / 1000000
-
     sns.lineplot(x='YEAR', y='DEATHS', data=hist_deaths, linewidth=2, color='gray', legend=False, ax=ax_deaths)
     sns.lineplot(x='YEAR', y='DEATHS', data=proj_deaths, linewidth=2, color='orange', legend=False, ax=ax_deaths)
     sns.lineplot(x='YEAR', y='DEATHS', data=post2020_deaths, linewidth=2, color='gray', legend=False, ax=ax_deaths)
-    sns.lineplot(x='YEAR', y='DEATHS', data=cbo_deaths, linewidth=2, color='purple', legend=False, ax=ax_deaths)
 
     plt.title('DEATHS')
     ax_deaths.set_xlabel('')
@@ -355,7 +316,7 @@ def main():
     hist_immig.columns = ['YEAR', 'IMMIGRATION']
     hist_immig['YEAR'] = hist_immig['YEAR'].str[-4:].astype(int)
     hist_immig.loc[hist_immig['YEAR'] == 2010, 'IMMIGRATION'] *= 4
-    hist_immig['IMMIGRATION'] = hist_immig['IMMIGRATION'] / 1000000
+    hist_immig['IMMIGRATION'] = hist_immig['IMMIGRATION']
 
     # historical immigration, 2020-2024
     columns = ['SUMLEV'] + ['INTERNATIONALMIG' + str(year) for year in range(2020, 2025)]
@@ -367,7 +328,7 @@ def main():
     post2020_immig.columns = ['YEAR', 'IMMIGRATION']
     post2020_immig['YEAR'] = post2020_immig['YEAR'].str[-4:].astype(int)
     post2020_immig.loc[post2020_immig['YEAR'] == 2020, 'IMMIGRATION'] *= 4
-    post2020_immig['IMMIGRATION'] = post2020_immig['IMMIGRATION'] / 1000000
+    post2020_immig['IMMIGRATION'] = post2020_immig['IMMIGRATION']
 
     # future immigration
     query = f'SELECT * FROM immigration_by_age_sex_{SCENARIO}'
@@ -378,7 +339,7 @@ def main():
     proj_immig = proj_immig.drop(columns=['GEOID', 'SEX', 'AGE']).sum().T.reset_index()
     proj_immig.columns = ['YEAR', 'IMMIGRATION']
     proj_immig['YEAR'] = proj_immig['YEAR'].astype(int)
-    proj_immig['IMMIGRATION'] = proj_immig['IMMIGRATION'] / 1000000
+    proj_immig['IMMIGRATION'] = proj_immig['IMMIGRATION']
 
     sns.lineplot(x='YEAR', y='IMMIGRATION', data=hist_immig, linewidth=2, color='gray', legend=False, ax=ax_immig)
     sns.lineplot(x='YEAR', y='IMMIGRATION', data=proj_immig, linewidth=2, color='orange', legend=False, ax=ax_immig)
