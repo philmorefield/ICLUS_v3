@@ -13,7 +13,7 @@ if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
 
 CENSUS_CSV_PATH = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\Census')
 POPULATION_DB = os.path.join(BASE_FOLDER, 'inputs', 'databases', 'population.sqlite')
-PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'CBO', 'p1v01.sqlite')
+PROJECTIONS_DB = os.path.join(BASE_FOLDER, 'outputs', 'CBO', 'p1v1.sqlite')
 
 SCENARIO = 'CBO'
 
@@ -121,7 +121,7 @@ def main():
     cbo_pop['POPULATION'] = cbo_pop['POPULATION'] / 1000000
 
     sns.lineplot(x='YEAR', y='POPULATION', data=histpop, linewidth=2, color='gray', legend=False, ax=ax_pop, label='U.S. Census\n(intercensal estimate)')
-    sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='P1v0 projection')
+    sns.lineplot(x='YEAR', y='POPULATION', data=proj_pop, linewidth=2, color='orange', legend=False, ax=ax_pop, label='p1v1 projection')
     sns.lineplot(x='YEAR', y='POPULATION', data=cbo_pop, linewidth=2, color='purple', legend=False, ax=ax_pop, label='CBO projection')
 
     plt.title('U.S. POPULATION')

@@ -23,7 +23,10 @@ import sqlite3
 
 from itertools import product
 
+import geopandas as gpd
 import pandas as pd
+
+from matplotlib import pyplot as plt
 
 
 BASE_FOLDER = 'D:\\OneDrive\\ICLUS_v3\\population'
@@ -33,6 +36,73 @@ if os.path.isdir('C:\\Users\\philm\\OneDrive\\ICLUS_v3\\population'):
 CSV_FILES = os.path.join(BASE_FOLDER, 'inputs\\raw_files\\CDC\\age')
 DATABASE_FOLDER = os.path.join(BASE_FOLDER, 'inputs\\databases')
 MIGRATION_DB = os.path.join(DATABASE_FOLDER, 'migration.sqlite')
+FIGURES = os.path.join(BASE_FOLDER, 'figures', 'p1v1')
+GEOSPATIAL = 'D:\\OneDrive\\ICLUS_v3\\geospatial'
+
+
+def read_county_shapefile():
+    f = 'county_2020_dissolved_proj.shp'
+    gdf = gpd.read_file(filename=os.path.join(GEOSPATIAL, f))
+    gdf.rename(columns={'NEW_FIPS': 'GEOID'}, inplace=True)
+    gdf = gdf.to_crs("EPSG:5070")
+
+    return gdf
+
+
+def read_state_shapefile():
+    f = 'state_2020.shp'
+    gdf = gpd.read_file(filename=os.path.join(GEOSPATIAL, f))
+    gdf = gdf.to_crs("EPSG:5070")
+
+    return gdf
+
+
+def create_maps(df):
+
+    # bins = (0.5, 1, 5, 10, 25, 100, 1000)
+    # labels = ('<0.5', '<1', '<5', '<10', '<25', '>=200')
+
+    # df['BINS'] = pd.cut(x=df['PERCENT_OF_AGE_SEX_COHORT'] * 10000,
+    #                     bins=bins,
+    #                     right=True,
+    #                     labels=labels,
+    #                     include_lowest=True)
+    gdf = read_county_shapefile()[['GEOID', 'geometry']]
+    gdf.GEOID = gdf.GEOID.astype(str).str.zfill(5)
+    states = read_state_shapefile()
+    for age in df.AGE.unique():
+        cohort = df.query('AGE == @age')
+        temp = gdf.merge(right=cohort, how='right', on='GEOID')
+
+        temp.plot(column='FERTILITY',
+                    scheme='FisherJenks',
+                    k=5,
+                    cmap='plasma',
+                    legend=True,
+                    legend_kwds={'bbox_to_anchor': (0.18, 0.3),#(1, 0.375),
+                                'fontsize': 'x-small',
+                                'fancybox': True},
+                    missing_kwds={'color': 'black'})
+        states.boundary.plot(ax=plt.gca(), edgecolor='lightgray', linewidth=0.2)
+        plt.gca().set_xlim(-2371000, 2278000)
+        plt.gca().set_ylim(246000, 3186000)
+        plt.gca().axis('off')
+        plt.title(label=f"2011-2015 Births per 1,000 women: Age {age}")
+        plt.tight_layout()
+
+        # simplify the legend labels
+        try:
+            for label in plt.gca().get_legend().get_texts():
+                upper_bound = label.get_text().split(',')[-1]
+                label.set_text(f'< {upper_bound}')
+        except AttributeError:
+            pass
+
+        # plt.show()
+        fn = f'county_fertility_rates_{age}.png'
+        plt.savefig(os.path.join(FIGURES, 'fertility', 'rates', fn), dpi=300)
+        plt.clf()
+        plt.close()
 
 
 def get_cofips_and_state():
@@ -137,6 +207,7 @@ def main():
     #           index=False)
     # con.close()
 
+    create_maps(df)
     df.to_csv(path_or_buf=os.path.join(DATABASE_FOLDER, 'fertility_2020_2024_county.csv'), index=False)
 
     print("Finished!")

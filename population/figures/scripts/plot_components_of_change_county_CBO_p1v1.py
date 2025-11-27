@@ -21,26 +21,25 @@ YEAR_MAX = 2050
 GEOID = '06037'  # Los Angeles County, CA
 
 
-def main():
+def get_pre2020_pop(GEOID):
+    """
+    Retrieve the 2010-2020 intercensal population estimate. This is the only
+    piece that uses the co-est2020int-pop excel file so it is a standalone
+    function.
 
-    fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 2)
+    Returns:
+        dataframe: A 2010-2020 annual time series of total population.
+        string: County name.
+        string: State name.
+    """
 
-    ######################
-    ## TOTAL POPULATION ##
-    ######################
-
-    ax_pop = fig.add_subplot(gs[0, :1])
-
-    # historical population, 2010-2020
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2020', 'intercensal')
     fips_csv = os.path.join(csv_folder, 'CC-EST2020-ALLDATA.csv')
-    fips = pd.read_csv(filepath_or_buffer=fips_csv,
-                       encoding='latin-1',
-                       usecols=['STATE', 'COUNTY', 'STNAME', 'CTYNAME']).drop_duplicates()
+    cty_name_to_fips = pd.read_csv(filepath_or_buffer=fips_csv,
+                     encoding='latin-1',
+                     usecols=['STATE', 'COUNTY', 'STNAME', 'CTYNAME']).drop_duplicates()
 
-    fips['GEOID'] = fips['STATE'].astype(str).str.zfill(2) + fips['COUNTY'].astype(str).str.zfill(3)
-
+    cty_name_to_fips['GEOID'] = cty_name_to_fips['STATE'].astype(str).str.zfill(2) + cty_name_to_fips['COUNTY'].astype(str).str.zfill(3)
 
     csv_fn = 'co-est2020int-pop.xlsx'
     df = pd.read_excel(os.path.join(csv_folder, csv_fn),
@@ -51,7 +50,7 @@ def main():
     df['CTYNAME'] = df['CTYNAME'].str.lstrip('.').str.strip()
     df['STNAME'] = df['STNAME'].str.strip()
     df = df.drop(columns=['2010_base', 'COUNTY_STATE'])
-    df = df.merge(fips, on=['CTYNAME', 'STNAME'], how='left')
+    df = df.merge(cty_name_to_fips, on=['CTYNAME', 'STNAME'], how='left')
     df = df.query(f'GEOID == "{GEOID}"')
     county_name = df['CTYNAME'].values[0]
     state_name = df['STNAME'].values[0]
@@ -60,16 +59,146 @@ def main():
     pre2020pop.columns = ['YEAR', 'POPULATION']
     pre2020pop['POPULATION'] = pre2020pop['POPULATION']
 
+    return pre2020pop, county_name, state_name
+
+
+def get_components_of_change_2010_2020():
+    """
+    Retrieve the components of change for 2010-2020 from the population database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, BIRTHS, DEATHS,
+            INTERNATIONALMIG, DOMESTICMIG and POPULATION.
+    """
+
+    # historical population, 2010-2020
+    csv_folder = os.path.join(CENSUS_CSV_PATH, '2020', 'intercensal')
+    csv_fn = 'co-est2020-alldata.csv'
+    df = pd.read_csv(os.path.join(csv_folder, csv_fn), encoding='latin-1')
+    df['GEOID'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
+
+    return df
+
+
+def get_components_of_change_2020_2024():
+    """
+    Retrieve the components of change for 2020-2024 from the population database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, BIRTHS, DEATHS,
+            INTERNATIONALMIG, DOMESTICMIG and POPULATION.
+    """
+
     # historical population, 2020-2024
     csv_folder = os.path.join(CENSUS_CSV_PATH, '2024', 'intercensal')
     csv_fn = 'co-est2024-alldata.csv'
     df = pd.read_csv(os.path.join(csv_folder, csv_fn), encoding='latin-1')
     df['GEOID'] = df['STATE'].astype(str).str.zfill(2) + df['COUNTY'].astype(str).str.zfill(3)
-    df = df.query(f'GEOID == "{GEOID}"')
+
+    return df
+
+
+def get_projected_population():
+    """
+    Retrieve the projected population from the projections database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, and POPULATION.
+    """
+    query = f'SELECT * FROM population_by_age_sex_{SCENARIO}'
+    con = sqlite3.connect(PROJECTIONS_DB)
+    all_proj_pop = pd.read_sql_query(sql=query, con=con)
+    con.close()
+
+    return all_proj_pop
+
+
+def get_projected_births():
+    """
+    Retrieve the projected births from the projections database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, and BIRTHS.
+    """
+    query = f'SELECT * FROM births_by_age_sex_{SCENARIO}'
+    con = sqlite3.connect(PROJECTIONS_DB)
+    all_proj_births = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    return all_proj_births
+
+
+def get_projected_migration():
+    """
+    Retrieve the projected migration from the projections database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, and MIGRATION.
+    """
+    query = f'SELECT * FROM migration_by_age_sex_{SCENARIO}'
+    con = sqlite3.connect(PROJECTIONS_DB)
+    all_proj_migration = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    return all_proj_migration
+
+
+def get_projected_deaths():
+    """
+    Retrieve the projected deaths from the projections database.
+
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, and DEATHS.
+    """
+    query = f'SELECT * FROM deaths_by_age_sex_{SCENARIO}'
+    con = sqlite3.connect(PROJECTIONS_DB)
+    all_proj_deaths = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    return all_proj_deaths
+
+
+def get_projected_immigration():
+    """
+    Retrieve the projected immigration from the projections database.
+    Returns:
+        dataframe: A dataframe with columns for GEOID, YEAR, and IMMIGRATION.
+    """
+    query = f'SELECT * FROM immigration_by_age_sex_{SCENARIO}'
+    con = sqlite3.connect(PROJECTIONS_DB)
+    all_proj_immigration = pd.read_sql(sql=query, con=con)
+    con.close()
+
+    return all_proj_immigration
+
+
+def main():
+
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(3, 2)
+
+    comp_change_2010_2020 = get_components_of_change_2010_2020()
+    comp_change_2020_2024 = get_components_of_change_2020_2024()
+    all_proj_pop = get_projected_population()
+    all_proj_births = get_projected_births()
+    all_proj_migration = get_projected_migration()
+    all_proj_deaths = get_projected_deaths()
+    all_proj_immigration = get_projected_immigration()
+
+    ######################
+    ## TOTAL POPULATION ##
+    ######################
+
+    ax_pop = fig.add_subplot(gs[0, :1])
+
+    # historical population, 2010-2020
+    pre2020pop, county_name, state_name = get_pre2020_pop(GEOID)
+
+    # historical population, 2020-2024
+    df = comp_change_2020_2024.query(f'GEOID == "{GEOID}"')
     columns = ['ESTIMATESBASE2020'] + [f'POPESTIMATE{year}' for year in range(2021, 2025)]
     post2020pop = df[columns]
     post2020pop = post2020pop.rename(columns={'ESTIMATESBASE2020': 'POPESTIMATE2020'})
-
     post2020pop = post2020pop.T.reset_index()
     post2020pop.columns = ['YEAR', 'POPULATION']
     post2020pop['YEAR'] = post2020pop['YEAR'].str[-4:].astype(int)
@@ -78,12 +207,7 @@ def main():
     histpop = pd.concat([pre2020pop, post2020pop], ignore_index=True)
 
     # future population
-    query = f'SELECT * FROM population_by_age_sex_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_pop = pd.read_sql_query(sql=query, con=con)
-    con.close()
-
-    proj_pop = proj_pop.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
+    proj_pop = all_proj_pop.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
     proj_pop = proj_pop.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_pop.columns = ['YEAR', 'POPULATION']
     proj_pop['YEAR'] = proj_pop['YEAR'].astype(int)
@@ -104,13 +228,10 @@ def main():
     ############
 
     # historical births
-    columns = ['BIRTHS' + str(year) for year in range(2010, 2021)]
     ax_births = fig.add_subplot(gs[1, :1])
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
-    hist_births = pd.read_csv(csv, encoding='latin-1')
-    hist_births['GEOID'] = hist_births['STATE'].astype(str).str.zfill(2) + hist_births['COUNTY'].astype(str).str.zfill(3)
 
-    hist_births = hist_births.loc[hist_births.GEOID == GEOID, columns]
+    columns = ['BIRTHS' + str(year) for year in range(2010, 2021)]
+    hist_births = comp_change_2010_2020.loc[comp_change_2010_2020.GEOID == GEOID, columns]
     hist_births = hist_births.T.reset_index()
     hist_births.columns = ['YEAR', 'BIRTHS']
     hist_births['YEAR'] = hist_births['YEAR'].str[-4:].astype(int)
@@ -119,11 +240,7 @@ def main():
 
     # historical births, 2020-2024
     columns = ['BIRTHS' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
-    post2020_births = pd.read_csv(csv, encoding='latin-1')
-    post2020_births['GEOID'] = post2020_births['STATE'].astype(str).str.zfill(2) + post2020_births['COUNTY'].astype(str).str.zfill(3)
-
-    post2020_births = post2020_births.loc[post2020_births.GEOID == GEOID, columns]
+    post2020_births = comp_change_2020_2024.loc[comp_change_2020_2024.GEOID == GEOID, columns]
     post2020_births = post2020_births.T.reset_index()
     post2020_births.columns = ['YEAR', 'BIRTHS']
     post2020_births['YEAR'] = post2020_births['YEAR'].str[-4:].astype(int)
@@ -131,12 +248,7 @@ def main():
     post2020_births['BIRTHS'] = post2020_births['BIRTHS']
 
     # future births
-    query = f'SELECT * FROM births_by_age_sex_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_births = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_births = proj_births.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
+    proj_births = all_proj_births.query('GEOID == @GEOID').drop(columns=['SEX', 'AGE'])
     proj_births = proj_births.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_births.columns = ['YEAR', 'BIRTHS']
     proj_births['YEAR'] = proj_births['YEAR'].astype(int)
@@ -160,11 +272,7 @@ def main():
     ax_migration = fig.add_subplot(gs[1, 1:])
 
     columns = ['DOMESTICMIG' + str(year) for year in range(2010, 2021)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
-    hist_migration = pd.read_csv(csv, encoding='latin-1')
-    hist_migration['GEOID'] = hist_migration['STATE'].astype(str).str.zfill(2) + hist_migration['COUNTY'].astype(str).str.zfill(3)
-
-    hist_migration = hist_migration.loc[hist_migration.GEOID == GEOID, columns]
+    hist_migration = comp_change_2010_2020.loc[comp_change_2010_2020.GEOID == GEOID, columns]
     hist_migration = hist_migration.T.reset_index()
     hist_migration.columns = ['YEAR', 'MIGRATION']
     hist_migration['YEAR'] = hist_migration['YEAR'].str[-4:].astype(int)
@@ -173,11 +281,7 @@ def main():
 
     # historical migration, 2020-2024
     columns = ['DOMESTICMIG' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
-    post2020_migration = pd.read_csv(csv, encoding='latin-1')
-    post2020_migration['GEOID'] = post2020_migration['STATE'].astype(str).str.zfill(2) + post2020_migration['COUNTY'].astype(str).str.zfill(3)
-
-    post2020_migration = post2020_migration.loc[post2020_migration.GEOID == GEOID, columns]
+    post2020_migration = comp_change_2020_2024.loc[comp_change_2020_2024.GEOID == GEOID, columns]
     post2020_migration = post2020_migration.T.reset_index()
     post2020_migration.columns = ['YEAR', 'MIGRATION']
     post2020_migration['YEAR'] = post2020_migration['YEAR'].str[-4:].astype(int)
@@ -185,15 +289,9 @@ def main():
     post2020_migration['MIGRATION'] = post2020_migration['MIGRATION']
 
     # future migration
-    columns = (', ').join([f'NETMIG{year}' for year in range(2025, 2099)])
-    columns = 'GEOID, AGE, ' + columns
-    query = f'SELECT {columns} FROM migration_by_age_sex_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_migration = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_migration = proj_migration.query('GEOID == @GEOID').drop(columns='AGE')
-    proj_migration = proj_migration.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
+    columns = [f'NETMIG{year}' for year in range(2025, 2099)]
+    proj_migration = all_proj_migration.loc[all_proj_migration.GEOID == GEOID, columns]
+    proj_migration = proj_migration.sum().T.reset_index()
     proj_migration.columns = ['YEAR', 'MIGRATION']
     proj_migration['YEAR'] = proj_migration['YEAR'].str[-4:].astype(int)
 
@@ -215,11 +313,7 @@ def main():
 
     # historical deaths, 2010-2020
     columns = ['DEATHS' + str(year) for year in range(2010, 2021)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
-    hist_deaths = pd.read_csv(csv, encoding='latin-1')
-    hist_deaths['GEOID'] = hist_deaths['STATE'].astype(str).str.zfill(2) + hist_deaths['COUNTY'].astype(str).str.zfill(3)
-
-    hist_deaths = hist_deaths.loc[hist_deaths.GEOID == GEOID, columns]
+    hist_deaths = comp_change_2010_2020.loc[comp_change_2010_2020.GEOID == GEOID, columns]
     hist_deaths = hist_deaths.T.reset_index()
     hist_deaths.columns = ['YEAR', 'DEATHS']
     hist_deaths['YEAR'] = hist_deaths['YEAR'].str[-4:].astype(int)
@@ -228,11 +322,7 @@ def main():
 
     # historical deaths, 2020-2024
     columns = ['DEATHS' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
-    post2020_deaths = pd.read_csv(csv, encoding='latin-1')
-    post2020_deaths['GEOID'] = post2020_deaths['STATE'].astype(str).str.zfill(2) + post2020_deaths['COUNTY'].astype(str).str.zfill(3)
-
-    post2020_deaths = post2020_deaths.loc[post2020_deaths.GEOID == GEOID, columns]
+    post2020_deaths = comp_change_2020_2024.loc[comp_change_2020_2024.GEOID == GEOID, columns]
     post2020_deaths = post2020_deaths.T.reset_index()
     post2020_deaths.columns = ['YEAR', 'DEATHS']
     post2020_deaths['YEAR'] = post2020_deaths['YEAR'].str[-4:].astype(int)
@@ -240,24 +330,11 @@ def main():
     post2020_deaths['DEATHS'] = post2020_deaths['DEATHS']
 
     # future deaths
-    query = f'SELECT * FROM deaths_by_age_sex_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_deaths = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_deaths = proj_deaths.query('GEOID == @GEOID').drop(columns=['AGE', 'SEX'])
+    proj_deaths = all_proj_deaths.query('GEOID == @GEOID').drop(columns=['AGE', 'SEX'])
     proj_deaths = proj_deaths.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_deaths.columns = ['YEAR', 'DEATHS']
     proj_deaths['YEAR'] = proj_deaths['YEAR'].astype(int)
     proj_deaths['DEATHS'] = proj_deaths['DEATHS']
-
-    # CBO future deaths
-    mort_csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections', 'CSV files')
-    mort_csv_fn = 'mortalityRates_byYearAgeSex.csv'
-    mort_df = pd.read_csv(os.path.join(mort_csv_folder, mort_csv_fn))
-    mort_df.columns = ['YEAR', 'AGE', 'SEX', 'MORTALITY_RATE_PER_K']
-    mort_df = mort_df[mort_df['YEAR'] >= 2025].set_index(['YEAR', 'AGE', 'SEX'])
-    mort_df = mort_df.rename(columns={'MORTALITY_RATE_PER_K': 'VALUE'})
 
     sns.lineplot(x='YEAR', y='DEATHS', data=hist_deaths, linewidth=2, color='gray', legend=False, ax=ax_deaths)
     sns.lineplot(x='YEAR', y='DEATHS', data=proj_deaths, linewidth=2, color='orange', legend=False, ax=ax_deaths)
@@ -275,12 +352,8 @@ def main():
     ax_immig = fig.add_subplot(gs[2, 1:])
 
     # historical immigration, 2010-2020
-    csv = os.path.join(CENSUS_CSV_PATH, '2020\\intercensal\\co-est2020-alldata.csv')
-    hist_immig = pd.read_csv(csv, encoding='latin-1')
     columns = ['INTERNATIONALMIG' + str(year) for year in range(2010, 2021)]
-    hist_immig['GEOID'] = hist_immig['STATE'].astype(str).str.zfill(2) + hist_immig['COUNTY'].astype(str).str.zfill(3)
-
-    hist_immig = hist_immig.loc[hist_immig.GEOID == GEOID, columns]
+    hist_immig = comp_change_2010_2020.loc[comp_change_2020_2024.GEOID == GEOID, columns]
     hist_immig = hist_immig.T.reset_index()
     hist_immig.columns = ['YEAR', 'IMMIGRATION']
     hist_immig['YEAR'] = hist_immig['YEAR'].str[-4:].astype(int)
@@ -289,11 +362,7 @@ def main():
 
     # historical immigration, 2020-2024
     columns = ['INTERNATIONALMIG' + str(year) for year in range(2020, 2025)]
-    csv = os.path.join(CENSUS_CSV_PATH, '2024\\intercensal\\co-est2024-alldata.csv')
-    post2020_immig = pd.read_csv(csv, encoding='latin-1')
-    post2020_immig['GEOID'] = post2020_immig['STATE'].astype(str).str.zfill(2) + post2020_immig['COUNTY'].astype(str).str.zfill(3)
-
-    post2020_immig = post2020_immig.loc[post2020_immig.GEOID == GEOID, columns]
+    post2020_immig = comp_change_2020_2024.loc[comp_change_2020_2024.GEOID == GEOID, columns]
     post2020_immig = post2020_immig.T.reset_index()
     post2020_immig.columns = ['YEAR', 'IMMIGRATION']
     post2020_immig['YEAR'] = post2020_immig['YEAR'].str[-4:].astype(int)
@@ -301,12 +370,7 @@ def main():
     post2020_immig['IMMIGRATION'] = post2020_immig['IMMIGRATION']
 
     # future immigration
-    query = f'SELECT * FROM immigration_by_age_sex_{SCENARIO}'
-    con = sqlite3.connect(PROJECTIONS_DB)
-    proj_immig = pd.read_sql(sql=query, con=con)
-    con.close()
-
-    proj_immig = proj_immig.query('GEOID == @GEOID').drop(columns=['AGE', 'SEX'])
+    proj_immig = all_proj_immigration.query('GEOID == @GEOID').drop(columns=['AGE', 'SEX'])
     proj_immig = proj_immig.groupby(by='GEOID').sum().reset_index(drop=True).T.reset_index()
     proj_immig.columns = ['YEAR', 'IMMIGRATION']
     proj_immig['YEAR'] = proj_immig['YEAR'].astype(int)
