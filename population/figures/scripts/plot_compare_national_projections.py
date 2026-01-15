@@ -20,6 +20,8 @@ YEAR_MAX = 2050
 
 POP2023 = 336806231  # from Census 2023 estimate
 
+POP2020 = 331577720  # from Census 2020 estimate
+
 
 def get_census_2023_projections():
     data_dir = os.path.join(CENSUS_CSV_PATH, '2023\\projections\\total_population')
@@ -117,26 +119,95 @@ def get_historical_population_to_2024():
 
 
 def get_cbo_projections():
-    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', 'demographic_projections_2025_9', 'CSV files')
-    csv_fn = 'censusThrough2020+CBOProjection_byYearAgeSex.csv'
-    df = pd.read_csv(os.path.join(csv_folder, csv_fn))
-    df.columns = ['Year', 'Age', 'Sex', 'Total Population']
-    df = df[['Year', 'Total Population']].groupby(by='Year').sum().reset_index()
-    df['Total Population'] = (df['Total Population'] / 1000000.0).round().astype(int)
+
+    cols = ['AGE',
+            'TOTAL_POPULATION',
+            'BLANK1',
+            'TOTAL_MALE',
+            'TOTAL_MALE_SINGLE',
+            'TOTAL_MALE_MARRIED',
+            'TOTAL_MALE_WIDOWED',
+            'TOTAL_MALE_DIVORCED',
+            'BLANK2',
+            'TOTAL_FEMALE',
+            'TOTAL_FEMALE_SINGLE',
+            'TOTAL_FEMALE_MARRIED',
+            'TOTAL_FEMALE_WIDOWED',
+            'TOTAL_FEMALE_DIVORCED']
+
+    csv_folder = os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'CBO', '57059-2025-09-Demographic-Projections')
+    csv_fn = '57059-2025-09-Demographic-Projections.xlsx'
+    df = pd.read_excel(io=os.path.join(csv_folder, csv_fn),
+                       sheet_name='2. Pop by age, sex, marital',
+                       names=cols,
+                       skiprows=9,
+                       skipfooter=6).dropna(axis='columns', how='all').dropna()
+
+    df = df[['AGE', 'TOTAL_POPULATION', 'TOTAL_MALE', 'TOTAL_FEMALE']].dropna()
+    df = df.loc[df['AGE'] != 'Age']
+    df['TOTAL_POPULATION'] = df['TOTAL_POPULATION'].astype(int)
+    df['TOTAL_MALE'] = df['TOTAL_MALE'].astype(int)
+    df['TOTAL_FEMALE'] = df ['TOTAL_FEMALE'].astype(int)
+
+    n = 101
+    df_list = [df[i:i+n] for i in range(0, df.shape[0], n)]
+
+    i = 0
+    for df in df_list:
+        df['YEAR'] = 2022 + i
+        i += 1
+
+    df = pd.concat(df_list, ignore_index=True)
+
+    df = df[['YEAR', 'TOTAL_POPULATION']].groupby(by='YEAR').sum().reset_index()
+    df['TOTAL_POPULATION'] = (df['TOTAL_POPULATION'] / 1000000.0).round().astype(int)
 
     # harmonize all projections to the observed Census time series
-    sub2023 = df.query('Year == 2023')['Total Population'].values[0]
-    df['Total Population'] = df['Total Population'].div(sub2023).mul(POP2023 / 1000000)
+    sub2023 = df.query('YEAR == 2023')['TOTAL_POPULATION'].values[0]
+    df['TOTAL_POPULATION'] = df['TOTAL_POPULATION'].div(sub2023).mul(POP2023 / 1000000)
 
+    df.columns = ['Year', 'Total Population']
     df['Data Source'] = 'CBO'
+
+    return df
+
+
+def get_uva_population_data():
+    """Get UVA population data for comparison"""
+    columns = ['STFIPS', 'NAME', 'SEX', 'POPULATION', '0_TO_4', '5_TO_9', '10_TO_14', '15_TO_19', '20_TO_24',
+               '25_TO_29', '30_TO_34', '35_TO_39', '40_TO_44', '45_TO_49', '50_TO_54', '55_TO_59', '60_TO_64',
+               '65_TO_69', '70_TO_74', '75_TO_79', '80_TO_84', '85_PLUS',]
+
+    df = None
+    for year in range(2020, 2060, 10):
+        temp = pd.read_excel(io=os.path.join(BASE_FOLDER, 'inputs', 'raw_files', 'UVA', f'NationalProjections_ProjectedAgeSexDistribution_2030-2050.xlsx'),
+                             sheet_name=f'{year}',
+                             names=columns,
+                             header=None,
+                             skiprows=4,
+                             skipfooter=1)
+        temp['YEAR'] = year
+        temp = temp.query('STFIPS == 0 & SEX == "Total"')[['POPULATION', 'YEAR']]
+        if df is None:
+            df = temp
+        else:
+            df = pd.concat([df, temp], ignore_index=True)
+
+    df['POPULATION'] = df['POPULATION'] / 1000000
+
+    # harmonize all projections to the observed Census time series
+    sub2020 = df.query('YEAR == 2020')['POPULATION'].values[0]
+    df['POPULATION'] = df['POPULATION'].div(sub2020).mul(POP2020 / 1000000)
+
     return df
 
 
 def main():
     obs = get_historical_population()
-    census_projections = get_census_2023_projections().query('Year >= 2023 & Year <= 2100')
-    witt_v3 = get_wittgenstein_v3_projections().query('Year >= 2023 & Year <= 2100')
-    cbo = get_cbo_projections().query('Year >= 2023 & Year <= 2100')
+    census_projections = get_census_2023_projections().query(f'Year >= 2023 & Year <= {YEAR_MAX}')
+    witt_v3 = get_wittgenstein_v3_projections().query(f'Year >= 2023 & Year <= {YEAR_MAX}')
+    cbo = get_cbo_projections().query(f'Year >= 2023 & Year <= {YEAR_MAX}')
+    uva = get_uva_population_data().query(f'YEAR <= {YEAR_MAX}')
 
     # plot Census lines in blue and shaded area between high and low
     for scenario in census_projections['Scenario'].unique():
@@ -161,7 +232,7 @@ def main():
                      y2=line[1].get_ydata(),
                      color='blue', alpha=0.2)
 
-    # plot Wittgenstein line in green and shaded area between high and low
+    # plot Wittgenstein line in red and shaded area between high and low
     for scenario in witt_v3['Scenario'].unique():
         df = witt_v3.query(f'Scenario == "{scenario}"')
         if scenario == 'SSP2':
@@ -171,18 +242,18 @@ def main():
             linewidth=0
             label=None
         sns.lineplot(x='Year',
-                    y='Total Population',
-                    data=df,
-                    color='green',
-                    label=label,
-                    linewidth=linewidth,
-                    ax=plt.gca())
+                     y='Total Population',
+                     data=df,
+                     color='red',
+                     label=label,
+                     linewidth=linewidth,
+                     ax=plt.gca())
 
     line = plt.gca().get_lines()
     plt.fill_between(x=line[4].get_xdata(),
                      y1=line[8].get_ydata(),
                      y2=line[7].get_ydata(),
-                     color='green', alpha=0.2)
+                     color='red', alpha=0.2)
 
     # plot CBO projection in orange
     sns.lineplot(x='Year',
@@ -193,6 +264,16 @@ def main():
                  label='CBO (Sept 2025)',
                  ax=plt.gca())
 
+    # plot UVA projections in green
+    sns.lineplot(x='YEAR',
+                 y='POPULATION',
+                 data=uva,
+                 color='green',
+                 linewidth=2,
+                 label='UVA (2024)',
+                 ax=plt.gca())
+
+    # plot historical estimates in black
     sns.lineplot(x='YEAR',
                 y='Total Population',
                 data=obs,
@@ -205,7 +286,7 @@ def main():
     plt.gca().set_ylabel('U.S. Population (millions)')
     plt.gca().xaxis.grid(False)
     plt.gca().get_legend().get_frame().set_alpha(1.0)
-    # plt.tight_layout()
+    plt.tight_layout()
 
     plt.show()
 
