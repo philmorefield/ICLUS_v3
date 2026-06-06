@@ -1,0 +1,17 @@
+TY  - DATA
+AU  - McKee, Jacob J.
+AU  - Rose, Amy N.
+AU  - Bright, Eddie A.
+AU  - Huynh, Timmy
+PY  - 2015
+TI  - LandCast 2030
+CY  - Oak Ridge, TN
+PB  - Oak Ridge National Laboratory
+SE  - February 3, 2015
+T3  - LandCast
+ET  - 2030
+RI  - contiguous United States
+C1  - CY 2030
+C3  - digital raster data
+AB  - Building on the intelligent dasymetric modeling techniques used in LandScan and LandScan USA, ORNL has constructed a national level, spatially explicit population projection for the contiguous United States for the year 2030.  To account for local factors which affect population change at the national level, both population gravity and multivariate methods were incorporated to construct LandCast 2030, which downscales national level population projections and models population growth at the local level. Modeled variables are locally adaptive and geographically varying to account for local subtleties which are not addressed in most large-scale projection models. This locally adaptive, spatially explicit model projects an ambient population distribution at a 30 arc-second resolution (approximately 1km) for the target year of 2030 based on a business as usual scenario.
+RN  - When using the LandCast data in publications, please insert this statement as appropriate: "This product was made utilizing the LandCast 2030™ Population Dataset copyrighted by UT-Battelle, LLC, operator of Oak Ridge National Laboratory under Contract No. DE-AC05-00OR22725 with the United States Department of Energy. The United States Government has certain rights in this Dataset.  Neither UT-BATTELLE, LLC NOR THE UNITED STATES DEPARTMENT OF ENERGY, NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR USEFULNESS OF THE DATA SET."
